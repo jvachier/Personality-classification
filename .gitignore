@@ -209,3 +209,6 @@ __marimo__/
 
 # Do not include data
 *data/
+
+# Do not include catboost_info
+catboost_info/
