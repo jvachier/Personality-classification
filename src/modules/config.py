@@ -2,11 +2,12 @@
 Configuration constants and global parameters for the personality classification pipeline.
 """
 
-import warnings
 import logging
 import sys
+import warnings
 from enum import Enum
 from pathlib import Path
+
 
 # Base paths
 BASE_DIR = Path(__file__).parent.parent.parent  # Points to project root
@@ -101,8 +102,8 @@ try:
     SDV_AVAILABLE = importlib.util.find_spec("sdv") is not None
     if SDV_AVAILABLE:
         # Only import if actually available
-        from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
         from sdv.metadata import SingleTableMetadata
+        from sdv.single_table import CTGANSynthesizer, GaussianCopulaSynthesizer
 except ImportError:
     SDV_AVAILABLE = False
 

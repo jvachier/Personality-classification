@@ -4,12 +4,13 @@ Ensemble functions for out-of-fold predictions and blending optimization.
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedKFold
 
 from .config import N_SPLITS, RND
-from .utils import get_logger
 from .optimization import add_label_noise
+from .utils import get_logger
+
 
 logger = get_logger(__name__)
 

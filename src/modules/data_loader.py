@@ -3,7 +3,9 @@ Data loading functions for the personality classification pipeline.
 """
 
 import pandas as pd
+
 from .utils import get_logger
+
 
 logger = get_logger(__name__)
 

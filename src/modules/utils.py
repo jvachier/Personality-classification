@@ -2,8 +2,9 @@
 Utility functions for the personality classification pipeline.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 
 
 def add_label_noise(y, noise_rate=0.02, random_state=42):

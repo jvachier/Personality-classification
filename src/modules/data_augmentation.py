@@ -2,27 +2,29 @@
 Data augmentation functions for the personality classification pipeline.
 """
 
-import pandas as pd
-import numpy as np
 import platform
 import signal
 import time
+
+import numpy as np
+import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 from .config import (
-    SDV_AVAILABLE,
-    IMBLEARN_AVAILABLE,
-    ENABLE_DATA_AUGMENTATION,
     AUGMENTATION_METHOD,
     AUGMENTATION_RATIO,
+    ENABLE_DATA_AUGMENTATION,
+    IMBLEARN_AVAILABLE,
     RND,
+    SDV_AVAILABLE,
 )
 from .utils import get_logger
 
+
 # Conditional imports
 if SDV_AVAILABLE:
-    from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
     from sdv.metadata import SingleTableMetadata
+    from sdv.single_table import CTGANSynthesizer, GaussianCopulaSynthesizer
 
 if IMBLEARN_AVAILABLE:
     from imblearn.over_sampling import SMOTENC
@@ -220,7 +222,7 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
     except Exception as e:
         logger.warning(
-            f"⚠️ SDV augmentation failed: {str(e)}, falling back to simple augmentation"
+            f"⚠️ SDV augmentation failed: {e!s}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
@@ -272,7 +274,7 @@ def smotenc_augmentation(X_train, y_train):
 
     except Exception as e:
         logger.warning(
-            f"⚠️ SMOTENC augmentation failed: {str(e)}, falling back to simple augmentation"
+            f"⚠️ SMOTENC augmentation failed: {e!s}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, 0.1)
 

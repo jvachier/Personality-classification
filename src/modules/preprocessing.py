@@ -2,21 +2,22 @@
 Data preprocessing functions for the personality classification pipeline.
 """
 
-import pandas as pd
+
 import numpy as np
-from typing import Tuple, List
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
-from sklearn.linear_model import LogisticRegression
+import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 
 from .utils import get_logger
+
 
 logger = get_logger(__name__)
 
 
 def prep(
     df_tr: pd.DataFrame, df_te: pd.DataFrame, tgt="Personality", idx="id"
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
     """
     Preprocess the training and test datasets with TOP-4 solution approach.
 
@@ -317,13 +318,13 @@ def add_pseudo_labeling_conservative(
 
 
 def create_domain_balanced_dataset(
-    dataframes: List[pd.DataFrame],
+    dataframes: list[pd.DataFrame],
     target_column: str = "Personality",
-    domain_names: List[str] = None,
+    domain_names: list[str] = None,
     random_state: int = 42,
     filter_low_quality: bool = True,
     weight_threshold: float = 0.2,
-) -> Tuple[pd.DataFrame, np.ndarray]:
+) -> tuple[pd.DataFrame, np.ndarray]:
     """
     Create domain-balanced dataset using inverse-propensity weighting.
     First dataframe is used as reference distribution.

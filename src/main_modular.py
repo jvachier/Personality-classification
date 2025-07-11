@@ -5,31 +5,31 @@ Complete implementation with Optuna optimization matching the monolithic script 
 """
 
 import optuna
-import numpy as np
 import pandas as pd
 
 # Import all required modules
 from modules.config import (
-    setup_logging,
-    RND,
-    N_TRIALS_STACK,
-    N_TRIALS_BLEND,
     LABEL_NOISE_RATE,
+    N_TRIALS_BLEND,
+    N_TRIALS_STACK,
+    RND,
+    setup_logging,
 )
-from modules.data_loader import load_data_with_external_merge
-from modules.preprocessing import prep
 from modules.data_augmentation import apply_data_augmentation
+from modules.data_loader import load_data_with_external_merge
+from modules.ensemble import improved_blend_obj, oof_probs, oof_probs_noisy
 from modules.optimization import (
-    save_best_trial_params,
     load_best_trial_params,
-    make_stack_objective,
-    make_stack_c_objective,
-    make_sklearn_stack_objective,
     make_neural_stack_objective,
     make_noisy_stack_objective,
+    make_sklearn_stack_objective,
+    make_stack_c_objective,
+    make_stack_objective,
+    save_best_trial_params,
 )
-from modules.ensemble import oof_probs, oof_probs_noisy, improved_blend_obj
+from modules.preprocessing import prep
 from modules.utils import get_logger
+
 
 # Set up logging
 setup_logging()
@@ -257,7 +257,7 @@ def main():
     best_weights = study_blend.best_trial.user_attrs["weights"]
     wA, wB, wC, wD, wE, wF = best_weights
 
-    logger.info(f"\n🏆 Best ensemble weights:")
+    logger.info("\n🏆 Best ensemble weights:")
     logger.info(f"   Stack A: {wA:.3f}")
     logger.info(f"   Stack B: {wB:.3f}")
     logger.info(f"   Stack C: {wC:.3f}")

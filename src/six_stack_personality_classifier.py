@@ -4,49 +4,39 @@ Six-Stack Personality Classification Script
 Converted from Jupyter notebook with CPU-only configuration and external data integration
 """
 
-import gc
-import warnings
-import sys
+import json
 import logging
-from typing import Sequence, Dict, Tuple, List
+import os
+import sys
+import warnings
 
-import numpy as np
-import pandas as pd
-
-import xgboost as xgb
-import lightgbm as lgb
 import catboost as cb
-
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
-from sklearn.linear_model import LogisticRegression, RidgeClassifier
-from sklearn.pipeline import Pipeline
+import lightgbm as lgb
+import numpy as np
+import optuna
+import pandas as pd
+import xgboost as xgb
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import (
-    StandardScaler,
-    OneHotEncoder,
-    LabelEncoder,
-    RobustScaler,
-)
-from sklearn.model_selection import StratifiedKFold
 from sklearn.ensemble import (
-    StackingClassifier,
-    RandomForestClassifier,
     ExtraTreesClassifier,
     HistGradientBoostingClassifier,
-    VotingClassifier,
+    RandomForestClassifier,
+    StackingClassifier,
 )
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
-from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.metrics import make_scorer
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedKFold
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import (
+    LabelEncoder,
+    OneHotEncoder,
+    RobustScaler,
+    StandardScaler,
+)
+from sklearn.svm import SVC
 
-import optuna
-import json
-import os
 
 # Configure logging
 logging.basicConfig(
@@ -61,8 +51,8 @@ logger = logging.getLogger(__name__)
 
 # Data augmentation imports
 try:
-    from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
     from sdv.metadata import SingleTableMetadata
+    from sdv.single_table import CTGANSynthesizer, GaussianCopulaSynthesizer
 
     SDV_AVAILABLE = True
 except ImportError:
@@ -371,7 +361,7 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
     except Exception as e:
         logger.warning(
-            f"⚠️ SDV augmentation failed: {str(e)}, falling back to simple augmentation"
+            f"⚠️ SDV augmentation failed: {e!s}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
@@ -423,7 +413,7 @@ def smotenc_augmentation(X_train, y_train):
 
     except Exception as e:
         logger.warning(
-            f"⚠️ SMOTENC augmentation failed: {str(e)}, falling back to simple augmentation"
+            f"⚠️ SMOTENC augmentation failed: {e!s}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, 0.1)
 
@@ -532,7 +522,7 @@ def augment_data_conservative(
         return df_combined
 
     except Exception as e:
-        logger.warning(f"   ⚠️ Conservative augmentation failed: {str(e)}")
+        logger.warning(f"   ⚠️ Conservative augmentation failed: {e!s}")
         logger.info("   🔄 Continuing with original data...")
         df_tr_copy = df_tr.copy()
         df_tr_copy["is_synthetic"] = 0
@@ -541,7 +531,7 @@ def augment_data_conservative(
 
 def prep(
     df_tr: pd.DataFrame, df_te: pd.DataFrame, tgt="Personality", idx="id"
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
     """
     Preprocess the training and test datasets with TOP-4 solution approach.
     """
@@ -848,13 +838,13 @@ def add_pseudo_labeling_conservative(
 
 
 def create_domain_balanced_dataset(
-    dataframes: List[pd.DataFrame],
+    dataframes: list[pd.DataFrame],
     target_column: str = "Personality",
-    domain_names: List[str] = None,
+    domain_names: list[str] = None,
     random_state: int = 42,
     filter_low_quality: bool = True,
     weight_threshold: float = 0.2,
-) -> Tuple[pd.DataFrame, np.ndarray]:
+) -> tuple[pd.DataFrame, np.ndarray]:
     """
     Create domain-balanced dataset using inverse-propensity weighting.
     First dataframe is used as reference distribution.
@@ -1046,7 +1036,7 @@ def load_best_trial_params(model_name, params_dir="best_params"):
     """Load the best trial parameters from a JSON file."""
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
     if os.path.exists(filepath):
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             params = json.load(f)
         logger.info("Loaded best parameters for {model_name} from {filepath}")
         return params
@@ -1673,7 +1663,7 @@ def make_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -1715,7 +1705,7 @@ def make_stack_c_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -1757,7 +1747,7 @@ def make_sklearn_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -1799,7 +1789,7 @@ def make_neural_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -1846,7 +1836,7 @@ def make_noisy_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 

@@ -2,25 +2,26 @@
 Model builders for different stacking configurations in the personality classification pipeline.
 """
 
+import lightgbm as lgb
 import pandas as pd
 import xgboost as xgb
-import lightgbm as lgb
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import RobustScaler
-from sklearn.model_selection import StratifiedKFold
 from sklearn.ensemble import (
-    StackingClassifier,
-    RandomForestClassifier,
     ExtraTreesClassifier,
+    RandomForestClassifier,
+    StackingClassifier,
 )
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import RobustScaler
+from sklearn.svm import SVC
 
 from .config import N_SPLITS
 from .utils import get_logger
+
 
 logger = get_logger(__name__)
 

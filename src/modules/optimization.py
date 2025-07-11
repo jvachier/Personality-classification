@@ -2,23 +2,25 @@
 Optimization functions and parameter utilities for the personality classification pipeline.
 """
 
-import os
 import json
-import pandas as pd
+import os
+
 import numpy as np
 import optuna
-from sklearn.model_selection import StratifiedKFold
+import pandas as pd
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedKFold
 
-from .utils import get_logger
 from .config import N_SPLITS, Paths
 from .model_builders import (
-    build_stack,
-    build_stack_c,
-    build_sklearn_stack,
     build_neural_stack,
     build_noisy_stack,
+    build_sklearn_stack,
+    build_stack,
+    build_stack_c,
 )
+from .utils import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -44,7 +46,7 @@ def load_best_trial_params(model_name, params_dir=None):
 
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
     if os.path.exists(filepath):
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             params = json.load(f)
         logger.info(f"Loaded best parameters for {model_name} from {filepath}")
         return params
@@ -103,7 +105,7 @@ def make_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -145,7 +147,7 @@ def make_stack_c_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -187,7 +189,7 @@ def make_sklearn_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -229,7 +231,7 @@ def make_neural_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
@@ -276,7 +278,7 @@ def make_noisy_stack_objective(
 
             return np.mean(scores)
 
-        except Exception as e:
+        except Exception:
             # If anything goes wrong, prune the trial
             raise optuna.TrialPruned()
 
