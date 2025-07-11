@@ -69,7 +69,7 @@ class TestingMode(Enum):
 class TestingConfig(Enum):
     """Testing configuration parameters."""
 
-    TESTING_MODE = TestingMode.DISABLED  # Enable for development
+    TESTING_MODE = TestingMode.ENABLED  # Enable for development
     TESTING_SAMPLE_SIZE = 1000  # Number of samples to use in testing mode
     FULL_SAMPLE_SIZE = None  # Use full dataset when None
 
@@ -86,6 +86,19 @@ class ModelConfig(Enum):
     N_SPLITS = 5
     N_TRIALS_STACK = 15  # Reduced for testing (original: 15)
     N_TRIALS_BLEND = 200  # Reduced for testing (original: 200)
+
+    @property
+    def value(self):
+        """Return the actual value."""
+        return self._value_
+
+
+class ThreadConfig(Enum):
+    """Thread and job configuration for parallel processing."""
+
+    # Conservative values to prevent segmentation faults
+    N_JOBS = 1  # Number of parallel jobs for scikit-learn models
+    THREAD_COUNT = 1  # Number of threads for CatBoost models
 
     @property
     def value(self):
@@ -113,6 +126,10 @@ RND = ModelConfig.RND.value
 N_SPLITS = ModelConfig.N_SPLITS.value
 N_TRIALS_STACK = ModelConfig.N_TRIALS_STACK.value
 N_TRIALS_BLEND = ModelConfig.N_TRIALS_BLEND.value
+
+# Thread configuration
+N_JOBS = ThreadConfig.N_JOBS.value
+THREAD_COUNT = ThreadConfig.THREAD_COUNT.value
 
 ENABLE_DATA_AUGMENTATION = AugmentationConfig.ENABLE_DATA_AUGMENTATION.value
 AUGMENTATION_METHOD = AugmentationConfig.AUGMENTATION_METHOD.value.value
