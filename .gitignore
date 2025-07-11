@@ -210,5 +210,9 @@ __marimo__/
 # Do not include data
 *data/
 
-# Do not include catboost_info
+# Project-specific ignores
+best_params/
+*.log
 catboost_info/
+submissions/*.csv
+six_stack_personality_predictions*.csv

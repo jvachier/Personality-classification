@@ -5,7 +5,6 @@ Model builders for different stacking configurations in the personality classifi
 import pandas as pd
 import xgboost as xgb
 import lightgbm as lgb
-import catboost as cb
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -15,7 +14,6 @@ from sklearn.ensemble import (
     StackingClassifier,
     RandomForestClassifier,
     ExtraTreesClassifier,
-    HistGradientBoostingClassifier,
 )
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
@@ -28,255 +26,150 @@ logger = get_logger(__name__)
 
 
 def build_stack(trial, seed: int, wide_hp: bool) -> Pipeline:
-    """Build main stacking model with CPU-only configuration"""
-    # Enhanced search ranges for better performance
+    """Build simplified main stacking model for stability"""
+    # Reduced search ranges for stability
     if wide_hp:
-        n_lo, n_hi = 600, 1200
+        n_lo, n_hi = 150, 350  # Reduced from 600-1200
     else:
-        n_lo, n_hi = 500, 1000
+        n_lo, n_hi = 100, 250  # Reduced from 500-1000
 
-    # Enhanced XGBoost parameters - CPU ONLY
-    grow_policy = trial.suggest_categorical("xgb_grow", ["depthwise", "lossguide"])
-
+    # Simplified XGBoost parameters - CPU ONLY
     xgb_params = {
-        "tree_method": "hist",  # CPU-only method
+        "tree_method": "hist",
         "eval_metric": "logloss",
         "objective": "binary:logistic",
-        "enable_categorical": True,
         "random_state": seed,
         "n_estimators": trial.suggest_int("xgb_n", n_lo, n_hi),
-        "learning_rate": trial.suggest_float("xgb_lr", 0.01, 0.25, log=True),
-        "max_depth": trial.suggest_int("xgb_d", 5, 12),
-        "subsample": trial.suggest_float("xgb_sub", 0.5, 1.0),
-        "colsample_bytree": trial.suggest_float("xgb_col", 0.5, 1.0),
-        "reg_alpha": trial.suggest_float("xgb_alpha", 0.0001, 2.0, log=True),
-        "reg_lambda": trial.suggest_float("xgb_lambda", 0.5, 10.0),
-        "gamma": trial.suggest_float("xgb_gamma", 0.0, 8.0),
-        "min_child_weight": trial.suggest_int("xgb_min_child", 1, 15),
-        "grow_policy": grow_policy,
-        "max_bin": 256,
+        "learning_rate": trial.suggest_float("xgb_lr", 0.05, 0.15),  # Narrower range
+        "max_depth": trial.suggest_int("xgb_d", 4, 8),  # Reduced depth
+        "subsample": trial.suggest_float("xgb_sub", 0.7, 0.9),
+        "colsample_bytree": trial.suggest_float("xgb_col", 0.7, 0.9),
+        "reg_alpha": trial.suggest_float("xgb_alpha", 0.01, 2.0, log=True),
+        "reg_lambda": trial.suggest_float("xgb_lambda", 1.0, 5.0),
         "verbosity": 0,
-        "n_jobs": 4,
+        "n_jobs": 1,  # Single thread for stability
     }
-
-    if grow_policy == "lossguide":
-        xgb_params["max_leaves"] = trial.suggest_int("xgb_leaves", 50, 200)
 
     xgb_clf = xgb.XGBClassifier(**xgb_params)
 
-    # Enhanced LightGBM parameters - CPU ONLY
+    # Simplified LightGBM parameters - CPU ONLY
     lgb_clf = lgb.LGBMClassifier(
         objective="binary",
         device_type="cpu",
         verbose=-1,
         random_state=seed,
         n_estimators=trial.suggest_int("lgb_n", n_lo, n_hi),
-        learning_rate=trial.suggest_float("lgb_lr", 0.01, 0.25, log=True),
-        max_depth=trial.suggest_int("lgb_d", -1, 15),
-        subsample=trial.suggest_float("lgb_sub", 0.5, 1.0),
-        colsample_bytree=trial.suggest_float("lgb_col", 0.5, 1.0),
-        num_leaves=trial.suggest_int("lgb_leaves", 50, 200),
-        min_child_samples=trial.suggest_int("lgb_min_child", 5, 80),
-        min_child_weight=trial.suggest_float("lgb_min_weight", 1e-4, 20.0, log=True),
-        reg_alpha=trial.suggest_float("lgb_alpha", 1e-4, 20.0, log=True),
-        reg_lambda=trial.suggest_float("lgb_lambda", 1e-4, 20.0, log=True),
-        cat_smooth=trial.suggest_int("lgb_cat_smooth", 1, 150),
-        cat_l2=trial.suggest_float("lgb_cat_l2", 0.5, 15.0),
+        learning_rate=trial.suggest_float("lgb_lr", 0.05, 0.15),
+        max_depth=trial.suggest_int("lgb_d", 4, 8),  # Reduced depth
+        subsample=trial.suggest_float("lgb_sub", 0.7, 0.9),
+        colsample_bytree=trial.suggest_float("lgb_col", 0.7, 0.9),
+        num_leaves=trial.suggest_int("lgb_leaves", 31, 100),  # Reduced leaves
+        min_child_samples=trial.suggest_int("lgb_min_child", 10, 50),
+        min_child_weight=trial.suggest_float("lgb_min_weight", 1e-3, 10.0, log=True),
+        reg_alpha=trial.suggest_float("lgb_alpha", 1e-3, 10.0, log=True),
+        reg_lambda=trial.suggest_float("lgb_lambda", 1e-3, 10.0, log=True),
         max_bin=255,
-        min_data_in_bin=trial.suggest_int("lgb_min_data_bin", 1, 30),
         boost_from_average=True,
         force_row_wise=True,
-        path_smooth=trial.suggest_float("lgb_path_smooth", 0, 0.15),
-        n_jobs=4,
+        n_jobs=1,  # Single thread for stability
     )
 
-    # Enhanced CatBoost parameters - CPU ONLY
-    bootstrap_type = trial.suggest_categorical(
-        "cat_bootstrap", ["Bayesian", "Bernoulli", "MVS"]
+    # Simplified meta-learner (remove complex CatBoost)
+    meta = LogisticRegression(
+        C=trial.suggest_float("meta_log_c", 0.1, 2.0),
+        max_iter=1000,  # Reduced iterations
+        solver="lbfgs",
+        random_state=seed,
+        n_jobs=1,  # Single thread
     )
 
-    cat_params = {
-        "task_type": "CPU",
-        "loss_function": "Logloss",
-        "eval_metric": "Logloss",
-        "random_state": seed,
-        "iterations": trial.suggest_int("cat_n", n_lo, n_hi),
-        "learning_rate": trial.suggest_float("cat_lr", 0.01, 0.25, log=True),
-        "depth": trial.suggest_int("cat_d", 5, 12),
-        "l2_leaf_reg": trial.suggest_float("cat_l2", 0.5, 20.0),
-        "random_strength": trial.suggest_float("cat_rs", 0.1, 20.0),
-        "leaf_estimation_iterations": trial.suggest_int("cat_leaf_iters", 1, 15),
-        "grow_policy": trial.suggest_categorical(
-            "cat_grow", ["SymmetricTree", "Depthwise", "Lossguide"]
-        ),
-        "min_data_in_leaf": trial.suggest_int("cat_min_data", 1, 30),
-        "bootstrap_type": bootstrap_type,
-        "border_count": trial.suggest_int("cat_border_count", 200, 300),
-        "verbose": False,
-        "thread_count": -1,
-    }
+    skf_inner = StratifiedKFold(
+        n_splits=3, shuffle=True, random_state=seed
+    )  # Reduced folds
 
-    if bootstrap_type == "Bayesian":
-        cat_params["bagging_temperature"] = trial.suggest_float("cat_temp", 0.0, 1.0)
-    elif bootstrap_type in ["Bernoulli", "MVS"]:
-        cat_params["subsample"] = trial.suggest_float("cat_subsample", 0.5, 1.0)
-
-    cat_clf = cb.CatBoostClassifier(**cat_params)
-
-    # Enhanced meta-learner
-    meta_type = trial.suggest_categorical("meta_type", ["logistic", "ridge", "xgb"])
-
-    if meta_type == "logistic":
-        meta = LogisticRegression(
-            C=trial.suggest_float("meta_log_c", 0.1, 10.0, log=True),
-            max_iter=2000,
-            solver="lbfgs",
-            random_state=seed,
-            n_jobs=4,
-        )
-    elif meta_type == "ridge":
-        meta = LogisticRegression(
-            C=1.0 / trial.suggest_float("meta_ridge_alpha", 0.1, 10.0, log=True),
-            penalty="l2",
-            max_iter=2000,
-            solver="lbfgs",
-            random_state=seed,
-            n_jobs=4,
-        )
-    else:  # xgb
-        meta = xgb.XGBClassifier(
-            n_estimators=100,
-            learning_rate=0.1,
-            max_depth=3,
-            random_state=seed,
-            eval_metric="logloss",
-            objective="binary:logistic",
-            tree_method="hist",
-            n_jobs=4,
-        )
-
-    skf_inner = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
-
+    # Use only 2 models instead of 3 for stability (removed CatBoost)
     stk = StackingClassifier(
-        estimators=[("xgb", xgb_clf), ("lgb", lgb_clf), ("cat", cat_clf)],
+        estimators=[("xgb", xgb_clf), ("lgb", lgb_clf)],
         final_estimator=meta,
         stack_method="predict_proba",
         cv=skf_inner,
-        n_jobs=4,
+        n_jobs=1,  # Single thread for stability
     )
 
     return Pipeline([("stk", stk)])
 
 
 def build_stack_c(trial, seed: int) -> Pipeline:
-    """Build Stack C with XGBoost + CatBoost combination for diversity."""
-    # XGBoost parameters - CPU ONLY
-    grow_policy = trial.suggest_categorical("xgb_grow", ["depthwise", "lossguide"])
+    """Build simplified Stack C with XGBoost + LightGBM for stability."""
+    # Reduced estimators for stability
+    n_lo, n_hi = 100, 250
+
+    # Simplified XGBoost parameters - CPU ONLY
     xgb_params = {
         "tree_method": "hist",
         "eval_metric": "logloss",
         "objective": "binary:logistic",
-        "enable_categorical": True,
         "random_state": seed,
-        "n_estimators": trial.suggest_int("xgb_n", 400, 800),
-        "learning_rate": trial.suggest_float("xgb_lr", 0.01, 0.2, log=True),
-        "max_depth": trial.suggest_int("xgb_d", 6, 12),
-        "subsample": trial.suggest_float("xgb_sub", 0.6, 1.0),
-        "colsample_bytree": trial.suggest_float("xgb_col", 0.6, 1.0),
-        "reg_alpha": trial.suggest_float("xgb_alpha", 0.001, 1.0, log=True),
-        "reg_lambda": trial.suggest_float("xgb_lambda", 1.0, 10.0),
-        "gamma": trial.suggest_float("xgb_gamma", 0.0, 5.0),
-        "min_child_weight": trial.suggest_int("xgb_min_child", 1, 10),
-        "grow_policy": grow_policy,
-        "max_bin": 255,
+        "n_estimators": trial.suggest_int("xgb_n", n_lo, n_hi),
+        "learning_rate": trial.suggest_float("xgb_lr", 0.05, 0.15),
+        "max_depth": trial.suggest_int("xgb_d", 4, 8),  # Reduced depth
+        "subsample": trial.suggest_float("xgb_sub", 0.7, 0.9),
+        "colsample_bytree": trial.suggest_float("xgb_col", 0.7, 0.9),
+        "reg_alpha": trial.suggest_float("xgb_alpha", 0.01, 1.0, log=True),
+        "reg_lambda": trial.suggest_float("xgb_lambda", 1.0, 5.0),
         "verbosity": 0,
-        "n_jobs": 4,
+        "n_jobs": 1,  # Single thread for stability
     }
-
-    if grow_policy == "lossguide":
-        xgb_params["max_leaves"] = trial.suggest_int("xgb_leaves", 50, 150)
 
     xgb_clf = xgb.XGBClassifier(**xgb_params)
 
-    # CatBoost parameters - CPU ONLY  
-    bootstrap_type = trial.suggest_categorical(
-        "cat_bootstrap", ["Bayesian", "Bernoulli", "MVS"]
+    # Use LightGBM instead of CatBoost for better stability
+    lgb_clf = lgb.LGBMClassifier(
+        objective="binary",
+        device_type="cpu",
+        verbose=-1,
+        random_state=seed,
+        n_estimators=trial.suggest_int("lgb_n", n_lo, n_hi),
+        learning_rate=trial.suggest_float("lgb_lr", 0.05, 0.15),
+        max_depth=trial.suggest_int("lgb_d", 4, 8),
+        subsample=trial.suggest_float("lgb_sub", 0.7, 0.9),
+        colsample_bytree=trial.suggest_float("lgb_col", 0.7, 0.9),
+        num_leaves=trial.suggest_int("lgb_leaves", 31, 100),
+        min_child_samples=trial.suggest_int("lgb_min_child", 10, 50),
+        min_child_weight=trial.suggest_float("lgb_min_weight", 1e-3, 10.0, log=True),
+        reg_alpha=trial.suggest_float("lgb_alpha", 1e-3, 10.0, log=True),
+        reg_lambda=trial.suggest_float("lgb_lambda", 1e-3, 10.0, log=True),
+        max_bin=255,
+        boost_from_average=True,
+        force_row_wise=True,
+        n_jobs=1,
     )
-    cat_params = {
-        "task_type": "CPU",
-        "loss_function": "Logloss",
-        "eval_metric": "Logloss",
-        "random_state": seed,
-        "iterations": trial.suggest_int("cat_n", 400, 800),
-        "learning_rate": trial.suggest_float("cat_lr", 0.01, 0.2, log=True),
-        "depth": trial.suggest_int("cat_d", 6, 12),
-        "l2_leaf_reg": trial.suggest_float("cat_l2", 1.0, 15.0),
-        "random_strength": trial.suggest_float("cat_rs", 1.0, 15.0),
-        "leaf_estimation_iterations": trial.suggest_int("cat_leaf_iters", 5, 15),
-        "grow_policy": trial.suggest_categorical(
-            "cat_grow", ["SymmetricTree", "Depthwise", "Lossguide"]
-        ),
-        "min_data_in_leaf": trial.suggest_int("cat_min_data", 1, 20),
-        "bootstrap_type": bootstrap_type,
-        "border_count": trial.suggest_int("cat_border_count", 200, 300),
-        "verbose": False,
-        "thread_count": -1,
-    }
 
-    if bootstrap_type == "Bayesian":
-        cat_params["bagging_temperature"] = trial.suggest_float("cat_temp", 0.1, 1.0)
-    elif bootstrap_type in ["Bernoulli", "MVS"]:
-        cat_params["subsample"] = trial.suggest_float("cat_subsample", 0.6, 0.95)
+    # Simplified meta-learner
+    meta = LogisticRegression(
+        C=trial.suggest_float("c_meta_c", 0.1, 2.0),
+        max_iter=1000,
+        solver="lbfgs",
+        random_state=seed,
+        n_jobs=1,
+    )
 
-    cat_clf = cb.CatBoostClassifier(**cat_params)
+    skf_inner = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
 
-    # Enhanced meta-learner
-    meta_type = trial.suggest_categorical("c_meta_type", ["logistic", "ridge", "xgb"])
-
-    if meta_type == "logistic":
-        meta = LogisticRegression(
-            C=trial.suggest_float("c_meta_c", 0.1, 10.0, log=True),
-            max_iter=2000,
-            solver="lbfgs",
-            random_state=seed,
-            n_jobs=4,
-        )
-    elif meta_type == "ridge":
-        meta = LogisticRegression(
-            C=1.0 / trial.suggest_float("c_meta_alpha", 0.1, 10.0, log=True),
-            penalty="l2",
-            max_iter=2000,
-            solver="lbfgs",
-            random_state=seed,
-            n_jobs=4,
-        )
-    else:  # xgb
-        meta = xgb.XGBClassifier(
-            n_estimators=100,
-            learning_rate=0.1,
-            max_depth=3,
-            random_state=seed,
-            eval_metric="logloss",
-            objective="binary:logistic",
-            tree_method="hist",
-            n_jobs=4,
-        )
-
-    skf_inner = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
-
+    # Use XGBoost + LightGBM instead of XGBoost + CatBoost for stability
     stk = StackingClassifier(
-        estimators=[("xgb", xgb_clf), ("cat", cat_clf)],
+        estimators=[("xgb", xgb_clf), ("lgb", lgb_clf)],
         final_estimator=meta,
         stack_method="predict_proba",
         cv=skf_inner,
-        n_jobs=4,
+        n_jobs=1,
     )
 
     return Pipeline([("stk", stk)])
 
 
 def build_sklearn_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
-    """Build Stack D with sklearn models with improved preprocessing."""
+    """Build simplified Stack D with sklearn models for stability."""
     # Get all columns as numerical (they're all numerical after one-hot encoding)
     num_base = list(X_full.columns)
 
@@ -287,98 +180,48 @@ def build_sklearn_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
         ]
     )
 
-    # RandomForest parameters
+    # Simplified RandomForest parameters
     rf_clf = RandomForestClassifier(
-        n_estimators=trial.suggest_int("rf_n", 500, 1000),
-        max_depth=trial.suggest_int("rf_depth", 15, 40),
-        min_samples_split=trial.suggest_int("rf_min_split", 2, 10),
-        min_samples_leaf=trial.suggest_int("rf_min_leaf", 1, 5),
-        max_features=trial.suggest_categorical(
-            "rf_max_features", ["sqrt", "log2", None]
-        ),
+        n_estimators=trial.suggest_int("rf_n", 100, 300),  # Reduced from 500-1000
+        max_depth=trial.suggest_int("rf_depth", 10, 20),  # Reduced depth
+        min_samples_split=trial.suggest_int("rf_min_split", 2, 5),
+        min_samples_leaf=trial.suggest_int("rf_min_leaf", 1, 3),
+        max_features="sqrt",  # Fixed instead of suggesting
         bootstrap=True,
-        class_weight=trial.suggest_categorical("rf_class_weight", [None, "balanced"]),
         random_state=seed,
-        n_jobs=4,
+        n_jobs=1,  # Single thread for stability
     )
 
-    # ExtraTrees parameters
+    # Simplified ExtraTrees parameters
     et_clf = ExtraTreesClassifier(
-        n_estimators=trial.suggest_int("et_n", 500, 1000),
-        max_depth=trial.suggest_int("et_depth", 15, 40),
-        min_samples_split=trial.suggest_int("et_min_split", 2, 10),
-        min_samples_leaf=trial.suggest_int("et_min_leaf", 1, 5),
-        max_features=trial.suggest_categorical(
-            "et_max_features", ["sqrt", "log2", None]
-        ),
+        n_estimators=trial.suggest_int("et_n", 100, 300),
+        max_depth=trial.suggest_int("et_depth", 10, 20),
+        min_samples_split=trial.suggest_int("et_min_split", 2, 5),
+        min_samples_leaf=trial.suggest_int("et_min_leaf", 1, 3),
+        max_features="sqrt",  # Fixed instead of suggesting
         bootstrap=False,
-        class_weight=trial.suggest_categorical("et_class_weight", [None, "balanced"]),
         random_state=seed,
-        n_jobs=4,
+        n_jobs=1,  # Single thread for stability
     )
 
-    # HistGradientBoosting parameters
-    hgb_clf = HistGradientBoostingClassifier(
-        max_iter=trial.suggest_int("hgb_n", 500, 1000),
-        learning_rate=trial.suggest_float("hgb_lr", 0.01, 0.3, log=True),
-        max_depth=trial.suggest_int("hgb_depth", 8, 20),
-        min_samples_leaf=trial.suggest_int("hgb_min_leaf", 5, 30),
-        l2_regularization=trial.suggest_float("hgb_l2", 0.0, 2.0),
+    # Simplified meta-learner (remove complex options)
+    meta = LogisticRegression(
+        C=trial.suggest_float("meta_log_c", 0.1, 2.0),
+        max_iter=1000,
+        solver="lbfgs",
         random_state=seed,
+        n_jobs=1,
     )
 
-    # Meta-learner options
-    meta_type = trial.suggest_categorical(
-        "meta_type", ["logistic", "xgb", "lgb", "ridge"]
-    )
+    skf_inner = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
 
-    if meta_type == "logistic":
-        meta = LogisticRegression(
-            C=trial.suggest_float("meta_log_c", 0.1, 10.0, log=True),
-            max_iter=2000,
-            solver="lbfgs",
-            random_state=seed,
-            n_jobs=4,
-        )
-    elif meta_type == "xgb":
-        meta = xgb.XGBClassifier(
-            n_estimators=trial.suggest_int("meta_xgb_n", 100, 300),
-            learning_rate=trial.suggest_float("meta_xgb_lr", 0.01, 0.3, log=True),
-            max_depth=trial.suggest_int("meta_xgb_depth", 3, 8),
-            random_state=seed,
-            eval_metric="logloss",
-            objective="binary:logistic",
-            tree_method="hist",
-            n_jobs=4,
-        )
-    elif meta_type == "lgb":
-        meta = lgb.LGBMClassifier(
-            n_estimators=trial.suggest_int("meta_lgb_n", 100, 300),
-            learning_rate=trial.suggest_float("meta_lgb_lr", 0.01, 0.3, log=True),
-            max_depth=trial.suggest_int("meta_lgb_depth", 3, 8),
-            random_state=seed,
-            objective="binary",
-            verbose=-1,
-            n_jobs=4,
-        )
-    else:  # ridge
-        meta = LogisticRegression(
-            C=1.0 / trial.suggest_float("meta_ridge_alpha", 0.1, 10.0, log=True),
-            penalty="l2",
-            max_iter=2000,
-            solver="lbfgs",
-            random_state=seed,
-            n_jobs=4,
-        )
-
-    skf_inner = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
-
+    # Use only 2 models instead of 3 for stability (removed HistGradientBoosting)
     stk = StackingClassifier(
-        estimators=[("rf", rf_clf), ("et", et_clf), ("hgb", hgb_clf)],
+        estimators=[("rf", rf_clf), ("et", et_clf)],
         final_estimator=meta,
         stack_method="predict_proba",
         cv=skf_inner,
-        n_jobs=4,
+        n_jobs=1,
     )
 
     return Pipeline([("preprocessor", preprocessor), ("stk", stk)])
@@ -386,10 +229,10 @@ def build_sklearn_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
 
 def build_neural_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
     """Build Neural Network Stack with diverse architectures."""
-    # Get all columns as numerical (they're all numerical after one-hot encoding)
+    # Since we already use one-hot encoding in preprocessing, all features are numerical
     num_base = list(X_full.columns)
 
-    # Use RobustScaler for all features
+    # Use RobustScaler for all features since they're all numerical after preprocessing
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", RobustScaler(), num_base),
@@ -447,7 +290,7 @@ def build_neural_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
             random_state=seed,
             n_jobs=4,
         )
-    else:
+    else:  # ridge
         meta = LogisticRegression(
             C=1.0 / trial.suggest_float("neural_meta_alpha", 0.1, 10.0, log=True),
             penalty="l2",
@@ -471,82 +314,69 @@ def build_neural_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
 
 
 def build_noisy_stack(trial, seed: int, noise_rate: float = 0.02) -> Pipeline:
-    """Build a stack trained on noisy labels for regularization."""
-    # Same parameters as build_stack but with different seed for noise
-    n_lo, n_hi = 400, 800
+    """Build a simplified stack trained on noisy labels for regularization."""
+    # Simplified parameters for stability
+    n_lo, n_hi = 100, 300  # Reduced from 500-1000
 
-    # XGBoost with slightly different config for noise robustness - CPU ONLY
-    grow_policy = trial.suggest_categorical("xgb_grow", ["depthwise", "lossguide"])
-
-    xgb_params = {
-        "tree_method": "hist",
-        "eval_metric": "logloss",
-        "objective": "binary:logistic",
-        "enable_categorical": True,
-        "random_state": seed,
-        "n_estimators": trial.suggest_int("xgb_n", n_lo, n_hi),
-        "learning_rate": trial.suggest_float("xgb_lr", 0.01, 0.2, log=True),
-        "max_depth": trial.suggest_int("xgb_d", 4, 10),
-        "subsample": trial.suggest_float("xgb_sub", 0.6, 1.0),
-        "colsample_bytree": trial.suggest_float("xgb_col", 0.6, 1.0),
-        "reg_alpha": trial.suggest_float("xgb_alpha", 0.001, 3.0, log=True),
-        "reg_lambda": trial.suggest_float("xgb_lambda", 1.0, 15.0),
-        "gamma": trial.suggest_float("xgb_gamma", 0.0, 10.0),
-        "min_child_weight": trial.suggest_int("xgb_min_child", 2, 20),
-        "grow_policy": grow_policy,
-        "max_bin": 256,
-        "verbosity": 0,
-        "n_jobs": -1,
-    }
-
-    if grow_policy == "lossguide":
-        xgb_params["max_leaves"] = trial.suggest_int("xgb_leaves", 31, 100)
-
-    xgb_clf = xgb.XGBClassifier(**xgb_params)
-
-    # LightGBM with noise robustness - CPU ONLY
+    # Use only LightGBM for stability - lighter than XGBoost+LightGBM+CatBoost
     lgb_clf = lgb.LGBMClassifier(
         objective="binary",
         device_type="cpu",
         verbose=-1,
         random_state=seed,
         n_estimators=trial.suggest_int("lgb_n", n_lo, n_hi),
-        learning_rate=trial.suggest_float("lgb_lr", 0.01, 0.2, log=True),
-        max_depth=trial.suggest_int("lgb_d", -1, 12),
-        subsample=trial.suggest_float("lgb_sub", 0.6, 1.0),
-        colsample_bytree=trial.suggest_float("lgb_col", 0.6, 1.0),
-        num_leaves=trial.suggest_int("lgb_leaves", 31, 150),
-        min_child_samples=trial.suggest_int("lgb_min_child", 10, 100),
-        min_child_weight=trial.suggest_float("lgb_min_weight", 1e-3, 30.0, log=True),
-        reg_alpha=trial.suggest_float("lgb_alpha", 1e-3, 30.0, log=True),
-        reg_lambda=trial.suggest_float("lgb_lambda", 1e-3, 30.0, log=True),
-        cat_smooth=trial.suggest_int("lgb_cat_smooth", 10, 200),
-        cat_l2=trial.suggest_float("lgb_cat_l2", 1.0, 20.0),
+        learning_rate=trial.suggest_float("lgb_lr", 0.05, 0.15),  # Narrower range
+        max_depth=trial.suggest_int("lgb_d", 4, 8),  # Reduced depth
+        subsample=trial.suggest_float("lgb_sub", 0.7, 0.9),
+        colsample_bytree=trial.suggest_float("lgb_col", 0.7, 0.9),
+        num_leaves=trial.suggest_int("lgb_leaves", 31, 100),  # Reduced leaves
+        min_child_samples=trial.suggest_int("lgb_min_child", 10, 50),
+        min_child_weight=trial.suggest_float("lgb_min_weight", 1e-3, 10.0, log=True),
+        reg_alpha=trial.suggest_float("lgb_alpha", 1e-3, 10.0, log=True),
+        reg_lambda=trial.suggest_float("lgb_lambda", 1e-3, 10.0, log=True),
         max_bin=255,
-        min_data_in_bin=trial.suggest_int("lgb_min_data_bin", 3, 50),
         boost_from_average=True,
         force_row_wise=True,
-        path_smooth=trial.suggest_float("lgb_path_smooth", 0, 0.2),
-        n_jobs=4,
+        n_jobs=1,  # Single thread for stability
     )
 
-    # Meta-learner for noisy stack
+    # Simplified XGBoost - reduced complexity
+    xgb_clf = xgb.XGBClassifier(
+        tree_method="hist",
+        eval_metric="logloss",
+        objective="binary:logistic",
+        random_state=seed,
+        n_estimators=trial.suggest_int("xgb_n", n_lo, n_hi),
+        learning_rate=trial.suggest_float("xgb_lr", 0.05, 0.15),
+        max_depth=trial.suggest_int("xgb_d", 4, 8),  # Reduced depth
+        subsample=trial.suggest_float("xgb_sub", 0.7, 0.9),
+        colsample_bytree=trial.suggest_float("xgb_col", 0.7, 0.9),
+        reg_alpha=trial.suggest_float("xgb_alpha", 0.01, 3.0, log=True),
+        reg_lambda=trial.suggest_float("xgb_lambda", 1.0, 10.0),
+        verbosity=0,
+        n_jobs=1,  # Single thread for stability
+    )
+
+    # Simplified meta-learner
     meta = LogisticRegression(
-        C=trial.suggest_float("meta_c", 0.1, 10.0, log=True),
-        max_iter=2000,
+        C=trial.suggest_float("meta_log_c", 0.1, 1.0),
+        max_iter=1000,  # Reduced iterations
         solver="lbfgs",
         random_state=seed,
-        n_jobs=4,
+        n_jobs=1,  # Single thread
     )
 
-    skf_inner = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
+    skf_inner = StratifiedKFold(
+        n_splits=3, shuffle=True, random_state=seed
+    )  # Reduced folds
 
+    # Use only 2 base models instead of 3 for stability
     stk = StackingClassifier(
-        estimators=[("xgb", xgb_clf), ("lgb", lgb_clf)],
+        estimators=[("lgb", lgb_clf), ("xgb", xgb_clf)],  # Removed CatBoost
         final_estimator=meta,
         stack_method="predict_proba",
         cv=skf_inner,
-        n_jobs=4,
+        n_jobs=1,  # Single thread for stability
     )
 
     return Pipeline([("stk", stk)])

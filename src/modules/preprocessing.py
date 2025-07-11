@@ -19,13 +19,13 @@ def prep(
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
     """
     Preprocess the training and test datasets with TOP-4 solution approach.
-    
+
     Args:
         df_tr: Training dataframe
-        df_te: Test dataframe  
+        df_te: Test dataframe
         tgt: Target column name
         idx: Index column name
-        
+
     Returns:
         Tuple of (X_train, X_test, y_train, label_encoder)
     """

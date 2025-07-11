@@ -18,27 +18,30 @@ AUGMENTATION_METHOD = (
 )
 AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
 QUALITY_THRESHOLD = 0.8  # For quality filtering
-N_TRIALS_STACK = 15
-N_TRIALS_BLEND = 200
+N_TRIALS_STACK = 3  # Reduced for testing (original: 15)
+N_TRIALS_BLEND = 10  # Reduced for testing (original: 200)
 LABEL_NOISE_RATE = 0.02
+
+# Data augmentation imports
+try:
+    from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
+    from sdv.metadata import SingleTableMetadata
+
+    SDV_AVAILABLE = True
+except ImportError:
+    SDV_AVAILABLE = False
+
+try:
+    from imblearn.over_sampling import SMOTENC
+
+    IMBLEARN_AVAILABLE = True
+except ImportError:
+    IMBLEARN_AVAILABLE = False
 
 # Configure warnings
 warnings.filterwarnings("ignore")
 # Suppress joblib resource tracker warnings on macOS
 warnings.filterwarnings("ignore", message="resource_tracker")
-
-# Check for optional dependencies
-try:
-    import importlib.util
-    SDV_AVAILABLE = importlib.util.find_spec("sdv") is not None
-except ImportError:
-    SDV_AVAILABLE = False
-
-try:
-    import importlib.util
-    IMBLEARN_AVAILABLE = importlib.util.find_spec("imblearn") is not None
-except ImportError:
-    IMBLEARN_AVAILABLE = False
 
 
 def setup_logging():
@@ -52,7 +55,7 @@ def setup_logging():
         ],
     )
     logger = logging.getLogger(__name__)
-    
+
     # Log warnings about missing dependencies
     if not SDV_AVAILABLE:
         logger.warning("⚠️ SDV not available. Install with: pip install sdv")
@@ -60,5 +63,5 @@ def setup_logging():
         logger.warning(
             "⚠️ imbalanced-learn not available. Install with: pip install imbalanced-learn"
         )
-    
+
     return logger

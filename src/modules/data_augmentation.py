@@ -10,8 +10,12 @@ import time
 from sklearn.preprocessing import LabelEncoder
 
 from .config import (
-    SDV_AVAILABLE, IMBLEARN_AVAILABLE, ENABLE_DATA_AUGMENTATION,
-    AUGMENTATION_METHOD, AUGMENTATION_RATIO, RND
+    SDV_AVAILABLE,
+    IMBLEARN_AVAILABLE,
+    ENABLE_DATA_AUGMENTATION,
+    AUGMENTATION_METHOD,
+    AUGMENTATION_RATIO,
+    RND,
 )
 from .utils import get_logger
 
@@ -276,7 +280,7 @@ def smotenc_augmentation(X_train, y_train):
 def apply_data_augmentation(X_train, y_train):
     """Apply the configured data augmentation method"""
     if not ENABLE_DATA_AUGMENTATION:
-        logger.info("📊 Data augmentation disabled")
+        logger.info("�� Data augmentation disabled")
         return X_train, y_train
 
     logger.info(f"📊 Applying {AUGMENTATION_METHOD} data augmentation...")
@@ -312,73 +316,3 @@ def apply_data_augmentation(X_train, y_train):
     else:
         logger.warning("   ⚠️ No synthetic samples generated")
         return X_train, y_train
-
-
-def augment_data_conservative(
-    df_tr: pd.DataFrame,
-    augment_ratio: float = 0.05,  # Very conservative ratio
-    random_state: int = 42,
-) -> pd.DataFrame:
-    """
-    DEPRECATED: Use apply_data_augmentation instead.
-    Conservative data augmentation using noise injection and feature perturbation.
-    This is safer than synthetic generation and less likely to hurt performance.
-    """
-    logger.info(
-        f"🔄 Conservative augmentation with noise injection (ratio: {augment_ratio:.1%})..."
-    )
-
-    try:
-        # Number of samples to generate
-        n_synthetic = int(len(df_tr) * augment_ratio)
-        logger.info(f"   🎲 Generating {n_synthetic:,} augmented samples...")
-
-        # Features to augment (exclude target and categorical)
-        numerical_cols = [
-            "Time_spent_Alone",
-            "Stage_fear",
-            "Social_event_attendance",
-            "Going_outside",
-            "Drained_after_socializing",
-            "Friends_circle_size",
-            "Post_frequency",
-        ]
-
-        # Sample from original data
-        np.random.seed(random_state)
-        sample_indices = np.random.choice(len(df_tr), size=n_synthetic, replace=True)
-        augmented_data = df_tr.iloc[sample_indices].copy().reset_index(drop=True)
-
-        # Add small amounts of noise to numerical features
-        for col in numerical_cols:
-            if col in augmented_data.columns:
-                # Calculate noise level as small fraction of feature std
-                noise_std = augmented_data[col].std() * 0.05  # 5% of std
-                noise = np.random.normal(0, noise_std, size=len(augmented_data))
-
-                # Add noise and clip to original range
-                col_min, col_max = df_tr[col].min(), df_tr[col].max()
-                augmented_data[col] = np.clip(
-                    augmented_data[col] + noise, col_min, col_max
-                )
-
-        # Combine with original data
-        df_tr_copy = df_tr.copy()
-        df_tr_copy["is_synthetic"] = 0
-        augmented_data["is_synthetic"] = 1
-
-        df_combined = pd.concat([df_tr_copy, augmented_data], ignore_index=True)
-
-        logger.info("   ✅ Conservative augmentation completed!")
-        logger.info(f"   📊 Original samples: {len(df_tr):,}")
-        logger.info(f"   📊 Augmented samples: {len(augmented_data):,}")
-        logger.info(f"   📊 Total samples: {len(df_combined):,}")
-
-        return df_combined
-
-    except Exception as e:
-        logger.warning(f"   ⚠️ Conservative augmentation failed: {str(e)}")
-        logger.info("   🔄 Continuing with original data...")
-        df_tr_copy = df_tr.copy()
-        df_tr_copy["is_synthetic"] = 0
-        return df_tr_copy

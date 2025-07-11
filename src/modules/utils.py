@@ -9,12 +9,12 @@ import logging
 def add_label_noise(y, noise_rate=0.02, random_state=42):
     """
     Add controlled label noise for regularization.
-    
+
     Args:
         y: Target labels
         noise_rate: Fraction of labels to flip (0-1)
         random_state: Random seed for reproducibility
-        
+
     Returns:
         y_noisy: Labels with added noise
     """

@@ -12,7 +12,7 @@ def load_data_with_external_merge():
     """
     Load and merge training data with external personality datasets using TOP-4 solution strategy.
     This function merges external data as features rather than concatenating as new samples.
-    
+
     Returns:
         tuple: (df_tr, df_te, submission) - training data, test data, and submission template
     """

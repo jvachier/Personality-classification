@@ -3,155 +3,120 @@ Ensemble functions for out-of-fold predictions and blending optimization.
 """
 
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
 
 from .config import N_SPLITS, RND
-from .utils import get_logger, add_label_noise
+from .utils import get_logger
+from .optimization import add_label_noise
 
 logger = get_logger(__name__)
 
 
-def oof_probs(builder, X_full, y_full, X_test, sample_weights=None):
-    """
-    Generate out-of-fold predictions using cross-validation.
-    
-    Args:
-        builder: Function that returns a model pipeline
-        X_full: Training features
-        y_full: Training labels
-        X_test: Test features (not used in training, just for consistent shape)
-        sample_weights: Optional sample weights
-        
-    Returns:
-        Tuple of (oof_predictions, test_predictions_placeholder)
-    """
-    logger.info(f"   📊 Generating OOF predictions with {N_SPLITS}-fold CV...")
-    
-    # Initialize out-of-fold predictions
-    oof_preds = np.zeros(len(X_full))
-    
-    # Create cross-validation splits
-    skf = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
-    
-    for fold, (train_idx, val_idx) in enumerate(skf.split(X_full, y_full)):
-        logger.info(f"      Fold {fold + 1}/{N_SPLITS}")
-        
-        # Split data
-        X_train_fold = X_full.iloc[train_idx]
-        y_train_fold = y_full.iloc[train_idx]
-        X_val_fold = X_full.iloc[val_idx]
-        
-        # Build and train model
-        model = builder()
-        
-        # Handle sample weights if provided
-        if sample_weights is not None:
-            fold_weights = sample_weights[train_idx]
-            model.fit(X_train_fold, y_train_fold, sample_weight=fold_weights)
-        else:
-            model.fit(X_train_fold, y_train_fold)
-        
-        # Generate predictions for validation set
-        val_preds = model.predict_proba(X_val_fold)[:, 1]
-        oof_preds[val_idx] = val_preds
-    
-    # Calculate CV score
-    cv_score = accuracy_score(y_full, oof_preds >= 0.5)
-    logger.info(f"   ✅ OOF CV accuracy: {cv_score:.6f}")
-    
-    return oof_preds, np.zeros(len(X_test))  # Placeholder for test predictions
+def oof_probs(
+    model_builder,
+    X: pd.DataFrame,
+    y: pd.Series,
+    X_test: pd.DataFrame,
+    sample_weights=None,
+):
+    """Generate out-of-fold predictions for ensemble blending."""
+    oof_preds = np.zeros(len(X))
+    test_preds = np.zeros(len(X_test))
+
+    cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
+
+    for fold, (tr_idx, val_idx) in enumerate(cv.split(X, y)):
+        logger.info(f"   Fold {fold + 1}/{N_SPLITS}")
+
+        X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
+        y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
+
+        # Build and fit model
+        model = model_builder()
+        model.fit(X_train, y_train)
+
+        # Out-of-fold predictions
+        oof_preds[val_idx] = model.predict_proba(X_val)[:, 1]
+
+        # Test predictions (averaged across folds)
+        test_preds += model.predict_proba(X_test)[:, 1] / N_SPLITS
+
+    return oof_preds, test_preds
 
 
-def oof_probs_noisy(builder, X_full, y_full, X_test, noise_rate=0.02, sample_weights=None):
-    """
-    Generate out-of-fold predictions using cross-validation with noisy labels.
-    
-    Args:
-        builder: Function that returns a model pipeline
-        X_full: Training features
-        y_full: Training labels
-        X_test: Test features (not used in training, just for consistent shape)
-        noise_rate: Rate of label noise to add
-        sample_weights: Optional sample weights
-        
-    Returns:
-        Tuple of (oof_predictions, test_predictions_placeholder)
-    """
-    logger.info(f"   📊 Generating OOF predictions with noisy labels (noise: {noise_rate:.1%})...")
-    
-    # Initialize out-of-fold predictions
-    oof_preds = np.zeros(len(X_full))
-    
-    # Create cross-validation splits
-    skf = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
-    
-    for fold, (train_idx, val_idx) in enumerate(skf.split(X_full, y_full)):
-        logger.info(f"      Fold {fold + 1}/{N_SPLITS}")
-        
-        # Split data
-        X_train_fold = X_full.iloc[train_idx]
-        y_train_fold = y_full.iloc[train_idx]
-        X_val_fold = X_full.iloc[val_idx]
-        
-        # Add noise to training labels
-        y_train_noisy = add_label_noise(y_train_fold, noise_rate=noise_rate, random_state=RND + fold)
-        
-        # Build and train model
-        model = builder()
-        
-        # Handle sample weights if provided
-        if sample_weights is not None:
-            fold_weights = sample_weights[train_idx]
-            model.fit(X_train_fold, y_train_noisy, sample_weight=fold_weights)
-        else:
-            model.fit(X_train_fold, y_train_noisy)
-        
-        # Generate predictions for validation set
-        val_preds = model.predict_proba(X_val_fold)[:, 1]
-        oof_preds[val_idx] = val_preds
-    
-    # Calculate CV score (against clean labels)
-    cv_score = accuracy_score(y_full, oof_preds >= 0.5)
-    logger.info(f"   ✅ Noisy OOF CV accuracy: {cv_score:.6f}")
-    
-    return oof_preds, np.zeros(len(X_test))  # Placeholder for test predictions
+def oof_probs_noisy(
+    model_builder,
+    X: pd.DataFrame,
+    y: pd.Series,
+    X_test: pd.DataFrame,
+    noise_rate: float,
+    sample_weights=None,
+):
+    """Generate out-of-fold predictions for noisy label ensemble."""
+    oof_preds = np.zeros(len(X))
+    test_preds = np.zeros(len(X_test))
+
+    cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
+
+    for fold, (tr_idx, val_idx) in enumerate(cv.split(X, y)):
+        logger.info(
+            f"   Fold {fold + 1}/{N_SPLITS} (with {noise_rate:.1%} label noise)"
+        )
+
+        X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
+        y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
+
+        # Add label noise to training data
+        y_train_noisy = add_label_noise(
+            y_train, noise_rate=noise_rate, random_state=RND + fold
+        )
+
+        # Build and fit model
+        model = model_builder()
+        model.fit(X_train, y_train_noisy)
+
+        # Out-of-fold predictions (on clean validation data)
+        oof_preds[val_idx] = model.predict_proba(X_val)[:, 1]
+
+        # Test predictions (averaged across folds)
+        test_preds += model.predict_proba(X_test)[:, 1] / N_SPLITS
+
+    return oof_preds, test_preds
 
 
 def improved_blend_obj(trial, oof_A, oof_B, oof_C, oof_D, oof_E, oof_F, y_true):
-    """
-    Objective function for optimizing blend weights with constraints.
-    
-    Args:
-        trial: Optuna trial object
-        oof_A, oof_B, oof_C, oof_D, oof_E, oof_F: Out-of-fold predictions from each model
-        y_true: True labels
-        
-    Returns:
-        Weighted ensemble accuracy
-    """
-    # Sample weights with constraints
-    w1 = trial.suggest_float("wA", 0.05, 0.5)
-    w2 = trial.suggest_float("wB", 0.05, 0.5) 
-    w3 = trial.suggest_float("wC", 0.05, 0.5)
-    w4 = trial.suggest_float("wD", 0.05, 0.5)
-    w5 = trial.suggest_float("wE", 0.05, 0.5)
-    w6 = trial.suggest_float("wF", 0.05, 0.5)
-    
-    # Normalize weights to sum to 1
-    total_weight = w1 + w2 + w3 + w4 + w5 + w6
-    w1, w2, w3, w4, w5, w6 = w1/total_weight, w2/total_weight, w3/total_weight, w4/total_weight, w5/total_weight, w6/total_weight
-    
-    # Calculate weighted ensemble predictions
-    ensemble_preds = (
-        w1 * oof_A + w2 * oof_B + w3 * oof_C + 
-        w4 * oof_D + w5 * oof_E + w6 * oof_F
+    """Improved blending objective with constraints and regularization."""
+    # Sample blend weights
+    w1 = trial.suggest_float("w1", 0.0, 1.0)
+    w2 = trial.suggest_float("w2", 0.0, 1.0)
+    w3 = trial.suggest_float("w3", 0.0, 1.0)
+    w4 = trial.suggest_float("w4", 0.0, 1.0)
+    w5 = trial.suggest_float("w5", 0.0, 1.0)
+    w6 = trial.suggest_float("w6", 0.0, 1.0)
+
+    # Normalize weights
+    weights = np.array([w1, w2, w3, w4, w5, w6])
+    weights = weights / np.sum(weights)
+
+    # Calculate blended predictions
+    blended = (
+        weights[0] * oof_A
+        + weights[1] * oof_B
+        + weights[2] * oof_C
+        + weights[3] * oof_D
+        + weights[4] * oof_E
+        + weights[5] * oof_F
     )
-    
+
+    # Convert to binary predictions
+    y_pred = (blended >= 0.5).astype(int)
+
     # Calculate accuracy
-    accuracy = accuracy_score(y_true, ensemble_preds >= 0.5)
-    
+    score = accuracy_score(y_true, y_pred)
+
     # Store normalized weights in trial attributes
-    trial.set_user_attr("weights", [w1, w2, w3, w4, w5, w6])
-    
-    return accuracy
+    trial.set_user_attr("weights", weights.tolist())
+
+    return score
