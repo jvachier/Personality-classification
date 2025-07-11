@@ -43,6 +43,17 @@ warnings.filterwarnings("ignore")
 # Suppress joblib resource tracker warnings on macOS
 warnings.filterwarnings("ignore", message="resource_tracker")
 
+# Suppress verbose SDV logging
+logging.getLogger("sdv").setLevel(logging.WARNING)
+logging.getLogger("rdt").setLevel(logging.WARNING)
+logging.getLogger("copulas").setLevel(logging.WARNING)
+logging.getLogger("sdv.single_table.base").setLevel(logging.WARNING)
+logging.getLogger("SYNTHESIZER").setLevel(logging.WARNING)
+logging.getLogger("SingleTableSynthesizer").setLevel(logging.WARNING)
+logging.getLogger("MultiTableSynthesizer").setLevel(logging.WARNING)
+logging.getLogger("sdv.data_processing").setLevel(logging.WARNING)
+logging.getLogger("sdv.metadata").setLevel(logging.WARNING)
+
 
 def setup_logging():
     """Configure logging for the personality classification pipeline."""

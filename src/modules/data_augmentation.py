@@ -19,8 +19,6 @@ from .config import (
 )
 from .utils import get_logger
 
-logger = get_logger(__name__)
-
 # Conditional imports
 if SDV_AVAILABLE:
     from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
@@ -28,6 +26,8 @@ if SDV_AVAILABLE:
 
 if IMBLEARN_AVAILABLE:
     from imblearn.over_sampling import SMOTENC
+
+logger = get_logger(__name__)
 
 
 def simple_mixed_augmentation(X_train, y_train, augment_ratio=0.05):
