@@ -11,7 +11,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
 
 from .utils import get_logger
-from .config import N_SPLITS
+from .config import N_SPLITS, Paths
 from .model_builders import (
     build_stack,
     build_stack_c,
@@ -23,8 +23,11 @@ from .model_builders import (
 logger = get_logger(__name__)
 
 
-def save_best_trial_params(study, model_name, params_dir="best_params"):
+def save_best_trial_params(study, model_name, params_dir=None):
     """Save the best trial parameters to a JSON file."""
+    if params_dir is None:
+        params_dir = Paths.BEST_PARAMS_DIR.value
+
     os.makedirs(params_dir, exist_ok=True)
     best_params = study.best_trial.params
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
@@ -34,8 +37,11 @@ def save_best_trial_params(study, model_name, params_dir="best_params"):
     return best_params
 
 
-def load_best_trial_params(model_name, params_dir="best_params"):
+def load_best_trial_params(model_name, params_dir=None):
     """Load the best trial parameters from a JSON file."""
+    if params_dir is None:
+        params_dir = Paths.BEST_PARAMS_DIR.value
+
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
     if os.path.exists(filepath):
         with open(filepath, "r") as f:

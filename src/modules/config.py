@@ -5,40 +5,132 @@ Configuration constants and global parameters for the personality classification
 import warnings
 import logging
 import sys
+from enum import Enum
+from pathlib import Path
 
-# Global parameters
-RND = 42
-N_SPLITS = 5
+# Base paths
+BASE_DIR = Path(__file__).parent.parent.parent  # Points to project root
 
-# Data augmentation parameters
-ENABLE_DATA_AUGMENTATION = True  # Set to True to enable
-AUGMENTATION_METHOD = (
-    "sdv_copula"  # Options: "simple", "sdv_copula", "sdv_ctgan", "smotenc"
-    # Note: Use "sdv_copula" on Apple Silicon - CTGAN may hang on M1/M2/M3
-)
-AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
-QUALITY_THRESHOLD = 0.8  # For quality filtering
-N_TRIALS_STACK = 3  # Reduced for testing (original: 15)
-N_TRIALS_BLEND = 10  # Reduced for testing (original: 200)
-LABEL_NOISE_RATE = 0.02
 
-# Data augmentation imports
+class Paths(Enum):
+    """File and directory paths for the project."""
+
+    DATA_DIR = BASE_DIR / "data"
+    SUBMISSIONS_DIR = BASE_DIR / "submissions"
+    BEST_PARAMS_DIR = BASE_DIR / "best_params"
+    CATBOOST_INFO_DIR = BASE_DIR / "catboost_info"
+    LOGS_DIR = BASE_DIR / "logs"
+
+    # Data files
+    TRAIN_CSV = DATA_DIR / "train.csv"
+    TEST_CSV = DATA_DIR / "test.csv"
+    SAMPLE_SUBMISSION_CSV = DATA_DIR / "sample_submission.csv"
+    PERSONALITY_DATASET_CSV = DATA_DIR / "personality_dataset.csv"
+
+    # Log files
+    PERSONALITY_CLASSIFIER_LOG = BASE_DIR / "personality_classifier.log"
+
+    @property
+    def value(self):
+        """Return the path as a string."""
+        return str(self._value_)
+
+    def exists(self):
+        """Check if the path exists."""
+        return Path(self._value_).exists()
+
+    def mkdir(self, parents=True, exist_ok=True):
+        """Create the directory if it's a directory path."""
+        Path(self._value_).mkdir(parents=parents, exist_ok=exist_ok)
+
+
+class AugmentationMethod(Enum):
+    """Data augmentation methods."""
+
+    SIMPLE = "simple"
+    SDV_COPULA = "sdv_copula"
+    SDV_CTGAN = "sdv_ctgan"
+    SMOTENC = "smotenc"
+
+
+class ModelConfig(Enum):
+    """Model configuration parameters."""
+
+    RND = 42
+    N_SPLITS = 5
+    N_TRIALS_STACK = 3  # Reduced for testing (original: 15)
+    N_TRIALS_BLEND = 10  # Reduced for testing (original: 200)
+
+    @property
+    def value(self):
+        """Return the actual value."""
+        return self._value_
+
+
+class AugmentationConfig(Enum):
+    """Data augmentation configuration."""
+
+    ENABLE_DATA_AUGMENTATION = True
+    AUGMENTATION_METHOD = AugmentationMethod.SDV_COPULA  # Default method
+    AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
+    QUALITY_THRESHOLD = 0.8  # For quality filtering
+    LABEL_NOISE_RATE = 0.02
+
+    @property
+    def value(self):
+        """Return the actual value."""
+        return self._value_
+
+
+# Backward compatibility - expose values directly
+RND = ModelConfig.RND.value
+N_SPLITS = ModelConfig.N_SPLITS.value
+N_TRIALS_STACK = ModelConfig.N_TRIALS_STACK.value
+N_TRIALS_BLEND = ModelConfig.N_TRIALS_BLEND.value
+
+ENABLE_DATA_AUGMENTATION = AugmentationConfig.ENABLE_DATA_AUGMENTATION.value
+AUGMENTATION_METHOD = AugmentationConfig.AUGMENTATION_METHOD.value.value
+AUGMENTATION_RATIO = AugmentationConfig.AUGMENTATION_RATIO.value
+QUALITY_THRESHOLD = AugmentationConfig.QUALITY_THRESHOLD.value
+LABEL_NOISE_RATE = AugmentationConfig.LABEL_NOISE_RATE.value
+
+# Data augmentation library availability checks
 try:
-    from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
-    from sdv.metadata import SingleTableMetadata
+    import importlib.util
 
-    SDV_AVAILABLE = True
+    SDV_AVAILABLE = importlib.util.find_spec("sdv") is not None
+    if SDV_AVAILABLE:
+        # Only import if actually available
+        from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
+        from sdv.metadata import SingleTableMetadata
 except ImportError:
     SDV_AVAILABLE = False
 
 try:
-    from imblearn.over_sampling import SMOTENC
+    import importlib.util
 
-    IMBLEARN_AVAILABLE = True
+    IMBLEARN_AVAILABLE = importlib.util.find_spec("imblearn") is not None
+    if IMBLEARN_AVAILABLE:
+        # Only import if actually available
+        from imblearn.over_sampling import SMOTENC
 except ImportError:
     IMBLEARN_AVAILABLE = False
 
-# Configure warnings
+
+# Initialize directories
+def initialize_directories():
+    """Create necessary directories if they don't exist."""
+    for path_enum in [
+        Paths.DATA_DIR,
+        Paths.SUBMISSIONS_DIR,
+        Paths.BEST_PARAMS_DIR,
+        Paths.CATBOOST_INFO_DIR,
+        Paths.LOGS_DIR,
+    ]:
+        path_enum.mkdir()
+
+
+# Configure warnings and logging
 warnings.filterwarnings("ignore")
 # Suppress joblib resource tracker warnings on macOS
 warnings.filterwarnings("ignore", message="resource_tracker")
@@ -57,12 +149,15 @@ logging.getLogger("sdv.metadata").setLevel(logging.WARNING)
 
 def setup_logging():
     """Configure logging for the personality classification pipeline."""
+    # Ensure logs directory exists
+    Paths.LOGS_DIR.mkdir()
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler("personality_classifier.log"),
+            logging.FileHandler(Paths.PERSONALITY_CLASSIFIER_LOG.value),
         ],
     )
     logger = logging.getLogger(__name__)
@@ -76,3 +171,7 @@ def setup_logging():
         )
 
     return logger
+
+
+# Initialize on import
+initialize_directories()
