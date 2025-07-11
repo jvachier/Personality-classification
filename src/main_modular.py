@@ -64,6 +64,7 @@ class TrainingData(NamedTuple):
     X_test: pd.DataFrame
     y_full: pd.Series
     le: object
+    submission: pd.DataFrame
 
 
 class StackResults(NamedTuple):
@@ -103,7 +104,7 @@ def load_and_prepare_data(
     # Apply new data augmentation after preprocessing
     X_full, y_full = apply_data_augmentation(X_full, y_full)
 
-    return TrainingData(X_full, X_test, y_full, le)
+    return TrainingData(X_full, X_test, y_full, le, submission)
 
 
 def get_stack_configurations() -> list[StackConfig]:
@@ -384,9 +385,7 @@ def refit_and_predict(
     personality = data.le.inverse_transform(proba_test_discrete)
 
     # Create submission
-    submission_df = pd.DataFrame(
-        {"id": range(len(personality)), "Personality": personality}
-    )
+    submission_df = pd.DataFrame({"id": data.submission.id, "Personality": personality})
 
     # Save results
     output_file = "./submissions/six_stack_personality_predictions_modular.csv"
