@@ -313,7 +313,6 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
         else:
             logger.info("   ⚡ Fallback to GaussianCopula...")
             synthesizer = GaussianCopulaSynthesizer(metadata)
-            synthesizer = GaussianCopulaSynthesizer(metadata)
 
         # Fit the synthesizer with timeout protection
         logger.info("   🏋️ Training synthesizer...")
