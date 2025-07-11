@@ -68,9 +68,11 @@ def prep(
     all_data = pd.concat([df_tr_no_target, df_te], ignore_index=True)
 
     def fill_missing_by_quantile_group(
-        df, group_source_col, target_col, quantiles=[0, 0.25, 0.5, 0.75, 1.0]
+        df, group_source_col, target_col, quantiles=None
     ):
         """Fill missing values using correlation-based grouping (from TOP-4 solution)"""
+        if quantiles is None:
+            quantiles = [0, 0.25, 0.5, 0.75, 1.0]
         if target_col not in df.columns or group_source_col not in df.columns:
             return df
 
@@ -320,7 +322,7 @@ def add_pseudo_labeling_conservative(
 def create_domain_balanced_dataset(
     dataframes: list[pd.DataFrame],
     target_column: str = "Personality",
-    domain_names: list[str] = None,
+    domain_names: list[str] | None = None,
     random_state: int = 42,
     filter_low_quality: bool = True,
     weight_threshold: float = 0.2,

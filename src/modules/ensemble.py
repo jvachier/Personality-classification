@@ -32,7 +32,7 @@ def oof_probs(
         logger.info(f"   Fold {fold + 1}/{N_SPLITS}")
 
         X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
-        y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
+        y_train, _y_val = y.iloc[tr_idx], y.iloc[val_idx]
 
         # Build and fit model
         model = model_builder()
@@ -67,7 +67,7 @@ def oof_probs_noisy(
         )
 
         X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
-        y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
+        y_train, _y_val = y.iloc[tr_idx], y.iloc[val_idx]
 
         # Add label noise to training data
         y_train_noisy = add_label_noise(

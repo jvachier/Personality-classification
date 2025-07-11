@@ -46,12 +46,18 @@ class Paths(Enum):
 
 
 class AugmentationMethod(Enum):
-    """Data augmentation methods."""
+    """Enhanced data augmentation methods."""
 
     SIMPLE = "simple"
     SDV_COPULA = "sdv_copula"
     SDV_CTGAN = "sdv_ctgan"
     SMOTENC = "smotenc"
+    # New advanced methods
+    TVAE = "tvae"  # Variational Autoencoder
+    FAST_ML = "fast_ml"  # Fast ML-based augmentation
+    MIXED_ENSEMBLE = "mixed_ensemble"  # Combine multiple methods
+    ADAPTIVE = "adaptive"  # Auto-select best method
+    CLASS_BALANCED = "class_balanced"  # Balance classes intelligently
 
 
 class TestingMode(Enum):
@@ -107,12 +113,34 @@ class ThreadConfig(Enum):
 
 
 class AugmentationConfig(Enum):
-    """Data augmentation configuration."""
+    """Enhanced data augmentation configuration."""
 
+    # Adaptive configuration
     ENABLE_DATA_AUGMENTATION = True
-    AUGMENTATION_METHOD = AugmentationMethod.SDV_COPULA  # Default method
-    AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
-    QUALITY_THRESHOLD = 0.8  # For quality filtering
+    AUGMENTATION_METHOD = AugmentationMethod.ADAPTIVE  # Auto-select best method
+
+    # Dynamic ratios based on data characteristics
+    MIN_AUGMENTATION_RATIO = 0.01
+    BASE_AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
+    MAX_AUGMENTATION_RATIO = 0.20
+
+    # Quality and performance controls
+    ENABLE_QUALITY_FILTERING = True
+    QUALITY_THRESHOLD = 0.75  # For quality filtering
+    ENABLE_DIVERSITY_CHECK = True
+    DIVERSITY_THRESHOLD = 0.8
+
+    # Performance optimizations
+    MAX_AUGMENTATION_TIME_SECONDS = 300  # 5 minutes max
+    ENABLE_CACHING = True
+    CACHE_AUGMENTED_DATA = True
+
+    # Class balancing
+    ENABLE_CLASS_BALANCING = True
+    TARGET_CLASS_BALANCE_RATIO = 0.7  # Aim for 70% balance minimum
+
+    # Legacy support
+    AUGMENTATION_RATIO = 0.05  # Backward compatibility
     LABEL_NOISE_RATE = 0.02
 
     @property
@@ -131,10 +159,22 @@ N_TRIALS_BLEND = ModelConfig.N_TRIALS_BLEND.value
 N_JOBS = ThreadConfig.N_JOBS.value
 THREAD_COUNT = ThreadConfig.THREAD_COUNT.value
 
+# Enhanced data augmentation configuration exports
 ENABLE_DATA_AUGMENTATION = AugmentationConfig.ENABLE_DATA_AUGMENTATION.value
 AUGMENTATION_METHOD = AugmentationConfig.AUGMENTATION_METHOD.value.value
 AUGMENTATION_RATIO = AugmentationConfig.AUGMENTATION_RATIO.value
+BASE_AUGMENTATION_RATIO = AugmentationConfig.BASE_AUGMENTATION_RATIO.value
+MIN_AUGMENTATION_RATIO = AugmentationConfig.MIN_AUGMENTATION_RATIO.value
+MAX_AUGMENTATION_RATIO = AugmentationConfig.MAX_AUGMENTATION_RATIO.value
 QUALITY_THRESHOLD = AugmentationConfig.QUALITY_THRESHOLD.value
+ENABLE_QUALITY_FILTERING = AugmentationConfig.ENABLE_QUALITY_FILTERING.value
+ENABLE_DIVERSITY_CHECK = AugmentationConfig.ENABLE_DIVERSITY_CHECK.value
+DIVERSITY_THRESHOLD = AugmentationConfig.DIVERSITY_THRESHOLD.value
+ENABLE_CLASS_BALANCING = AugmentationConfig.ENABLE_CLASS_BALANCING.value
+TARGET_CLASS_BALANCE_RATIO = AugmentationConfig.TARGET_CLASS_BALANCE_RATIO.value
+MAX_AUGMENTATION_TIME_SECONDS = AugmentationConfig.MAX_AUGMENTATION_TIME_SECONDS.value
+ENABLE_CACHING = AugmentationConfig.ENABLE_CACHING.value
+CACHE_AUGMENTED_DATA = AugmentationConfig.CACHE_AUGMENTED_DATA.value
 LABEL_NOISE_RATE = AugmentationConfig.LABEL_NOISE_RATE.value
 
 # Testing configuration

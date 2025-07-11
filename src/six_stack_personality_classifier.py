@@ -573,9 +573,11 @@ def prep(
     all_data = pd.concat([df_tr_no_target, df_te], ignore_index=True)
 
     def fill_missing_by_quantile_group(
-        df, group_source_col, target_col, quantiles=[0, 0.25, 0.5, 0.75, 1.0]
+        df, group_source_col, target_col, quantiles=None
     ):
         """Fill missing values using correlation-based grouping (from TOP-4 solution)"""
+        if quantiles is None:
+            quantiles = [0, 0.25, 0.5, 0.75, 1.0]
         if target_col not in df.columns or group_source_col not in df.columns:
             return df
 
@@ -840,7 +842,7 @@ def add_pseudo_labeling_conservative(
 def create_domain_balanced_dataset(
     dataframes: list[pd.DataFrame],
     target_column: str = "Personality",
-    domain_names: list[str] = None,
+    domain_names: list[str] | None = None,
     random_state: int = 42,
     filter_low_quality: bool = True,
     weight_threshold: float = 0.2,
@@ -1313,7 +1315,7 @@ def build_sklearn_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
     num_base = list(X_full.columns)
 
     # Use RobustScaler for all features since they're all numerical after one-hot encoding
-    preprocessor = ColumnTransformer(
+    ColumnTransformer(
         transformers=[
             ("num", RobustScaler(), num_base),
             # No categorical transformer needed after one-hot encoding
@@ -1856,11 +1858,11 @@ def oof_probs(
 
     cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
 
-    for fold, (tr_idx, val_idx) in enumerate(cv.split(X, y)):
+    for _fold, (tr_idx, val_idx) in enumerate(cv.split(X, y)):
         logger.info("   Fold {fold + 1}/{N_SPLITS}")
 
         X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
-        y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
+        y_train, _y_val = y.iloc[tr_idx], y.iloc[val_idx]
 
         # Build and fit model
         model = model_builder()
@@ -1893,7 +1895,7 @@ def oof_probs_noisy(
         logger.info("   Fold {fold + 1}/{N_SPLITS} (with {noise_rate:.1%} label noise)")
 
         X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
-        y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
+        y_train, _y_val = y.iloc[tr_idx], y.iloc[val_idx]
 
         # Add label noise to training data
         y_train_noisy = add_label_noise(
@@ -1969,199 +1971,16 @@ def main():
     )
 
     # Initial parameters for warm start - Model A (Best: 0.9698770414156341)
-    prep_parameters_a = {
-        "xgb_grow": "depthwise",
-        "xgb_n": 945,
-        "xgb_lr": 0.015202638535985058,
-        "xgb_d": 9,
-        "xgb_sub": 0.852046198262209,
-        "xgb_col": 0.9480247550215684,
-        "xgb_alpha": 0.000379569597468035,
-        "xgb_lambda": 8.425575953853357,
-        "xgb_gamma": 2.9680749905938644,
-        "xgb_min_child": 11,
-        "lgb_n": 802,
-        "lgb_lr": 0.16508685948157298,
-        "lgb_d": 2,
-        "lgb_sub": 0.7036333592082553,
-        "lgb_col": 0.7302718535301005,
-        "lgb_leaves": 159,
-        "lgb_min_child": 53,
-        "lgb_min_weight": 0.0009564176415918027,
-        "lgb_alpha": 19.44913137025784,
-        "lgb_lambda": 0.0023439694833987984,
-        "lgb_cat_smooth": 36,
-        "lgb_cat_l2": 14.295504457172747,
-        "lgb_min_data_bin": 2,
-        "lgb_path_smooth": 0.1010614204894173,
-        "cat_bootstrap": "MVS",
-        "cat_n": 646,
-        "cat_lr": 0.031212713245561453,
-        "cat_d": 10,
-        "cat_l2": 1.577368711730953,
-        "cat_rs": 6.85311322571503,
-        "cat_leaf_iters": 7,
-        "cat_grow": "Lossguide",
-        "cat_min_data": 7,
-        "cat_border_count": 227,
-        "cat_subsample": 0.7510380706434205,
-        "meta_type": "xgb",
-    }
 
     # Model B (Best: 0.9700928201047561)
-    prep_parameters_b = {
-        "xgb_grow": "lossguide",
-        "xgb_n": 1131,
-        "xgb_lr": 0.05157765001330079,
-        "xgb_d": 11,
-        "xgb_sub": 0.8872877080452362,
-        "xgb_col": 0.7795741489732473,
-        "xgb_alpha": 0.00902833328479989,
-        "xgb_lambda": 8.61136334496091,
-        "xgb_gamma": 7.804614543983024,
-        "xgb_min_child": 13,
-        "xgb_leaves": 126,
-        "lgb_n": 854,
-        "lgb_lr": 0.17770038584473272,
-        "lgb_d": 10,
-        "lgb_sub": 0.5568110142494049,
-        "lgb_col": 0.5261568302477544,
-        "lgb_leaves": 188,
-        "lgb_min_child": 46,
-        "lgb_min_weight": 0.00038335518811955654,
-        "lgb_alpha": 0.07236992480642132,
-        "lgb_lambda": 0.07212731897883105,
-        "lgb_cat_smooth": 67,
-        "lgb_cat_l2": 8.305236603222985,
-        "lgb_min_data_bin": 11,
-        "lgb_path_smooth": 0.10035424976991908,
-        "cat_bootstrap": "MVS",
-        "cat_n": 880,
-        "cat_lr": 0.015993755307381854,
-        "cat_d": 11,
-        "cat_l2": 12.450962287776338,
-        "cat_rs": 16.72836530669729,
-        "cat_leaf_iters": 11,
-        "cat_grow": "Lossguide",
-        "cat_min_data": 18,
-        "cat_border_count": 283,
-        "cat_subsample": 0.8553510476562626,
-        "meta_type": "logistic",
-        "meta_log_c": 6.459864162187188,
-    }
 
     # Model C (Best: 0.9700386786870816)
-    prep_parameters_c = {
-        "xgb_grow": "lossguide",
-        "xgb_n": 448,
-        "xgb_lr": 0.15750641449223535,
-        "xgb_d": 11,
-        "xgb_sub": 0.6219348595208609,
-        "xgb_col": 0.6237860243259894,
-        "xgb_alpha": 0.046983945094351026,
-        "xgb_lambda": 9.70175049299882,
-        "xgb_gamma": 3.931277261316059,
-        "xgb_min_child": 6,
-        "xgb_leaves": 66,
-        "cat_bootstrap": "Bayesian",
-        "cat_n": 770,
-        "cat_lr": 0.0360746361642475,
-        "cat_d": 7,
-        "cat_l2": 6.281663165541404,
-        "cat_rs": 6.061917523212558,
-        "cat_leaf_iters": 14,
-        "cat_grow": "SymmetricTree",
-        "cat_min_data": 18,
-        "cat_border_count": 207,
-        "cat_temp": 0.6510949621686273,
-        "c_meta_type": "logistic",
-        "c_meta_c": 8.305622416200901,
-    }
 
     # Model D (Best: 0.9698232060463503)
-    prep_parameters_d = {
-        "rf_n": 508,
-        "rf_depth": 21,
-        "rf_min_split": 5,
-        "rf_min_leaf": 1,
-        "rf_max_features": None,
-        "rf_class_weight": None,
-        "et_n": 950,
-        "et_depth": 39,
-        "et_min_split": 6,
-        "et_min_leaf": 5,
-        "et_max_features": "log2",
-        "et_class_weight": None,
-        "hgb_n": 800,
-        "hgb_lr": 0.08007953809056918,
-        "hgb_depth": 8,
-        "hgb_min_leaf": 16,
-        "hgb_l2": 0.6740832112808466,
-        "meta_type": "xgb",
-        "meta_xgb_n": 246,
-        "meta_xgb_lr": 0.06589834679918967,
-        "meta_xgb_depth": 6,
-    }
 
     # Model E (Best: 0.9698230165878229)
-    prep_parameters_e = {
-        "mlp1_h1": 106,
-        "mlp1_h2": 86,
-        "mlp1_h3": 50,
-        "mlp1_lr": 0.0006306913268514695,
-        "mlp1_alpha": 0.02019413520280658,
-        "mlp1_iter": 1579,
-        "mlp2_h1": 342,
-        "mlp2_lr": 0.0010947538981036953,
-        "mlp2_alpha": 0.00016513079871827957,
-        "mlp2_iter": 621,
-        "svm_c": 1.17311282154475,
-        "svm_gamma": "auto",
-        "svm_kernel": "rbf",
-        "nb_var_smooth": 9.553142993144058e-09,
-        "neural_meta_type": "logistic",
-        "neural_meta_c": 8.063615330559422,
-    }
 
     # Model F (Best: 0.9700387661294789)
-    prep_parameters_f = {
-        "xgb_grow": "depthwise",
-        "xgb_n": 651,
-        "xgb_lr": 0.19980229596023016,
-        "xgb_d": 7,
-        "xgb_sub": 0.9646027011006114,
-        "xgb_col": 0.7110655132254216,
-        "xgb_alpha": 0.005890889327182349,
-        "xgb_lambda": 14.858206311292482,
-        "xgb_gamma": 0.49066560158731787,
-        "xgb_min_child": 3,
-        "lgb_n": 929,
-        "lgb_lr": 0.013667186190795077,
-        "lgb_d": -1,
-        "lgb_sub": 0.9125801588716573,
-        "lgb_col": 0.9311697942047846,
-        "lgb_leaves": 110,
-        "lgb_min_child": 72,
-        "lgb_min_weight": 0.01456398702838513,
-        "lgb_alpha": 1.051308135053416,
-        "lgb_lambda": 0.04114612588000621,
-        "lgb_cat_smooth": 198,
-        "lgb_cat_l2": 14.631872253652649,
-        "lgb_min_data_bin": 43,
-        "lgb_path_smooth": 0.15361398097734175,
-        "cat_bootstrap": "Bayesian",
-        "cat_n": 679,
-        "cat_lr": 0.03117224079638828,
-        "cat_d": 10,
-        "cat_l2": 8.666707732672174,
-        "cat_rs": 1.7502250623280302,
-        "cat_leaf_iters": 10,
-        "cat_grow": "Lossguide",
-        "cat_min_data": 18,
-        "cat_border_count": 176,
-        "cat_temp": 0.8741016355692319,
-        "meta_log_c": 0.03105340492419464,
-    }
 
     # Train 6 stacks
     logger.info("\n🔍 Training 6 specialized stacks...")
