@@ -1030,7 +1030,7 @@ def save_best_trial_params(study, model_name, params_dir="best_params"):
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
     with open(filepath, "w") as f:
         json.dump(best_params, f, indent=2)
-    logger.info("Saved best parameters for {model_name} to {filepath}")
+    logger.info(f"Saved best parameters for {model_name} to {filepath}")
     return best_params
 
 
