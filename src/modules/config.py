@@ -75,7 +75,7 @@ class TestingMode(Enum):
 class TestingConfig(Enum):
     """Testing configuration parameters."""
 
-    TESTING_MODE = TestingMode.ENABLED  # Enable for development
+    TESTING_MODE = TestingMode.DISABLED  # Enable for development
     TESTING_SAMPLE_SIZE = 1000  # Number of samples to use in testing mode
     FULL_SAMPLE_SIZE = None  # Use full dataset when None
 
