@@ -205,3 +205,14 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Do not include data
+*data/
+
+# Project-specific ignores
+best_params/
+*.log
+catboost_info/
+submissions/*.csv
+six_stack_personality_predictions*.csv
