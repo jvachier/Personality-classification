@@ -7,6 +7,7 @@ Converted from Jupyter notebook with CPU-only configuration and external data in
 import gc
 import warnings
 import sys
+import logging
 from typing import Sequence, Dict, Tuple, List
 
 import numpy as np
@@ -47,6 +48,17 @@ import optuna
 import json
 import os
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("personality_classifier.log"),
+    ],
+)
+logger = logging.getLogger(__name__)
+
 # Data augmentation imports
 try:
     from sdv.single_table import GaussianCopulaSynthesizer, CTGANSynthesizer
@@ -55,7 +67,7 @@ try:
     SDV_AVAILABLE = True
 except ImportError:
     SDV_AVAILABLE = False
-    print("⚠️ SDV not available. Install with: pip install sdv")
+    logger.warning("⚠️ SDV not available. Install with: pip install sdv")
 
 try:
     from imblearn.over_sampling import SMOTENC
@@ -63,7 +75,7 @@ try:
     IMBLEARN_AVAILABLE = True
 except ImportError:
     IMBLEARN_AVAILABLE = False
-    print(
+    logger.warning(
         "⚠️ imbalanced-learn not available. Install with: pip install imbalanced-learn"
     )
 
@@ -93,20 +105,20 @@ def load_data_with_external_merge():
     Load and merge training data with external personality datasets using TOP-4 solution strategy.
     This function merges external data as features rather than concatenating as new samples.
     """
-    print("📊 Loading data with TOP-4 solution merge strategy...")
+    logger.info("📊 Loading data with TOP-4 solution merge strategy...")
 
     # Load original datasets
-    df_tr = pd.read_csv("data/train.csv")
-    df_te = pd.read_csv("data/test.csv")
-    submission = pd.read_csv("data/sample_submission.csv")
+    df_tr = pd.read_csv("./data/train.csv")
+    df_te = pd.read_csv("./data/test.csv")
+    submission = pd.read_csv("./data/sample_submission.csv")
 
-    print(f"Original train shape: {df_tr.shape}")
-    print(f"Original test shape: {df_te.shape}")
+    logger.info(f"Original train shape: {df_tr.shape}")
+    logger.info(f"Original test shape: {df_te.shape}")
 
     # Load external dataset using TOP-4 solution merge strategy
     try:
-        df_external = pd.read_csv("data/personality_datasert.csv")
-        print(f"External dataset shape: {df_external.shape}")
+        df_external = pd.read_csv("./data/personality_datasert.csv")
+        logger.info(f"External dataset shape: {df_external.shape}")
 
         # Rename Personality column to match_p for clarity
         df_external = df_external.rename(columns={"Personality": "match_p"})
@@ -126,8 +138,8 @@ def load_data_with_external_merge():
         original_external_shape = df_external.shape[0]
         df_external = df_external.drop_duplicates(subset=merge_cols)
         duplicates_removed = original_external_shape - df_external.shape[0]
-        print(f"Removed {duplicates_removed} duplicate rows from external data")
-        print(f"External dataset shape after deduplication: {df_external.shape}")
+        logger.info(f"Removed {duplicates_removed} duplicate rows from external data")
+        logger.info(f"External dataset shape after deduplication: {df_external.shape}")
 
         # Merge with training and test data to create match_p feature
         # This adds the match_p column as a new feature
@@ -138,26 +150,28 @@ def load_data_with_external_merge():
         train_matches = df_tr["match_p"].notna().sum()
         test_matches = df_te["match_p"].notna().sum()
 
-        print(
+        logger.info(
             f"✅ Successfully matched {train_matches}/{len(df_tr)} training samples with external data"
         )
-        print(
+        logger.info(
             f"✅ Successfully matched {test_matches}/{len(df_te)} test samples with external data"
         )
 
         # Print match distribution for training data
         if train_matches > 0:
             match_dist = df_tr["match_p"].value_counts(dropna=False)
-            print("Training match_p distribution:")
+            logger.info("Training match_p distribution:")
             for value, count in match_dist.items():
-                print(f"   {value}: {count} ({count / len(df_tr) * 100:.1f}%)")
+                logger.info(f"   {value}: {count} ({count / len(df_tr) * 100:.1f}%)")
 
     except FileNotFoundError:
-        print("⚠️ personality_datasert.csv not found, adding empty match_p column")
+        logger.warning(
+            "⚠️ personality_datasert.csv not found, adding empty match_p column"
+        )
         df_tr["match_p"] = None
         df_te["match_p"] = None
 
-    print("✅ Data loading with external merge completed")
+    logger.info("✅ Data loading with external merge completed")
     return df_tr, df_te, submission
 
 
@@ -230,11 +244,11 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
     High-quality synthetic data generation using SDV with improved CTGAN handling
     """
     if not SDV_AVAILABLE:
-        print("⚠️ SDV not available, falling back to simple augmentation")
+        logger.warning("⚠️ SDV not available, falling back to simple augmentation")
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
     try:
-        print(f"   🔧 Using {method} synthesizer...")
+        logger.info(f"   🔧 Using {method} synthesizer...")
 
         # Combine features and target for SDV
         train_data = X_train.copy()
@@ -257,7 +271,7 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
 
         # Choose synthesizer based on method
         if method == "copula":
-            print("   ⚡ Training GaussianCopula (fast)...")
+            logger.info("   ⚡ Training GaussianCopula (fast)...")
             synthesizer = GaussianCopulaSynthesizer(metadata)
         elif method == "ctgan":
             # Check for Apple Silicon - CTGAN has issues on M1/M2/M3
@@ -268,11 +282,13 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
             )
 
             if is_apple_silicon:
-                print("   ⚠️ Apple Silicon detected - CTGAN has compatibility issues")
-                print("   🔄 Falling back to GaussianCopula for stability...")
+                logger.warning(
+                    "   ⚠️ Apple Silicon detected - CTGAN has compatibility issues"
+                )
+                logger.info("   🔄 Falling back to GaussianCopula for stability...")
                 synthesizer = GaussianCopulaSynthesizer(metadata)
             else:
-                print("   🧠 Training CTGAN (slow but high quality)...")
+                logger.info("   🧠 Training CTGAN (slow but high quality)...")
 
                 # Much more conservative CTGAN parameters to prevent hanging
                 data_size = len(train_data)
@@ -286,7 +302,7 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
                     epochs = 20
                     batch_size = min(100, data_size // 8)
 
-                print(f"   📊 Using epochs={epochs}, batch_size={batch_size}")
+                logger.info(f"   📊 Using epochs={epochs}, batch_size={batch_size}")
 
                 try:
                     synthesizer = CTGANSynthesizer(
@@ -301,15 +317,16 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
                         pac=1,
                     )
                 except Exception as e:
-                    print(f"   ⚠️ CTGAN initialization failed: {e}")
-                    print("   🔄 Falling back to GaussianCopula...")
+                    logger.warning(f"   ⚠️ CTGAN initialization failed: {e}")
+                    logger.info("   🔄 Falling back to GaussianCopula...")
                     synthesizer = GaussianCopulaSynthesizer(metadata)
         else:
-            print("   ⚡ Fallback to GaussianCopula...")
+            logger.info("   ⚡ Fallback to GaussianCopula...")
+            synthesizer = GaussianCopulaSynthesizer(metadata)
             synthesizer = GaussianCopulaSynthesizer(metadata)
 
         # Fit the synthesizer with timeout protection
-        print("   🏋️ Training synthesizer...")
+        logger.info("   🏋️ Training synthesizer...")
 
         import signal
         import time
@@ -327,7 +344,7 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
         try:
             synthesizer.fit(train_data)
             training_time = time.time() - start_time
-            print(f"   ✅ Training completed in {training_time:.1f}s")
+            logger.info(f"   ✅ Training completed in {training_time:.1f}s")
         finally:
             if method == "ctgan":
                 signal.alarm(0)  # Cancel timeout
@@ -337,21 +354,23 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
         if n_synthetic == 0:
             return pd.DataFrame(), pd.Series()
 
-        print(f"   🎲 Generating {n_synthetic} synthetic samples...")
+        logger.info(f"   🎲 Generating {n_synthetic} synthetic samples...")
         synthetic_data = synthesizer.sample(num_rows=n_synthetic)
 
         # Split back to features and target
         synthetic_X = synthetic_data.drop("Personality", axis=1)
         synthetic_y = synthetic_data["Personality"]
 
-        print(f"   ✅ Generated {len(synthetic_X)} synthetic samples")
+        logger.info(f"   ✅ Generated {len(synthetic_X)} synthetic samples")
         return synthetic_X, synthetic_y
 
     except TimeoutError:
-        print("⚠️ CTGAN training timed out (3 min), falling back to simple augmentation")
+        logger.warning(
+            "⚠️ CTGAN training timed out (3 min), falling back to simple augmentation"
+        )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
     except Exception as e:
-        print(
+        logger.warning(
             f"⚠️ SDV augmentation failed: {str(e)}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
@@ -360,7 +379,9 @@ def sdv_augmentation(X_train, y_train, method="copula", augment_ratio=0.05):
 def smotenc_augmentation(X_train, y_train):
     """SMOTE for mixed numerical/categorical data"""
     if not IMBLEARN_AVAILABLE:
-        print("⚠️ imbalanced-learn not available, falling back to simple augmentation")
+        logger.warning(
+            "⚠️ imbalanced-learn not available, falling back to simple augmentation"
+        )
         return simple_mixed_augmentation(X_train, y_train, 0.1)
 
     try:
@@ -401,7 +422,7 @@ def smotenc_augmentation(X_train, y_train):
         return augmented_X, augmented_y
 
     except Exception as e:
-        print(
+        logger.warning(
             f"⚠️ SMOTENC augmentation failed: {str(e)}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, 0.1)
@@ -410,10 +431,10 @@ def smotenc_augmentation(X_train, y_train):
 def apply_data_augmentation(X_train, y_train):
     """Apply the configured data augmentation method"""
     if not ENABLE_DATA_AUGMENTATION:
-        print("📊 Data augmentation disabled")
+        logger.info("📊 Data augmentation disabled")
         return X_train, y_train
 
-    print(f"📊 Applying {AUGMENTATION_METHOD} data augmentation...")
+    logger.info(f"📊 Applying {AUGMENTATION_METHOD} data augmentation...")
     original_shape = X_train.shape
 
     if AUGMENTATION_METHOD == "simple":
@@ -431,7 +452,7 @@ def apply_data_augmentation(X_train, y_train):
     elif AUGMENTATION_METHOD == "smotenc":
         augmented_X, augmented_y = smotenc_augmentation(X_train, y_train)
     else:
-        print(f"⚠️ Unknown augmentation method: {AUGMENTATION_METHOD}")
+        logger.warning(f"⚠️ Unknown augmentation method: {AUGMENTATION_METHOD}")
         return X_train, y_train
 
     if len(augmented_X) > 0:
@@ -439,12 +460,12 @@ def apply_data_augmentation(X_train, y_train):
         X_combined = pd.concat([X_train, augmented_X], ignore_index=True)
         y_combined = pd.concat([y_train, augmented_y], ignore_index=True)
 
-        print(f"   ✅ Added {len(augmented_X)} synthetic samples")
-        print(f"   📈 Data shape: {original_shape} → {X_combined.shape}")
+        logger.info(f"   ✅ Added {len(augmented_X)} synthetic samples")
+        logger.info(f"   📈 Data shape: {original_shape} → {X_combined.shape}")
 
         return X_combined, y_combined
     else:
-        print("   ⚠️ No synthetic samples generated")
+        logger.warning("   ⚠️ No synthetic samples generated")
         return X_train, y_train
 
 
@@ -458,14 +479,14 @@ def augment_data_conservative(
     Conservative data augmentation using noise injection and feature perturbation.
     This is safer than synthetic generation and less likely to hurt performance.
     """
-    print(
+    logger.info(
         f"🔄 Conservative augmentation with noise injection (ratio: {augment_ratio:.1%})..."
     )
 
     try:
         # Number of samples to generate
         n_synthetic = int(len(df_tr) * augment_ratio)
-        print(f"   🎲 Generating {n_synthetic:,} augmented samples...")
+        logger.info(f"   🎲 Generating {n_synthetic:,} augmented samples...")
 
         # Features to augment (exclude target and categorical)
         numerical_cols = [
@@ -503,16 +524,16 @@ def augment_data_conservative(
 
         df_combined = pd.concat([df_tr_copy, augmented_data], ignore_index=True)
 
-        print("   ✅ Conservative augmentation completed!")
-        print(f"   📊 Original samples: {len(df_tr):,}")
-        print(f"   📊 Augmented samples: {len(augmented_data):,}")
-        print(f"   📊 Total samples: {len(df_combined):,}")
+        logger.info("   ✅ Conservative augmentation completed!")
+        logger.info(f"   📊 Original samples: {len(df_tr):,}")
+        logger.info(f"   📊 Augmented samples: {len(augmented_data):,}")
+        logger.info(f"   📊 Total samples: {len(df_combined):,}")
 
         return df_combined
 
     except Exception as e:
-        print(f"   ⚠️ Conservative augmentation failed: {str(e)}")
-        print("   🔄 Continuing with original data...")
+        logger.warning(f"   ⚠️ Conservative augmentation failed: {str(e)}")
+        logger.info("   🔄 Continuing with original data...")
         df_tr_copy = df_tr.copy()
         df_tr_copy["is_synthetic"] = 0
         return df_tr_copy
@@ -524,7 +545,7 @@ def prep(
     """
     Preprocess the training and test datasets with TOP-4 solution approach.
     """
-    print("🔧 Preprocessing data with TOP-4 solution approach...")
+    logger.info("🔧 Preprocessing data with TOP-4 solution approach...")
 
     # Define feature groups before any processing
     # Keep original column types for proper categorization
@@ -548,7 +569,7 @@ def prep(
         df_te = df_te.drop(columns=[idx])
 
     # Use TOP-4 solution correlation-based imputation
-    print("🔄 Performing TOP-4 correlation-based imputation...")
+    logger.info("🔄 Performing TOP-4 correlation-based imputation...")
 
     # Extract and encode target variable BEFORE combining data
     le_tgt = LabelEncoder()
@@ -637,7 +658,7 @@ def prep(
             all_data[col] = all_data[col].fillna("Unknown")
 
     # Apply one-hot encoding for categorical features using OneHotEncoder (TOP-4 solution approach)
-    print("🔄 Applying one-hot encoding for categorical features...")
+    logger.info("🔄 Applying one-hot encoding for categorical features...")
 
     # Identify categorical columns that exist in the data
     existing_categorical_cols = [
@@ -666,14 +687,14 @@ def prep(
         all_data = all_data.drop(columns=existing_categorical_cols)
         all_data = pd.concat([all_data, encoded_df], axis=1)
 
-        print(
+        logger.info(
             f"   ✅ Encoded {len(existing_categorical_cols)} categorical features into {len(feature_names)} binary features"
         )
     else:
-        print("   ⚠️ No categorical features found to encode")
+        logger.warning("   ⚠️ No categorical features found to encode")
 
     # Fill any remaining missing values
-    print("🔄 Filling any remaining missing values...")
+    logger.info("🔄 Filling any remaining missing values...")
 
     # For numerical columns, use median
     num_cols = all_data.select_dtypes(include=[np.number]).columns
@@ -691,10 +712,10 @@ def prep(
     df_tr = all_data[:ntrain].copy()
     df_te = all_data[ntrain:].copy()
 
-    print(f"Final train shape: {df_tr.shape}")
-    print(f"Final test shape: {df_te.shape}")
+    logger.info(f"Final train shape: {df_tr.shape}")
+    logger.info(f"Final test shape: {df_te.shape}")
 
-    print("✅ Preprocessing completed with TOP-4 solution approach")
+    logger.info("✅ Preprocessing completed with TOP-4 solution approach")
     return df_tr, df_te, ytr, le_tgt
 
 
@@ -746,7 +767,9 @@ def add_pseudo_labeling_conservative(
     Returns:
         Tuple of (X_combined, y_combined, pseudo_stats)
     """
-    print(f"🔮 Adding pseudo-labels with confidence threshold {confidence_threshold}")
+    logger.info(
+        "🔮 Adding pseudo-labels with confidence threshold {confidence_threshold}"
+    )
 
     # Generate ensemble predictions on test set using optimized weights
     ensemble_proba = (
@@ -766,13 +789,13 @@ def add_pseudo_labeling_conservative(
     n_high_conf = np.sum(high_conf_mask)
     max_pseudo_samples = int(len(X_full) * max_pseudo_ratio)
 
-    print(f"   📊 Found {n_high_conf} high-confidence predictions")
-    print(f"   📏 Maximum allowed pseudo-samples: {max_pseudo_samples}")
+    logger.info("   📊 Found {n_high_conf} high-confidence predictions")
+    logger.info("   📏 Maximum allowed pseudo-samples: {max_pseudo_samples}")
 
     if n_high_conf > 0:
         # Limit pseudo-samples to avoid overfitting
         if n_high_conf > max_pseudo_samples:
-            print(f"   ✂️ Limiting to {max_pseudo_samples} most confident samples")
+            logger.info("   ✂️ Limiting to {max_pseudo_samples} most confident samples")
             # Get confidence scores and select most confident samples
             conf_scores = np.maximum(ensemble_proba, 1 - ensemble_proba)
             high_conf_indices = np.where(high_conf_mask)[0]
@@ -806,16 +829,16 @@ def add_pseudo_labeling_conservative(
             "final_size": len(X_combined),
         }
 
-        print(f"   ✅ Added {len(y_pseudo)} pseudo-labels to training data")
-        print(
+        logger.info(f"   ✅ Added {len(y_pseudo)} pseudo-labels to training data")
+        logger.info(
             f"   📊 Pseudo-label distribution: Class 0: {pseudo_stats['pseudo_class_0']}, Class 1: {pseudo_stats['pseudo_class_1']}"
         )
-        print(f"   🎯 Mean confidence: {pseudo_stats['mean_confidence']:.4f}")
-        print(f"   📈 Training data: {len(X_full)} → {len(X_combined)} samples")
+        logger.info(f"   🎯 Mean confidence: {pseudo_stats['mean_confidence']:.4f}")
+        logger.info(f"   📈 Training data: {len(X_full)} → {len(X_combined)} samples")
 
         return X_combined, y_combined, pseudo_stats
     else:
-        print("   ⚠️ No high-confidence predictions found")
+        logger.info("   ⚠️ No high-confidence predictions found")
         pseudo_stats = {
             "n_pseudo_added": 0,
             "original_size": len(X_full),
@@ -847,7 +870,7 @@ def create_domain_balanced_dataset(
     Returns:
         Tuple of (combined_dataframe, sample_weights)
     """
-    print("🎯 Computing domain weights for distribution alignment...")
+    logger.info("🎯 Computing domain weights for distribution alignment...")
 
     # Combine dataframes with domain labels
     combined_data = []
@@ -947,13 +970,13 @@ def create_domain_balanced_dataset(
             weights[domain_mask] = domain_weights / (np.mean(domain_weights) + 1e-8)
 
     # Print summary
-    print("📊 Domain weighting summary:")
-    print("   Reference domain: 0 (first dataframe)")
+    logger.info("📊 Domain weighting summary:")
+    logger.info("   Reference domain: 0 (first dataframe)")
     for domain_idx in range(len(dataframes)):
         domain_mask = domain_labels == domain_idx
         if np.any(domain_mask):
             domain_weights = weights[domain_mask]
-            print(
+            logger.info(
                 f"   Domain {domain_idx}: {np.sum(domain_mask)} samples, "
                 f"weight range [{domain_weights.min():.3f}, {domain_weights.max():.3f}], "
                 f"mean weight {domain_weights.mean():.3f}"
@@ -962,10 +985,10 @@ def create_domain_balanced_dataset(
             # Analyze weight distribution
             low_weight_pct = np.mean(domain_weights < 0.5) * 100
             high_weight_pct = np.mean(domain_weights > 2.0) * 100
-            print(
+            logger.info(
                 f"     - {low_weight_pct:.1f}% samples have weight < 0.5 (very different)"
             )
-            print(
+            logger.info(
                 f"     - {high_weight_pct:.1f}% samples have weight > 2.0 (very similar)"
             )
 
@@ -987,7 +1010,7 @@ def create_domain_balanced_dataset(
             removed_count = np.sum(remove_mask)
             total_count = np.sum(domain_mask)
             if removed_count > 0:
-                print(
+                logger.info(
                     f"   🚫 Filtered {removed_count}/{total_count} ({removed_count / total_count * 100:.1f}%) "
                     f"low-quality samples from domain {domain_idx}"
                 )
@@ -996,10 +1019,12 @@ def create_domain_balanced_dataset(
         combined_df = combined_df[keep_mask].reset_index(drop=True)
         weights = weights[keep_mask]
 
-        print(f"   ✅ Kept {len(combined_df)} high-quality samples after filtering")
+        logger.info(
+            "   ✅ Kept {len(combined_df)} high-quality samples after filtering"
+        )
 
-    print(f"Created domain-balanced dataset with {len(combined_df)} samples")
-    print(
+    logger.info("Created domain-balanced dataset with {len(combined_df)} samples")
+    logger.info(
         f"Sample weights: min={weights.min():.3f}, max={weights.max():.3f}, mean={weights.mean():.3f}"
     )
 
@@ -1011,9 +1036,9 @@ def save_best_trial_params(study, model_name, params_dir="best_params"):
     os.makedirs(params_dir, exist_ok=True)
     best_params = study.best_trial.params
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         json.dump(best_params, f, indent=2)
-    print(f"Saved best parameters for {model_name} to {filepath}")
+    logger.info("Saved best parameters for {model_name} to {filepath}")
     return best_params
 
 
@@ -1021,12 +1046,12 @@ def load_best_trial_params(model_name, params_dir="best_params"):
     """Load the best trial parameters from a JSON file."""
     filepath = os.path.join(params_dir, f"{model_name}_best_params.json")
     if os.path.exists(filepath):
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             params = json.load(f)
-        print(f"Loaded best parameters for {model_name} from {filepath}")
+        logger.info("Loaded best parameters for {model_name} from {filepath}")
         return params
     else:
-        print(f"No saved parameters found for {model_name} at {filepath}")
+        logger.info("No saved parameters found for {model_name} at {filepath}")
         return None
 
 
@@ -1842,7 +1867,7 @@ def oof_probs(
     cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
 
     for fold, (tr_idx, val_idx) in enumerate(cv.split(X, y)):
-        print(f"   Fold {fold + 1}/{N_SPLITS}")
+        logger.info("   Fold {fold + 1}/{N_SPLITS}")
 
         X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
         y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
@@ -1875,7 +1900,7 @@ def oof_probs_noisy(
     cv = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=RND)
 
     for fold, (tr_idx, val_idx) in enumerate(cv.split(X, y)):
-        print(f"   Fold {fold + 1}/{N_SPLITS} (with {noise_rate:.1%} label noise)")
+        logger.info("   Fold {fold + 1}/{N_SPLITS} (with {noise_rate:.1%} label noise)")
 
         X_train, X_val = X.iloc[tr_idx], X.iloc[val_idx]
         y_train, y_val = y.iloc[tr_idx], y.iloc[val_idx]
@@ -1936,8 +1961,8 @@ def improved_blend_obj(trial, oof_A, oof_B, oof_C, oof_D, oof_E, oof_F, y_true):
 
 def main():
     """Main execution function"""
-    print("🎯 Six-Stack Personality Classification Pipeline (CPU-Only)")
-    print("=" * 60)
+    logger.info("🎯 Six-Stack Personality Classification Pipeline (CPU-Only)")
+    logger.info("=" * 60)
 
     # Load data using TOP-4 solution merge strategy
     df_tr, df_te, submission = load_data_with_external_merge()
@@ -2149,10 +2174,10 @@ def main():
     }
 
     # Train 6 stacks
-    print("\n🔍 Training 6 specialized stacks...")
+    logger.info("\n🔍 Training 6 specialized stacks...")
 
     # Stack E - Neural networks
-    print("Training Stack E - Neural Networks...")
+    logger.info("Training Stack E - Neural Networks...")
     study_E = optuna.create_study(
         direction="maximize",
         pruner=pruner,
@@ -2171,7 +2196,7 @@ def main():
     save_best_trial_params(study_E, "stack_E")
 
     # Stack F - Noisy labels
-    print("Training Stack F - Noisy Labels...")
+    logger.info("Training Stack F - Noisy Labels...")
     study_F = optuna.create_study(
         direction="maximize",
         pruner=pruner,
@@ -2196,7 +2221,7 @@ def main():
     save_best_trial_params(study_F, "stack_F")
 
     # Stack A - Traditional ML (narrow hyperparameters)
-    print("Training Stack A...")
+    logger.info("Training Stack A...")
     study_A = optuna.create_study(
         direction="maximize",
         pruner=pruner,
@@ -2217,7 +2242,7 @@ def main():
     save_best_trial_params(study_A, "stack_A")
 
     # Stack B - Traditional ML (wide hyperparameters)
-    print("Training Stack B...")
+    logger.info("Training Stack B...")
     study_B = optuna.create_study(
         direction="maximize",
         pruner=pruner,
@@ -2238,7 +2263,7 @@ def main():
     save_best_trial_params(study_B, "stack_B")
 
     # Stack C - XGBoost + CatBoost
-    print("Training Stack C...")
+    logger.info("Training Stack C...")
     study_C = optuna.create_study(
         direction="maximize",
         pruner=pruner,
@@ -2257,7 +2282,7 @@ def main():
     save_best_trial_params(study_C, "stack_C")
 
     # Stack D - Sklearn models
-    print("Training Stack D - Sklearn...")
+    logger.info("Training Stack D - Sklearn...")
     study_D = optuna.create_study(
         direction="maximize",
         pruner=pruner,
@@ -2297,18 +2322,18 @@ def main():
         )
 
     # Generate out-of-fold predictions
-    print("\n🔮 Generating out-of-fold predictions...")
-    print("Generating OOF A...")
+    logger.info("\n🔮 Generating out-of-fold predictions...")
+    logger.info("Generating OOF A...")
     oof_A, _ = oof_probs(builder_A, X_full, y_full, X_test[:1], sample_weights=None)
-    print("Generating OOF B...")
+    logger.info("Generating OOF B...")
     oof_B, _ = oof_probs(builder_B, X_full, y_full, X_test[:1], sample_weights=None)
-    print("Generating OOF C...")
+    logger.info("Generating OOF C...")
     oof_C, _ = oof_probs(builder_C, X_full, y_full, X_test[:1], sample_weights=None)
-    print("Generating OOF D...")
+    logger.info("Generating OOF D...")
     oof_D, _ = oof_probs(builder_D, X_full, y_full, X_test[:1], sample_weights=None)
-    print("Generating OOF E...")
+    logger.info("Generating OOF E...")
     oof_E, _ = oof_probs(builder_E, X_full, y_full, X_test[:1], sample_weights=None)
-    print("Generating OOF F (noisy)...")
+    logger.info("Generating OOF F (noisy)...")
     oof_F, _ = oof_probs_noisy(
         builder_F,
         X_full,
@@ -2319,7 +2344,7 @@ def main():
     )
 
     # Optimize blending weights
-    print("\n⚖️ Optimizing blending weights...")
+    logger.info("\n⚖️ Optimizing blending weights...")
     study_improved = optuna.create_study(
         direction="maximize",
         sampler=optuna.samplers.TPESampler(n_startup_trials=10, seed=RND),
@@ -2350,34 +2375,34 @@ def main():
     best_weights = np.array(best_trial.user_attrs["weights"])
     wA, wB, wC, wD, wE, wF = best_weights
 
-    print(
+    logger.info(
         f"\n🏆 Best blend weights: wA={wA:.3f}, wB={wB:.3f}, wC={wC:.3f}, wD={wD:.3f}, wE={wE:.3f}, wF={wF:.3f}"
     )
-    print(f"Best CV score: {study_improved.best_value:.6f}")
+    logger.info(f"Best CV score: {study_improved.best_value:.6f}")
 
     # Refit all models on full data
-    print("\n🔄 Refitting all models on full data...")
-    print("Refitting Stack A...")
+    logger.info("\n🔄 Refitting all models on full data...")
+    logger.info("Refitting Stack A...")
     mdl_A = builder_A()
     mdl_A.fit(X_full, y_full)
 
-    print("Refitting Stack B...")
+    logger.info("Refitting Stack B...")
     mdl_B = builder_B()
     mdl_B.fit(X_full, y_full)
 
-    print("Refitting Stack C...")
+    logger.info("Refitting Stack C...")
     mdl_C = builder_C()
     mdl_C.fit(X_full, y_full)
 
-    print("Refitting Stack D...")
+    logger.info("Refitting Stack D...")
     mdl_D = builder_D()
     mdl_D.fit(X_full, y_full)
 
-    print("Refitting Stack E...")
+    logger.info("Refitting Stack E...")
     mdl_E = builder_E()
     mdl_E.fit(X_full, y_full)
 
-    print("Refitting Stack F (noisy)...")
+    logger.info("Refitting Stack F (noisy)...")
     mdl_F = builder_F()
     y_full_noisy = add_label_noise(
         y_full, noise_rate=LABEL_NOISE_RATE, random_state=RND
@@ -2385,8 +2410,8 @@ def main():
     mdl_F.fit(X_full, y_full_noisy)
 
     # 🔮 PSEUDO-LABELING: Generate test predictions for pseudo-labeling
-    print("\n🔮 Applying Conservative Pseudo-Labeling...")
-    print("Generating test predictions for pseudo-labeling...")
+    logger.info("\n🔮 Applying Conservative Pseudo-Labeling...")
+    logger.info("Generating test predictions for pseudo-labeling...")
 
     test_proba_A = mdl_A.predict_proba(X_test)[:, 1]
     test_proba_B = mdl_B.predict_proba(X_test)[:, 1]
@@ -2418,31 +2443,31 @@ def main():
 
     # If pseudo-labels were added, retrain models with combined data
     if pseudo_stats["n_pseudo_added"] > 0:
-        print(
+        logger.info(
             f"\n🔄 Retraining models with {pseudo_stats['n_pseudo_added']} pseudo-labels..."
         )
 
-        print("Retraining Stack A with pseudo-labels...")
+        logger.info("Retraining Stack A with pseudo-labels...")
         mdl_A_final = builder_A()
         mdl_A_final.fit(X_combined, y_combined)
 
-        print("Retraining Stack B with pseudo-labels...")
+        logger.info("Retraining Stack B with pseudo-labels...")
         mdl_B_final = builder_B()
         mdl_B_final.fit(X_combined, y_combined)
 
-        print("Retraining Stack C with pseudo-labels...")
+        logger.info("Retraining Stack C with pseudo-labels...")
         mdl_C_final = builder_C()
         mdl_C_final.fit(X_combined, y_combined)
 
-        print("Retraining Stack D with pseudo-labels...")
+        logger.info("Retraining Stack D with pseudo-labels...")
         mdl_D_final = builder_D()
         mdl_D_final.fit(X_combined, y_combined)
 
-        print("Retraining Stack E with pseudo-labels...")
+        logger.info("Retraining Stack E with pseudo-labels...")
         mdl_E_final = builder_E()
         mdl_E_final.fit(X_combined, y_combined)
 
-        print("Retraining Stack F with pseudo-labels...")
+        logger.info("Retraining Stack F with pseudo-labels...")
         mdl_F_final = builder_F()
         y_combined_noisy = add_label_noise(
             y_combined, noise_rate=LABEL_NOISE_RATE, random_state=RND
@@ -2450,7 +2475,9 @@ def main():
         mdl_F_final.fit(X_combined, y_combined_noisy)
 
         # Use retrained models for final predictions
-        print("✅ Using retrained models with pseudo-labels for final predictions")
+        logger.info(
+            "✅ Using retrained models with pseudo-labels for final predictions"
+        )
         final_models = (
             mdl_A_final,
             mdl_B_final,
@@ -2460,11 +2487,11 @@ def main():
             mdl_F_final,
         )
     else:
-        print("⚠️ No pseudo-labels added, using original models")
+        logger.info("⚠️ No pseudo-labels added, using original models")
         final_models = (mdl_A, mdl_B, mdl_C, mdl_D, mdl_E, mdl_F)
 
     # Generate final predictions
-    print("\n🎯 Generating final predictions...")
+    logger.info("\n🎯 Generating final predictions...")
     proba_test_continuous = (
         wA * final_models[0].predict_proba(X_test)[:, 1]
         + wB * final_models[1].predict_proba(X_test)[:, 1]
@@ -2485,27 +2512,27 @@ def main():
     output_file = "six_stack_personality_predictions_with_external.csv"
     submission_df.to_csv(output_file, index=False)
 
-    print(f"\n✅ Predictions saved to '{output_file}'")
-    print(f"📊 Final submission shape: {submission_df.shape}")
-    print("🎉 Six-stack ensemble pipeline completed successfully!")
+    logger.info("\n✅ Predictions saved to '{output_file}'")
+    logger.info("📊 Final submission shape: {submission_df.shape}")
+    logger.info("🎉 Six-stack ensemble pipeline completed successfully!")
 
     # Print summary
-    print("\n📋 Summary:")
-    print(f"   - Combined training data: {len(df_tr):,} samples")
-    print("   - External data merged as features using TOP-4 solution approach")
-    print("   - 6 specialized stacks trained")
-    print(f"   - Best ensemble CV score: {study_improved.best_value:.6f}")
+    logger.info("\n📋 Summary:")
+    logger.info("   - Combined training data: {len(df_tr):,} samples")
+    logger.info("   - External data merged as features using TOP-4 solution approach")
+    logger.info("   - 6 specialized stacks trained")
+    logger.info("   - Best ensemble CV score: {study_improved.best_value:.6f}")
     if pseudo_stats["n_pseudo_added"] > 0:
-        print(
+        logger.info(
             f"   - Pseudo-labeling: Added {pseudo_stats['n_pseudo_added']:,} high-confidence samples"
         )
-        print(f"   - Final training size: {pseudo_stats['final_size']:,} samples")
-        print(
+        logger.info(f"   - Final training size: {pseudo_stats['final_size']:,} samples")
+        logger.info(
             f"   - Mean pseudo-label confidence: {pseudo_stats['mean_confidence']:.4f}"
         )
     else:
-        print("   - Pseudo-labeling: No high-confidence samples found")
-    print("   - CPU-only configuration used")
+        logger.info("   - Pseudo-labeling: No high-confidence samples found")
+    logger.info("   - CPU-only configuration used")
 
 
 if __name__ == "__main__":
