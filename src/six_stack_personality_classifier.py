@@ -2321,7 +2321,7 @@ def main():
     output_file = "six_stack_personality_predictions_with_external.csv"
     submission_df.to_csv(output_file, index=False)
 
-    logger.info("\n✅ Predictions saved to '{output_file}'")
+    logger.info(f"\n✅ Predictions saved to '{output_file}'")
     logger.info("📊 Final submission shape: {submission_df.shape}")
     logger.info("🎉 Six-stack ensemble pipeline completed successfully!")
 
