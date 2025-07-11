@@ -69,7 +69,7 @@ class TestingMode(Enum):
 class TestingConfig(Enum):
     """Testing configuration parameters."""
 
-    TESTING_MODE = TestingMode.ENABLED  # Enable for development
+    TESTING_MODE = TestingMode.DISABLED  # Enable for development
     TESTING_SAMPLE_SIZE = 1000  # Number of samples to use in testing mode
     FULL_SAMPLE_SIZE = None  # Use full dataset when None
 
@@ -84,8 +84,8 @@ class ModelConfig(Enum):
 
     RND = 42
     N_SPLITS = 5
-    N_TRIALS_STACK = 3  # Reduced for testing (original: 15)
-    N_TRIALS_BLEND = 10  # Reduced for testing (original: 200)
+    N_TRIALS_STACK = 15  # Reduced for testing (original: 15)
+    N_TRIALS_BLEND = 200  # Reduced for testing (original: 200)
 
     @property
     def value(self):

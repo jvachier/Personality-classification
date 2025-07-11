@@ -85,8 +85,8 @@ def build_stack(trial, seed: int, wide_hp: bool) -> Pipeline:
     )
 
     skf_inner = StratifiedKFold(
-        n_splits=3, shuffle=True, random_state=seed
-    )  # Reduced folds
+        n_splits=N_SPLITS, shuffle=True, random_state=seed
+    )
 
     # Use only 2 models instead of 3 for stability (removed CatBoost)
     stk = StackingClassifier(
@@ -155,7 +155,7 @@ def build_stack_c(trial, seed: int) -> Pipeline:
         n_jobs=1,
     )
 
-    skf_inner = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
+    skf_inner = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
 
     # Use XGBoost + LightGBM instead of XGBoost + CatBoost for stability
     stk = StackingClassifier(
@@ -214,7 +214,7 @@ def build_sklearn_stack(trial, seed: int, X_full: pd.DataFrame) -> Pipeline:
         n_jobs=1,
     )
 
-    skf_inner = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
+    skf_inner = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=seed)
 
     # Use only 2 models instead of 3 for stability (removed HistGradientBoosting)
     stk = StackingClassifier(
@@ -368,8 +368,8 @@ def build_noisy_stack(trial, seed: int, noise_rate: float = 0.02) -> Pipeline:
     )
 
     skf_inner = StratifiedKFold(
-        n_splits=3, shuffle=True, random_state=seed
-    )  # Reduced folds
+        n_splits=N_SPLITS, shuffle=True, random_state=seed
+    )
 
     # Use only 2 base models instead of 3 for stability
     stk = StackingClassifier(
