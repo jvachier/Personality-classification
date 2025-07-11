@@ -54,6 +54,31 @@ class AugmentationMethod(Enum):
     SMOTENC = "smotenc"
 
 
+class TestingMode(Enum):
+    """Testing mode configuration for development and debugging."""
+
+    DISABLED = False
+    ENABLED = True
+
+    @property
+    def value(self):
+        """Return the actual boolean value."""
+        return self._value_
+
+
+class TestingConfig(Enum):
+    """Testing configuration parameters."""
+
+    TESTING_MODE = TestingMode.ENABLED  # Enable for development
+    TESTING_SAMPLE_SIZE = 1000  # Number of samples to use in testing mode
+    FULL_SAMPLE_SIZE = None  # Use full dataset when None
+
+    @property
+    def value(self):
+        """Return the actual value."""
+        return self._value_
+
+
 class ModelConfig(Enum):
     """Model configuration parameters."""
 
@@ -95,15 +120,16 @@ AUGMENTATION_RATIO = AugmentationConfig.AUGMENTATION_RATIO.value
 QUALITY_THRESHOLD = AugmentationConfig.QUALITY_THRESHOLD.value
 LABEL_NOISE_RATE = AugmentationConfig.LABEL_NOISE_RATE.value
 
+# Testing configuration
+TESTING_MODE = TestingConfig.TESTING_MODE.value.value
+TESTING_SAMPLE_SIZE = TestingConfig.TESTING_SAMPLE_SIZE.value
+FULL_SAMPLE_SIZE = TestingConfig.FULL_SAMPLE_SIZE.value
+
 # Data augmentation library availability checks
 try:
     import importlib.util
 
     SDV_AVAILABLE = importlib.util.find_spec("sdv") is not None
-    if SDV_AVAILABLE:
-        # Only import if actually available
-        from sdv.metadata import SingleTableMetadata
-        from sdv.single_table import CTGANSynthesizer, GaussianCopulaSynthesizer
 except ImportError:
     SDV_AVAILABLE = False
 
@@ -111,9 +137,6 @@ try:
     import importlib.util
 
     IMBLEARN_AVAILABLE = importlib.util.find_spec("imblearn") is not None
-    if IMBLEARN_AVAILABLE:
-        # Only import if actually available
-        from imblearn.over_sampling import SMOTENC
 except ImportError:
     IMBLEARN_AVAILABLE = False
 

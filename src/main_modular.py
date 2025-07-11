@@ -16,6 +16,8 @@ from modules.config import (
     N_TRIALS_BLEND,
     N_TRIALS_STACK,
     RND,
+    TESTING_MODE,
+    TESTING_SAMPLE_SIZE,
     setup_logging,
 )
 from modules.data_augmentation import apply_data_augmentation
@@ -396,7 +398,9 @@ def refit_and_predict(
 def main():
     """Main execution function for the Six-Stack Personality Classification Pipeline."""
     # Load and prepare data
-    data = load_and_prepare_data(testing_mode=True, test_size=1000)
+    data = load_and_prepare_data(
+        testing_mode=TESTING_MODE, test_size=TESTING_SAMPLE_SIZE
+    )
 
     # Train all stacks
     studies = train_all_stacks(data)
