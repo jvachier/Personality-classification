@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
-"""
-Six-Stack Personality Classification Pipeline (Modular Version)
+"""Six-Stack Personality Classification Pipeline (Modular Version).
+
 Complete implementation with Optuna optimization matching the monolithic script exactly.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import optuna
 import pandas as pd
 
 # Import all required modules
 from modules.config import (
+    ENABLE_PSEUDO_LABELLING,
     LABEL_NOISE_RATE,
     N_TRIALS_BLEND,
     N_TRIALS_STACK,
+    PSEUDO_CONFIDENCE_THRESHOLD,
+    PSEUDO_MAX_RATIO,
     RND,
     TESTING_MODE,
     TESTING_SAMPLE_SIZE,
@@ -40,7 +44,7 @@ from modules.optimization import (
     make_stack_objective,
     save_best_trial_params,
 )
-from modules.preprocessing import prep
+from modules.preprocessing import add_pseudo_labeling_conservative, prep
 from modules.utils import get_logger
 
 
@@ -63,7 +67,7 @@ class TrainingData(NamedTuple):
     X_full: pd.DataFrame
     X_test: pd.DataFrame
     y_full: pd.Series
-    le: object
+    le: Any  # LabelEncoder from sklearn
     submission: pd.DataFrame
 
 
@@ -71,7 +75,7 @@ class StackResults(NamedTuple):
     """Container for stack training results."""
 
     studies: dict[str, optuna.Study]
-    builders: dict[str, callable]
+    builders: dict[str, Callable[[], Any]]
     oof_predictions: dict[str, pd.Series]
 
 
@@ -87,7 +91,7 @@ def load_and_prepare_data(
     logger.info("🎯 Six-Stack Personality Classification Pipeline (Modular)")
     logger.info("=" * 60)
 
-    # Load data using TOP-4 solution merge strategy
+    # Load data using advanced merge strategy
     df_tr, df_te, submission = load_data_with_external_merge()
 
     # FOR TESTING: Limit to specified samples for faster execution
@@ -98,7 +102,7 @@ def load_and_prepare_data(
         df_tr = df_tr.sample(n=test_size, random_state=RND).reset_index(drop=True)
         logger.info(f"   📊 Using {len(df_tr)} samples for testing")
 
-    # Preprocess data with TOP-4 solution approach (do this first)
+    # Preprocess data with advanced competitive approach (do this first)
     X_full, X_test, y_full, le = prep(df_tr, df_te)
 
     # Apply new data augmentation after preprocessing
@@ -243,7 +247,7 @@ def train_all_stacks(data: TrainingData) -> dict[str, optuna.Study]:
 
 def create_model_builders(
     studies: dict[str, optuna.Study], data: TrainingData
-) -> dict[str, callable]:
+) -> dict[str, Callable[[], Any]]:
     """Create model builder functions for each stack."""
     logger.info("\n📊 Creating model builders for ensemble...")
 
@@ -266,7 +270,7 @@ def create_model_builders(
 
 
 def generate_oof_predictions(
-    builders: dict[str, callable], data: TrainingData
+    builders: dict[str, Callable[[], Any]], data: TrainingData
 ) -> dict[str, pd.Series]:
     """Generate out-of-fold predictions for all stacks."""
     logger.info("\n🔮 Generating out-of-fold predictions...")
@@ -349,7 +353,9 @@ def optimize_ensemble_blending(
 
 
 def refit_and_predict(
-    builders: dict[str, callable], best_weights: dict[str, float], data: TrainingData
+    builders: dict[str, Callable[[], Any]],
+    best_weights: dict[str, float],
+    data: TrainingData,
 ) -> tuple[pd.DataFrame, str]:
     """Refit models on full data and generate final predictions."""
     logger.info("\n🔄 Refitting models on full data...")
@@ -394,6 +400,87 @@ def refit_and_predict(
     return submission_df, output_file
 
 
+def apply_pseudo_labelling(
+    builders: dict[str, Callable[[], Any]],
+    best_weights: dict[str, float],
+    data: TrainingData,
+) -> TrainingData:
+    """Apply pseudo labelling using ensemble predictions."""
+    if not ENABLE_PSEUDO_LABELLING:
+        logger.info("🔮 Pseudo labelling disabled")
+        return data
+
+    logger.info(
+        f"\n🔮 Applying pseudo labelling (threshold={PSEUDO_CONFIDENCE_THRESHOLD}, max_ratio={PSEUDO_MAX_RATIO})..."
+    )
+
+    # First train models to get test predictions for pseudo labelling
+    logger.info("Training models for pseudo labelling...")
+    models = {}
+
+    # Train stacks A-E normally
+    for stack_name in ["A", "B", "C", "D", "E"]:
+        logger.info(f"Training Stack {stack_name} for pseudo labelling...")
+        models[stack_name] = builders[stack_name]()
+        models[stack_name].fit(data.X_full, data.y_full)
+
+    # Train Stack F with noisy labels
+    logger.info("Training Stack F (with noisy labels) for pseudo labelling...")
+    y_full_noisy = add_label_noise(
+        data.y_full, noise_rate=LABEL_NOISE_RATE, random_state=RND
+    )
+    models["F"] = builders["F"]()
+    models["F"].fit(data.X_full, y_full_noisy)
+
+    # Generate test predictions for all stacks
+    logger.info("Generating test predictions for pseudo labelling...")
+    test_probabilities = {}
+    for stack_name in ["A", "B", "C", "D", "E", "F"]:
+        test_probabilities[stack_name] = models[stack_name].predict_proba(data.X_test)[
+            :, 1
+        ]
+
+    # Apply pseudo labelling
+    X_combined, y_combined, pseudo_stats = add_pseudo_labeling_conservative(
+        data.X_full,
+        data.y_full,
+        data.X_test,
+        test_probabilities["A"],
+        test_probabilities["B"],
+        test_probabilities["C"],
+        test_probabilities["D"],
+        test_probabilities["E"],
+        test_probabilities["F"],
+        best_weights["A"],
+        best_weights["B"],
+        best_weights["C"],
+        best_weights["D"],
+        best_weights["E"],
+        best_weights["F"],
+        confidence_threshold=PSEUDO_CONFIDENCE_THRESHOLD,
+        max_pseudo_ratio=PSEUDO_MAX_RATIO,
+    )
+
+    # Create new TrainingData with pseudo labels added
+    if pseudo_stats["n_pseudo_added"] > 0:
+        logger.info(
+            f"✅ Pseudo labelling added {pseudo_stats['n_pseudo_added']} samples"
+        )
+
+        # Create new TrainingData object with enhanced training set
+        enhanced_data = TrainingData(
+            X_full=X_combined,
+            y_full=y_combined,
+            X_test=data.X_test,
+            le=data.le,
+            submission=data.submission,
+        )
+        return enhanced_data
+    else:
+        logger.info("⚠️ No pseudo labels added, using original data")
+        return data
+
+
 def main():
     """Main execution function for the Six-Stack Personality Classification Pipeline."""
     # Load and prepare data
@@ -415,8 +502,13 @@ def main():
         oof_predictions, data.y_full
     )
 
+    # Apply pseudo labelling using ensemble predictions
+    enhanced_data = apply_pseudo_labelling(builders, best_weights, data)
+
     # Refit models and generate final predictions
-    submission_df, output_file = refit_and_predict(builders, best_weights, data)
+    submission_df, output_file = refit_and_predict(
+        builders, best_weights, enhanced_data
+    )
 
     # Print final results
     logger.info(f"\n✅ Predictions saved to '{output_file}'")
@@ -425,11 +517,14 @@ def main():
 
     # Print summary
     logger.info("\n📋 Summary:")
-    logger.info(f"   - Training samples: {len(data.X_full):,}")
-    logger.info(f"   - Test samples: {len(data.X_test):,}")
-    logger.info(f"   - Features: {data.X_full.shape[1]}")
+    logger.info(f"   - Training samples: {len(enhanced_data.X_full):,}")
+    logger.info(f"   - Test samples: {len(enhanced_data.X_test):,}")
+    logger.info(f"   - Features: {enhanced_data.X_full.shape[1]}")
     logger.info("   - Stacks trained: 6 (A-F)")
     logger.info(f"   - Best ensemble CV score: {best_cv_score:.6f}")
+    logger.info(
+        f"   - Pseudo labelling: {'Enabled' if ENABLE_PSEUDO_LABELLING else 'Disabled'}"
+    )
     logger.info("   - Modular architecture")
 
 

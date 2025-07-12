@@ -21,7 +21,6 @@ from .model_builders import (
 )
 from .utils import get_logger
 
-
 logger = get_logger(__name__)
 
 
@@ -105,9 +104,9 @@ def make_stack_objective(
 
             return np.mean(scores)
 
-        except Exception:
+        except Exception as e:
             # If anything goes wrong, prune the trial
-            raise optuna.TrialPruned()
+            raise optuna.TrialPruned() from e
 
     return _obj
 
@@ -147,9 +146,9 @@ def make_stack_c_objective(
 
             return np.mean(scores)
 
-        except Exception:
+        except Exception as e:
             # If anything goes wrong, prune the trial
-            raise optuna.TrialPruned()
+            raise optuna.TrialPruned() from e
 
     return _obj
 
@@ -189,9 +188,9 @@ def make_sklearn_stack_objective(
 
             return np.mean(scores)
 
-        except Exception:
+        except Exception as e:
             # If anything goes wrong, prune the trial
-            raise optuna.TrialPruned()
+            raise optuna.TrialPruned() from e
 
     return _obj
 
@@ -231,9 +230,9 @@ def make_neural_stack_objective(
 
             return np.mean(scores)
 
-        except Exception:
+        except Exception as e:
             # If anything goes wrong, prune the trial
-            raise optuna.TrialPruned()
+            raise optuna.TrialPruned() from e
 
     return _obj
 
@@ -278,8 +277,8 @@ def make_noisy_stack_objective(
 
             return np.mean(scores)
 
-        except Exception:
+        except Exception as e:
             # If anything goes wrong, prune the trial
-            raise optuna.TrialPruned()
+            raise optuna.TrialPruned() from e
 
     return _obj

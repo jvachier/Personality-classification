@@ -1,13 +1,10 @@
-"""
-Configuration constants and global parameters for the personality classification pipeline.
-"""
+"""Configuration constants and global parameters for the personality classification pipeline."""
 
 import logging
 import sys
 import warnings
 from enum import Enum
 from pathlib import Path
-
 
 # Base paths
 BASE_DIR = Path(__file__).parent.parent.parent  # Points to project root
@@ -124,6 +121,15 @@ class AugmentationConfig(Enum):
     BASE_AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
     MAX_AUGMENTATION_RATIO = 0.20
 
+    # Adaptive scaling multipliers for user control
+    ADAPTIVE_SCALING_ENABLED = True
+    SIMPLE_AUGMENTATION_MULTIPLIER = 1.0  # Base multiplier for simple augmentation
+    SDV_AUGMENTATION_MULTIPLIER = 1.2  # Slightly higher for SDV methods
+    SMOTE_AUGMENTATION_MULTIPLIER = 0.8  # Lower for SMOTE-based methods
+    ENSEMBLE_AUGMENTATION_MULTIPLIER = 1.5  # Higher for ensemble methods
+    ADAPTIVE_QUALITY_MULTIPLIER = 1.3  # Quality-based scaling
+    CLASS_BALANCE_MULTIPLIER = 1.1  # Class balancing multiplier
+
     # Quality and performance controls
     ENABLE_QUALITY_FILTERING = True
     QUALITY_THRESHOLD = 0.75  # For quality filtering
@@ -138,6 +144,11 @@ class AugmentationConfig(Enum):
     # Class balancing
     ENABLE_CLASS_BALANCING = True
     TARGET_CLASS_BALANCE_RATIO = 0.7  # Aim for 70% balance minimum
+
+    # Pseudo labelling configuration
+    ENABLE_PSEUDO_LABELLING = True
+    PSEUDO_CONFIDENCE_THRESHOLD = 0.95  # Minimum confidence for pseudo-labels
+    PSEUDO_MAX_RATIO = 0.3  # Maximum ratio of pseudo-labels to original data
 
     # Legacy support
     AUGMENTATION_RATIO = 0.05  # Backward compatibility
@@ -176,6 +187,22 @@ MAX_AUGMENTATION_TIME_SECONDS = AugmentationConfig.MAX_AUGMENTATION_TIME_SECONDS
 ENABLE_CACHING = AugmentationConfig.ENABLE_CACHING.value
 CACHE_AUGMENTED_DATA = AugmentationConfig.CACHE_AUGMENTED_DATA.value
 LABEL_NOISE_RATE = AugmentationConfig.LABEL_NOISE_RATE.value
+
+# Adaptive scaling multipliers
+ADAPTIVE_SCALING_ENABLED = AugmentationConfig.ADAPTIVE_SCALING_ENABLED.value
+SIMPLE_AUGMENTATION_MULTIPLIER = AugmentationConfig.SIMPLE_AUGMENTATION_MULTIPLIER.value
+SDV_AUGMENTATION_MULTIPLIER = AugmentationConfig.SDV_AUGMENTATION_MULTIPLIER.value
+SMOTE_AUGMENTATION_MULTIPLIER = AugmentationConfig.SMOTE_AUGMENTATION_MULTIPLIER.value
+ENSEMBLE_AUGMENTATION_MULTIPLIER = (
+    AugmentationConfig.ENSEMBLE_AUGMENTATION_MULTIPLIER.value
+)
+ADAPTIVE_QUALITY_MULTIPLIER = AugmentationConfig.ADAPTIVE_QUALITY_MULTIPLIER.value
+CLASS_BALANCE_MULTIPLIER = AugmentationConfig.CLASS_BALANCE_MULTIPLIER.value
+
+# Pseudo labelling configuration
+ENABLE_PSEUDO_LABELLING = AugmentationConfig.ENABLE_PSEUDO_LABELLING.value
+PSEUDO_CONFIDENCE_THRESHOLD = AugmentationConfig.PSEUDO_CONFIDENCE_THRESHOLD.value
+PSEUDO_MAX_RATIO = AugmentationConfig.PSEUDO_MAX_RATIO.value
 
 # Testing configuration
 TESTING_MODE = TestingConfig.TESTING_MODE.value.value

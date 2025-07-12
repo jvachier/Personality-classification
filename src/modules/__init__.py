@@ -1,5 +1,4 @@
-"""
-Personality Classification Modules
+"""Personality Classification Modules.
 
 This package contains modular components for the six-stack personality
 classification pipeline, refactored from the original monolithic script.

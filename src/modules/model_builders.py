@@ -25,7 +25,6 @@ from sklearn.svm import SVC
 from .config import N_JOBS, N_SPLITS, THREAD_COUNT
 from .utils import get_logger
 
-
 logger = get_logger(__name__)
 
 
