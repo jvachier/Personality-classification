@@ -37,7 +37,6 @@ from sklearn.preprocessing import (
 )
 from sklearn.svm import SVC
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

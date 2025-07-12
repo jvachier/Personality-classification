@@ -4,8 +4,9 @@ Six-Stack Personality Classification Pipeline (Modular Version)
 Complete implementation with Optuna optimization matching the monolithic script exactly.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import optuna
 import pandas as pd
@@ -66,7 +67,7 @@ class TrainingData(NamedTuple):
     X_full: pd.DataFrame
     X_test: pd.DataFrame
     y_full: pd.Series
-    le: object
+    le: Any  # LabelEncoder from sklearn
     submission: pd.DataFrame
 
 
@@ -74,7 +75,7 @@ class StackResults(NamedTuple):
     """Container for stack training results."""
 
     studies: dict[str, optuna.Study]
-    builders: dict[str, callable]
+    builders: dict[str, Callable[[], object]]
     oof_predictions: dict[str, pd.Series]
 
 
@@ -246,7 +247,7 @@ def train_all_stacks(data: TrainingData) -> dict[str, optuna.Study]:
 
 def create_model_builders(
     studies: dict[str, optuna.Study], data: TrainingData
-) -> dict[str, callable]:
+) -> dict[str, Callable[[], object]]:
     """Create model builder functions for each stack."""
     logger.info("\n📊 Creating model builders for ensemble...")
 
@@ -269,7 +270,7 @@ def create_model_builders(
 
 
 def generate_oof_predictions(
-    builders: dict[str, callable], data: TrainingData
+    builders: dict[str, Callable[[], object]], data: TrainingData
 ) -> dict[str, pd.Series]:
     """Generate out-of-fold predictions for all stacks."""
     logger.info("\n🔮 Generating out-of-fold predictions...")
@@ -352,7 +353,9 @@ def optimize_ensemble_blending(
 
 
 def refit_and_predict(
-    builders: dict[str, callable], best_weights: dict[str, float], data: TrainingData
+    builders: dict[str, Callable[[], object]],
+    best_weights: dict[str, float],
+    data: TrainingData,
 ) -> tuple[pd.DataFrame, str]:
     """Refit models on full data and generate final predictions."""
     logger.info("\n🔄 Refitting models on full data...")
@@ -398,7 +401,9 @@ def refit_and_predict(
 
 
 def apply_pseudo_labelling(
-    builders: dict[str, callable], best_weights: dict[str, float], data: TrainingData
+    builders: dict[str, Callable[[], object]],
+    best_weights: dict[str, float],
+    data: TrainingData,
 ) -> TrainingData:
     """Apply pseudo labelling using ensemble predictions."""
     if not ENABLE_PSEUDO_LABELLING:

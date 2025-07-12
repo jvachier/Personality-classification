@@ -1,0 +1,117 @@
+# Pre-commit configuration for personality classification project
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  # General formatting and linting
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=10000"] # 10MB limit
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: mixed-line-ending
+      - id: fix-byte-order-marker
+
+  # Python-specific hooks
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=88]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=88]
+
+  # Ruff for fast Python linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.10
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix, --ignore=PLR0912, PLR0915, B904]
+      - id: ruff-format
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.9
+    hooks:
+      - id: bandit
+        args: [-r, -x, tests/, -ll]
+        exclude: ^tests/
+
+  # Documentation checks
+  - repo: https://github.com/pycqa/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: [--convention=google, --add-ignore=D200, D212, D202, D205, D415]
+        exclude: ^(tests/|scripts/|examples/)
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests, types-PyYAML]
+        args: [--ignore-missing-imports, --no-strict-optional]
+        exclude: ^(tests/|scripts/|examples/)
+
+  # Jupyter notebook cleaning
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.5
+    hooks:
+      - id: nbqa-black
+      - id: nbqa-isort
+        args: [--profile=black]
+      - id: nbqa-ruff
+        args: [--fix]
+
+  # Remove notebook outputs
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [yaml, markdown, json]
+        exclude: ^(.*\.lock|uv\.lock)$
+
+  # Check for merge conflicts in generated files
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: remove-crlf
+      - id: remove-tabs
+        exclude: ^(Makefile|.*\.tsv)$
+
+# Configuration for specific tools
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ""
+  autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
+  autoupdate_schedule: weekly
+  skip: [mypy, pydocstyle] # Skip intensive checks on CI
+  submodules: false
