@@ -9,6 +9,7 @@ The Six-Stack Personality Classification Pipeline provides extensive configurati
 ### Centralized Configuration
 
 All configuration is managed through a single module to ensure:
+
 - **Consistency** across all components
 - **Easy maintenance** and updates
 - **Environment-specific** settings
@@ -26,6 +27,7 @@ All configuration is managed through a single module to ensure:
 ## Core Parameters
 
 ### Reproducibility Settings
+
 ```python
 # Global random seed for reproducibility
 RND: int = 42
@@ -37,6 +39,7 @@ RND: int = 42
 ```
 
 ### Cross-Validation Configuration
+
 ```python
 # Number of stratified folds for cross-validation
 N_SPLITS: int = 5
@@ -48,6 +51,7 @@ N_SPLITS: int = 5
 ```
 
 ### Hyperparameter Optimization
+
 ```python
 # Optuna trials per individual stack
 N_TRIALS_STACK: int = 15
@@ -71,10 +75,11 @@ N_TRIALS_BLEND: int = 200
 ## Threading Configuration
 
 ### Thread Management Enum
+
 ```python
 class ThreadConfig(Enum):
     """Centralized threading configuration for all models."""
-    
+
     N_JOBS: int = 4          # sklearn parallel jobs
     THREAD_COUNT: int = 4    # XGBoost/LightGBM threads
 ```
@@ -82,6 +87,7 @@ class ThreadConfig(Enum):
 ### Optimization Guidelines
 
 #### System-Specific Tuning
+
 ```python
 # For development machines (4-8 cores)
 N_JOBS = 2
@@ -102,15 +108,16 @@ optimal_threads = min(multiprocessing.cpu_count(), 8)
 
 #### Performance vs Resource Trade-offs
 
-| Setting | Training Speed | Memory Usage | CPU Usage |
-|---------|---------------|--------------|-----------|
-| 1 thread | Slowest | Lowest | Low |
-| 2-4 threads | Moderate | Moderate | Medium |
-| 8+ threads | Fastest | Highest | High |
+| Setting     | Training Speed | Memory Usage | CPU Usage |
+| ----------- | -------------- | ------------ | --------- |
+| 1 thread    | Slowest        | Lowest       | Low       |
+| 2-4 threads | Moderate       | Moderate     | Medium    |
+| 8+ threads  | Fastest        | Highest      | High      |
 
 ## Data Augmentation Configuration
 
 ### Main Augmentation Settings
+
 ```python
 # Enable/disable data augmentation globally
 ENABLE_DATA_AUGMENTATION: bool = True
@@ -126,35 +133,41 @@ AUGMENTATION_RATIO: float = 0.05  # 5% additional synthetic data
 ### Method Selection Guide
 
 #### "auto" (Recommended)
+
 - **Best for**: Most use cases
 - **Behavior**: Automatically selects optimal method based on data characteristics
 - **Fallback**: Always provides a working solution
 
 #### "sdv_copula"
+
 - **Best for**: Large datasets with complex distributions
 - **Pros**: High-quality synthetic data, preserves correlations
 - **Cons**: Computationally intensive, requires more memory
 - **Use when**: Dataset >5K samples, complex feature interactions
 
 #### "smote"
+
 - **Best for**: Small to medium datasets with class imbalance
 - **Pros**: Fast, well-tested, handles imbalance well
 - **Cons**: May create unrealistic edge cases
 - **Use when**: Dataset <5K samples, clear class imbalance
 
 #### "adasyn"
+
 - **Best for**: Severely imbalanced datasets
 - **Pros**: Adaptive to difficult examples, improved boundary learning
 - **Cons**: Sensitive to noise, may overfit to outliers
 - **Use when**: Extreme imbalance (>90% majority class)
 
 #### "basic"
+
 - **Best for**: High-categorical datasets or fallback
 - **Pros**: Fast, simple, always works
 - **Cons**: Lower quality, limited sophistication
 - **Use when**: Many categorical features, quick prototyping
 
 ### Quality Control Parameters
+
 ```python
 # Quality filtering threshold (0-1, higher = stricter)
 QUALITY_THRESHOLD: float = 0.7
@@ -171,6 +184,7 @@ BASIC_NOISE_FACTOR: float = 0.1      # Noise factor for basic method
 ### Advanced Augmentation Tuning
 
 #### Quality Threshold Tuning
+
 ```python
 # Conservative (high quality, fewer samples)
 QUALITY_THRESHOLD = 0.8
@@ -186,6 +200,7 @@ QUALITY_THRESHOLD = 0.5
 ```
 
 #### Ratio Optimization Strategy
+
 ```python
 # Start conservative and increase
 AUGMENTATION_RATIOS = [0.02, 0.05, 0.10, 0.15, 0.20]
@@ -201,6 +216,7 @@ for ratio in AUGMENTATION_RATIOS:
 ## Model Training Configuration
 
 ### Label Noise for Robustness
+
 ```python
 # Label noise rate for Stack F (noise-robust training)
 LABEL_NOISE_RATE: float = 0.02  # 2% of labels randomly flipped
@@ -212,6 +228,7 @@ LABEL_NOISE_RATE: float = 0.02  # 2% of labels randomly flipped
 ```
 
 ### Timeout and Resource Limits
+
 ```python
 # Training timeout per stack (seconds)
 STACK_TIMEOUT: int = 1800  # 30 minutes
@@ -226,6 +243,7 @@ EARLY_STOPPING_PATIENCE: int = 10
 ## Development and Testing
 
 ### Testing Mode Configuration
+
 ```python
 # Enable reduced dataset for faster development
 TESTING_MODE: bool = True
@@ -242,6 +260,7 @@ TESTING_SDV_EPOCHS: int = 5
 ```
 
 ### Development Presets
+
 ```python
 # Quick development preset
 def configure_for_development():
@@ -263,6 +282,7 @@ def configure_for_production():
 ## Logging Configuration
 
 ### Log Level Settings
+
 ```python
 # Logging level
 LOG_LEVEL: str = "INFO"
@@ -275,6 +295,7 @@ LOG_LEVEL: str = "INFO"
 ```
 
 ### Advanced Logging Configuration
+
 ```python
 # Log file configuration
 LOG_FILE: str = "personality_classifier.log"
@@ -296,6 +317,7 @@ PROGRESS_BAR_STYLE: str = "tqdm"  # "tqdm" or "simple"
 ### Configuration Profiles
 
 #### Local Development
+
 ```python
 # config_development.py
 TESTING_MODE = True
@@ -308,6 +330,7 @@ ThreadConfig.THREAD_COUNT = 2
 ```
 
 #### CI/CD Pipeline
+
 ```python
 # config_ci.py
 TESTING_MODE = True
@@ -320,6 +343,7 @@ ThreadConfig.THREAD_COUNT = 1
 ```
 
 #### Production Server
+
 ```python
 # config_production.py
 TESTING_MODE = False
@@ -333,6 +357,7 @@ ThreadConfig.THREAD_COUNT = 8
 ```
 
 ### Environment Variable Integration
+
 ```python
 import os
 
@@ -350,6 +375,7 @@ if os.getenv('RUNNING_IN_DOCKER'):
 ## Performance Tuning Guidelines
 
 ### Memory Optimization
+
 ```python
 # For systems with <8GB RAM
 TESTING_MODE = True
@@ -369,6 +395,7 @@ N_TRIALS_STACK = 50
 ```
 
 ### Speed Optimization
+
 ```python
 # Fastest configuration (for quick iteration)
 TESTING_MODE = True
@@ -389,6 +416,7 @@ AUGMENTATION_METHOD = "sdv_copula"
 ```
 
 ### GPU Configuration (Future)
+
 ```python
 # GPU settings (when available)
 USE_GPU: bool = False
@@ -403,6 +431,7 @@ GPU_N_ESTIMATORS_FACTOR: float = 2.0  # Increase for GPU
 ## Validation and Error Handling
 
 ### Configuration Validation
+
 ```python
 def validate_configuration():
     """Validate configuration parameters."""
@@ -410,15 +439,16 @@ def validate_configuration():
     assert N_SPLITS >= 2, "Need at least 2 CV folds"
     assert 0 <= LABEL_NOISE_RATE <= 0.2, "Label noise rate too high"
     assert ThreadConfig.N_JOBS >= 1, "Need at least 1 job"
-    
+
     if TESTING_MODE and N_TRIALS_STACK > 20:
         logger.warning("High trial count in testing mode may be slow")
-    
+
     if not ENABLE_DATA_AUGMENTATION and AUGMENTATION_RATIO > 0:
         logger.warning("Augmentation ratio set but augmentation disabled")
 ```
 
 ### Configuration Debugging
+
 ```python
 def log_configuration():
     """Log current configuration for debugging."""
@@ -433,26 +463,31 @@ def log_configuration():
 ## Configuration Best Practices
 
 ### 1. Start Conservative
+
 - Begin with default settings
 - Use testing mode for development
 - Gradually increase complexity
 
 ### 2. Monitor Resources
+
 - Watch memory usage during training
 - Monitor CPU utilization
 - Adjust threading based on available resources
 
 ### 3. Validate Changes
+
 - Test configuration changes on small datasets first
 - Compare cross-validation scores
 - Ensure reproducibility with fixed seeds
 
 ### 4. Document Customizations
+
 - Comment configuration changes
 - Track performance impacts
 - Maintain environment-specific configs
 
 ### 5. Use Version Control
+
 - Track configuration changes
 - Tag configurations with results
 - Maintain separate configs for different environments
@@ -460,6 +495,7 @@ def log_configuration():
 ## Troubleshooting Common Issues
 
 ### Memory Issues
+
 ```python
 # Reduce memory usage
 TESTING_MODE = True
@@ -469,6 +505,7 @@ TESTING_SAMPLE_SIZE = 500
 ```
 
 ### Slow Training
+
 ```python
 # Speed up training
 N_TRIALS_STACK = 5
@@ -478,6 +515,7 @@ SHOW_PROGRESS_BARS = False
 ```
 
 ### Poor Performance
+
 ```python
 # Increase optimization
 N_TRIALS_STACK = 100
@@ -487,6 +525,7 @@ AUGMENTATION_RATIO = 0.08
 ```
 
 ### Reproducibility Issues
+
 ```python
 # Ensure reproducibility
 # Set fixed seed
@@ -502,4 +541,4 @@ ENABLE_DATA_AUGMENTATION = False
 
 ---
 
-*This configuration guide covers all current options. For the latest parameters and features, check the source code in `src/modules/config.py`.*
+_This configuration guide covers all current options. For the latest parameters and features, check the source code in `src/modules/config.py`._

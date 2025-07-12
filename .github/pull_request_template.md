@@ -1,4 +1,5 @@
 ## **Describe your changes**
+
 Provide a clear and concise description of the changes made in this pull request. Include any relevant context or background information.
 
 - What is the purpose of this pull request?
@@ -8,6 +9,7 @@ Provide a clear and concise description of the changes made in this pull request
 ## **Issue ticket number and link**
 
 ## **Type of Change**
+
 Check the type of change your pull request introduces:
 
 - [ ] Bug fix (non-breaking change that fixes an issue)
@@ -17,6 +19,7 @@ Check the type of change your pull request introduces:
 - [ ] Refactoring (code improvements without changing functionality)
 
 ## **Checklist before requesting a review**
+
 Before submitting your pull request, ensure the following:
 
 - [ ] I have performed a self-review of my code.

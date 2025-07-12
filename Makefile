@@ -2,7 +2,7 @@
 # Author: AI Assistant
 # Date: 2025-07-11
 
-.PHONY: help install install-dev format lint check test clean run-pipeline run-quick setup-env
+.PHONY: help install install-dev format lint check test clean run-pipeline run-quick setup-env pre-commit-install pre-commit-run pre-commit-all
 
 # Default target
 help:
@@ -16,6 +16,9 @@ help:
 	@echo "  lint           - Lint code with ruff"
 	@echo "  check          - Run both linting and formatting checks"
 	@echo "  fix            - Auto-fix linting and formatting issues"
+	@echo "  pre-commit-install - Install pre-commit hooks"
+	@echo "  pre-commit-run - Run pre-commit on staged files"
+	@echo "  pre-commit-all - Run pre-commit on all files"
 	@echo "  test           - Run tests (if any)"
 	@echo "  clean          - Clean cache and temporary files"
 	@echo "  run-pipeline   - Run the full modular pipeline"
@@ -33,7 +36,7 @@ help:
 	@echo ""
 
 # Environment setup
-setup-env: install-dev
+setup-env: install-dev pre-commit-install
 	@echo "🔧 Setting up development environment..."
 	@echo "✅ Development environment ready!"
 
@@ -65,6 +68,20 @@ fix:
 	@echo "🔧 Auto-fixing code issues..."
 	uv run ruff check src/ --fix
 	uv run ruff format src/
+
+# Pre-commit hooks
+pre-commit-install:
+	@echo "🪝 Installing pre-commit hooks..."
+	uv run pre-commit install
+	@echo "✅ Pre-commit hooks installed"
+
+pre-commit-run:
+	@echo "🔍 Running pre-commit on staged files..."
+	uv run pre-commit run
+
+pre-commit-all:
+	@echo "🔍 Running pre-commit on all files..."
+	uv run pre-commit run --all-files
 
 # Testing
 test:

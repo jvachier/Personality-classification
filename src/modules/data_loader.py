@@ -1,18 +1,15 @@
-"""
-Data loading functions for the personality classification pipeline.
-"""
+"""Data loading functions for the personality classification pipeline."""
 
 import pandas as pd
 
 from .utils import get_logger
 
-
 logger = get_logger(__name__)
 
 
 def load_data_with_external_merge():
-    """
-    Load and merge training data with external personality datasets using advanced merge strategy.
+    """Load and merge training data with external personality datasets using advanced merge strategy.
+
     This function merges external data as features rather than concatenating as new samples.
 
     Returns:

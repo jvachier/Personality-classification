@@ -10,7 +10,6 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 
 from .utils import get_logger
 
-
 logger = get_logger(__name__)
 
 
@@ -353,7 +352,7 @@ def create_domain_balanced_dataset(
 
     # Create combined dataset
     combined_df = pd.concat(combined_data, axis=0, ignore_index=True)
-    domain_labels = np.array(domain_labels)
+    domain_labels = np.array(domain_labels).tolist()  # Convert to list for consistency
 
     # Identify features (exclude target and id columns)
     feature_cols = [

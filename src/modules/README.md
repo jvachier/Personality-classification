@@ -23,26 +23,31 @@ src/
 ## Module Overview
 
 ### `config.py`
+
 - Global parameters and constants (RND, N_SPLITS, etc.)
 - Data augmentation configuration
 - Dependency checking (SDV, imbalanced-learn)
 - Logging setup function
 
 ### `data_loader.py`
+
 - `load_data_with_external_merge()`: Loads and merges external personality data using advanced merge strategy
 
 ### `data_augmentation.py`
+
 - `simple_mixed_augmentation()`: Basic noise-based augmentation
 - `sdv_augmentation()`: High-quality synthetic data using SDV (GaussianCopula, CTGAN)
 - `smotenc_augmentation()`: SMOTE for mixed numerical/categorical data
 - `apply_data_augmentation()`: Main augmentation dispatcher function
 
 ### `preprocessing.py`
+
 - `prep()`: Main preprocessing function with advanced competitive approach
 - `add_pseudo_labeling_conservative()`: Conservative pseudo-labeling
 - `create_domain_balanced_dataset()`: Domain weighting for distribution alignment
 
 ### `model_builders.py`
+
 - `build_stack()`: Main XGBoost + LightGBM + CatBoost stack
 - `build_stack_c()`: XGBoost + CatBoost combination
 - `build_sklearn_stack()`: RandomForest + ExtraTrees + HistGradientBoosting
@@ -50,15 +55,18 @@ src/
 - `build_noisy_stack()`: Stack trained on noisy labels for regularization
 
 ### `optimization.py`
+
 - `save_best_trial_params()`: Save Optuna trial parameters to JSON
 - `load_best_trial_params()`: Load saved parameters for warm starts
 
 ### `ensemble.py`
+
 - `oof_probs()`: Generate out-of-fold predictions using cross-validation
 - `oof_probs_noisy()`: OOF predictions with noisy labels
 - `improved_blend_obj()`: Optuna objective for optimizing ensemble weights
 
 ### `utils.py`
+
 - `add_label_noise()`: Add controlled label noise for regularization
 - `get_logger()`: Get logger instance
 
@@ -93,6 +101,7 @@ python main_modular.py
 ## Dependencies
 
 The same dependencies as the original script:
+
 - pandas, numpy, sklearn
 - xgboost, lightgbm, catboost
 - optuna

@@ -7,12 +7,14 @@ This guide covers deploying the Six-Stack Personality Classification Pipeline us
 ## Deployment Strategy
 
 ### Core Technologies
+
 - **🐳 Docker**: Containerization for consistent environments
 - **☸️ Kubernetes**: Container orchestration and scaling
 - **📊 Dash**: Interactive web application for model inference
 - **📈 Monitoring**: Prometheus and Grafana integration
 
 ### Architecture Overview
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Dash Web App  │───▶│  ML Pipeline    │───▶│   Data Store    │
@@ -29,9 +31,10 @@ This guide covers deploying the Six-Stack Personality Classification Pipeline us
 ## 🐳 Docker Deployment
 
 ### Prerequisites
+
 ```bash
 # System requirements
-- Docker 20.10+ 
+- Docker 20.10+
 - Docker Compose 2.0+
 - 8GB+ RAM available for containers
 - 4+ CPU cores
@@ -47,6 +50,7 @@ sudo apt install docker-compose-plugin
 ```
 
 ### Dockerfile
+
 ```dockerfile
 # Multi-stage build for optimal image size
 FROM python:3.11-slim as builder
@@ -109,6 +113,7 @@ CMD ["python", "src/main_modular.py"]
 ```
 
 ### Pipeline Dockerfile
+
 ```dockerfile
 # Dockerfile.pipeline - ML Training Pipeline
 FROM python:3.11-slim as builder
@@ -173,6 +178,7 @@ CMD ["python", "src/main_modular.py"]
 ```
 
 ### Dash Application Dockerfile
+
 ```dockerfile
 # Dockerfile.dash - Interactive Dash Application
 FROM python:3.11-slim
@@ -224,6 +230,7 @@ CMD ["python", "dash_app/app.py"]
 ```
 
 ### Dash Requirements
+
 ```txt
 # requirements-dash.txt
 dash>=2.14.0
@@ -235,40 +242,41 @@ gunicorn>=21.2.0
 ```
 
 ### Multi-Service Docker Compose
+
 ```yaml
 # docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
   # ML Pipeline Service
   ml-pipeline:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.pipeline
     container_name: personality-ml-pipeline
     restart: unless-stopped
-    
+
     deploy:
       resources:
         limits:
           memory: 8G
-          cpus: '4'
+          cpus: "4"
         reservations:
           memory: 2G
-          cpus: '1'
-    
+          cpus: "1"
+
     environment:
       - PERSONALITY_LOG_LEVEL=INFO
       - PERSONALITY_TESTING_MODE=false
       - RUNNING_IN_DOCKER=true
-    
+
     volumes:
       - ./data:/app/data:ro
       - ./best_params:/app/best_params
       - ./submissions:/app/submissions
       - ./logs:/app/logs
       - model-artifacts:/app/models
-    
+
     networks:
       - personality-net
 
@@ -281,19 +289,19 @@ services:
     restart: unless-stopped
     ports:
       - "8050:8050"
-    
+
     depends_on:
       - ml-pipeline
-    
+
     environment:
       - DASH_HOST=0.0.0.0
       - DASH_PORT=8050
       - MODEL_PATH=/app/models
-    
+
     volumes:
       - model-artifacts:/app/models:ro
       - ./data:/app/data:ro
-    
+
     networks:
       - personality-net
 
@@ -334,6 +342,7 @@ networks:
 ```
 
 ### Build and Deploy with Docker Compose
+
 ```bash
 # Build all images
 docker-compose build
@@ -358,7 +367,8 @@ docker-compose down -v
 ## ☸️ Kubernetes Deployment
 
 ### ML Pipeline Deployment
-```yaml
+
+````yaml
 # k8s/ml-pipeline-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -379,7 +389,7 @@ spec:
       containers:
       - name: ml-pipeline
         image: personality-ml-pipeline:latest
-        
+
         resources:
           requests:
             memory: "2Gi"
@@ -387,13 +397,13 @@ spec:
           limits:
             memory: "8Gi"
             cpu: "2000m"
-        
+
         env:
         - name: PERSONALITY_LOG_LEVEL
           value: "INFO"
         - name: RUNNING_IN_KUBERNETES
           value: "true"
-        
+
         volumeMounts:
         - name: data-volume
           mountPath: /app/data
@@ -402,7 +412,7 @@ spec:
           mountPath: /app/models
         - name: logs-volume
           mountPath: /app/logs
-        
+
         livenessProbe:
           exec:
             command:
@@ -411,7 +421,7 @@ spec:
             - "import src.modules.config; print('OK')"
           initialDelaySeconds: 60
           periodSeconds: 30
-        
+
         readinessProbe:
           exec:
             command:
@@ -420,7 +430,7 @@ spec:
             - "import src.modules.config; print('OK')"
           initialDelaySeconds: 30
           periodSeconds: 10
-      
+
       volumes:
       - name: data-volume
         configMap:
@@ -457,7 +467,7 @@ spec:
         image: personality-dash-app:latest
         ports:
         - containerPort: 8050
-        
+
         resources:
           requests:
             memory: "1Gi"
@@ -465,7 +475,7 @@ spec:
           limits:
             memory: "4Gi"
             cpu: "1000m"
-        
+
         env:
         - name: DASH_HOST
           value: "0.0.0.0"
@@ -473,7 +483,7 @@ spec:
           value: "8050"
         - name: MODEL_PATH
           value: "/app/models"
-        
+
         volumeMounts:
         - name: model-artifacts
           mountPath: /app/models
@@ -481,21 +491,21 @@ spec:
         - name: data-volume
           mountPath: /app/data
           readOnly: true
-        
+
         livenessProbe:
           httpGet:
             path: /
             port: 8050
           initialDelaySeconds: 30
           periodSeconds: 10
-        
+
         readinessProbe:
           httpGet:
             path: /
             port: 8050
           initialDelaySeconds: 15
           periodSeconds: 5
-      
+
       volumes:
       - name: model-artifacts
         persistentVolumeClaim:
@@ -503,9 +513,10 @@ spec:
       - name: data-volume
         configMap:
           name: training-data
-```
+````
 
 ### Services and Ingress
+
 ```yaml
 # k8s/services.yaml
 apiVersion: v1
@@ -516,9 +527,9 @@ spec:
   selector:
     app: dash-app
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8050
+    - protocol: TCP
+      port: 80
+      targetPort: 8050
   type: ClusterIP
 
 ---
@@ -530,9 +541,9 @@ spec:
   selector:
     app: ml-pipeline
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8080
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
   type: ClusterIP
 
 ---
@@ -547,30 +558,31 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   tls:
-  - hosts:
-    - personality.yourdomain.com
-    secretName: personality-tls
+    - hosts:
+        - personality.yourdomain.com
+      secretName: personality-tls
   rules:
-  - host: personality.yourdomain.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: dash-app-service
-            port:
-              number: 80
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: ml-pipeline-service
-            port:
-              number: 80
+    - host: personality.yourdomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dash-app-service
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ml-pipeline-service
+                port:
+                  number: 80
 ```
 
 ### Persistent Storage
+
 ```yaml
 # k8s/storage.yaml
 apiVersion: v1
@@ -609,6 +621,7 @@ data:
 ```
 
 ### Deploy to Kubernetes
+
 ```bash
 # Build and push images to registry
 docker build -f Dockerfile.pipeline -t your-registry/personality-ml-pipeline:latest .
@@ -650,6 +663,7 @@ kubectl port-forward service/dash-app-service 8050:80 -n personality-classifier
 ## 🔧 Production Best Practices
 
 ### Security Considerations
+
 ```bash
 # Use secrets for sensitive configuration
 kubectl create secret generic model-secrets \
@@ -668,6 +682,7 @@ securityContext:
 ```
 
 ### Backup Strategy
+
 ```bash
 #!/bin/bash
 # backup.sh - Automated backup script
@@ -689,6 +704,7 @@ find ./backups -name "models-backup-*.tar.gz" -mtime +30 -delete
 ```
 
 ### Health Checks and Monitoring
+
 ```yaml
 # k8s/monitoring.yaml
 apiVersion: v1
@@ -699,8 +715,8 @@ spec:
   selector:
     app: prometheus
   ports:
-  - port: 9090
-    targetPort: 9090
+    - port: 9090
+      targetPort: 9090
 
 ---
 apiVersion: apps/v1
@@ -718,22 +734,23 @@ spec:
         app: prometheus
     spec:
       containers:
-      - name: prometheus
-        image: prom/prometheus:latest
-        ports:
-        - containerPort: 9090
-        volumeMounts:
-        - name: prometheus-config
-          mountPath: /etc/prometheus
+        - name: prometheus
+          image: prom/prometheus:latest
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
       volumes:
-      - name: prometheus-config
-        configMap:
-          name: prometheus-config
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
 ```
 
 ## 🚀 Quick Deployment Commands
 
 ### Local Development
+
 ```bash
 # Quick start with Docker Compose
 git clone <repository-url>
@@ -750,6 +767,7 @@ docker-compose logs -f dash-app
 ```
 
 ### Production Deployment
+
 ```bash
 # Build and push images
 docker build -f Dockerfile.pipeline -t your-registry/ml-pipeline:v1.0 .
@@ -771,6 +789,7 @@ kubectl logs -f deployment/dash-app -n personality-classifier
 ### Common Issues
 
 #### Container Memory Issues
+
 ```bash
 # Check memory usage
 kubectl top pods -n personality-classifier
@@ -782,6 +801,7 @@ resources:
 ```
 
 #### Model Loading Problems
+
 ```bash
 # Check persistent volumes
 kubectl get pvc -n personality-classifier
@@ -791,6 +811,7 @@ kubectl exec -it deployment/ml-pipeline -n personality-classifier -- ls -la /app
 ```
 
 #### Dash Application Not Starting
+
 ```bash
 # Check logs
 kubectl logs deployment/dash-app -n personality-classifier
@@ -800,6 +821,7 @@ kubectl port-forward service/dash-app-service 8050:80 -n personality-classifier
 ```
 
 #### Network Connectivity Issues
+
 ```bash
 # Test service connectivity
 kubectl exec -it deployment/dash-app -n personality-classifier -- \
@@ -821,4 +843,4 @@ kubectl describe ingress personality-classifier-ingress -n personality-classifie
 
 ---
 
-*This deployment guide focuses on containerized deployment with Docker and Kubernetes orchestration. For specific platform requirements or custom deployments, consult the platform documentation or create an issue in the repository.*
+_This deployment guide focuses on containerized deployment with Docker and Kubernetes orchestration. For specific platform requirements or custom deployments, consult the platform documentation or create an issue in the repository._

@@ -1,13 +1,10 @@
-"""
-Configuration constants and global parameters for the personality classification pipeline.
-"""
+"""Configuration constants and global parameters for the personality classification pipeline."""
 
 import logging
 import sys
 import warnings
 from enum import Enum
 from pathlib import Path
-
 
 # Base paths
 BASE_DIR = Path(__file__).parent.parent.parent  # Points to project root
@@ -90,7 +87,7 @@ class ModelConfig(Enum):
 
     RND = 42
     N_SPLITS = 5
-    N_TRIALS_STACK = 2  # Reduced for testing (original: 15)
+    N_TRIALS_STACK = 15  # Reduced for testing (original: 15)
     N_TRIALS_BLEND = 200  # Reduced for testing (original: 200)
 
     @property

@@ -1,5 +1,5 @@
-"""
-Enhanced data augmentation functions for the personality classification pipeline.
+"""Enhanced data augmentation functions for the personality classification pipeline.
+
 Features: Adaptive method selection, quality control, diversity checking, class balancing.
 """
 
@@ -21,7 +21,6 @@ from .config import (
     AugmentationMethod,
 )
 from .utils import get_logger
-
 
 # Conditional imports
 if SDV_AVAILABLE:
@@ -367,7 +366,6 @@ def simple_mixed_augmentation(
     X_train: pd.DataFrame, y_train: pd.Series, augment_ratio: float = 0.05
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Simple data augmentation for mixed numerical/categorical features."""
-
     # Define feature types based on your dataset
     numerical_features = [
         "Time_spent_Alone",
@@ -611,7 +609,6 @@ def apply_data_augmentation(
     X_train: pd.DataFrame, y_train: pd.Series
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Enhanced adaptive data augmentation with quality control."""
-
     if not AugmentationConfig.ENABLE_DATA_AUGMENTATION.value:
         logger.info("📊 Data augmentation disabled")
         return X_train, y_train

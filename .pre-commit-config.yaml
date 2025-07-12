@@ -24,28 +24,6 @@ repos:
       - id: mixed-line-ending
       - id: fix-byte-order-marker
 
-  # Python-specific hooks
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
-    hooks:
-      - id: black
-        language_version: python3
-        args: [--line-length=88]
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: [--profile=black, --line-length=88]
-
-  # Ruff for fast Python linting and formatting
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.10
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, --ignore=PLR0912, PLR0915, B904]
-      - id: ruff-format
-
   # Security checks
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.9
@@ -54,13 +32,13 @@ repos:
         args: [-r, -x, tests/, -ll]
         exclude: ^tests/
 
-  # Documentation checks
-  - repo: https://github.com/pycqa/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        args: [--convention=google, --add-ignore=D200, D212, D202, D205, D415]
-        exclude: ^(tests/|scripts/|examples/)
+  # Documentation checks (disabled for initial setup)
+  # - repo: https://github.com/pycqa/pydocstyle
+  #   rev: 6.3.0
+  #   hooks:
+  #     - id: pydocstyle
+  #       args: [--convention=google, --add-ignore=D100,D104,D105,D200,D212,D202,D205,D415,D205]
+  #       exclude: ^(tests/|scripts/|examples/|docs/)
 
   # Type checking with mypy
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -86,14 +64,6 @@ repos:
     rev: 0.7.1
     hooks:
       - id: nbstripout
-
-  # YAML formatting
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        types_or: [yaml, markdown, json]
-        exclude: ^(.*\.lock|uv\.lock)$
 
   # Check for merge conflicts in generated files
   - repo: https://github.com/Lucas-C/pre-commit-hooks

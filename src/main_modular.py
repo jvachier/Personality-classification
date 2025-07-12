@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""
-Six-Stack Personality Classification Pipeline (Modular Version)
+"""Six-Stack Personality Classification Pipeline (Modular Version).
+
 Complete implementation with Optuna optimization matching the monolithic script exactly.
 """
 
@@ -75,7 +75,7 @@ class StackResults(NamedTuple):
     """Container for stack training results."""
 
     studies: dict[str, optuna.Study]
-    builders: dict[str, Callable[[], object]]
+    builders: dict[str, Callable[[], Any]]
     oof_predictions: dict[str, pd.Series]
 
 
@@ -247,7 +247,7 @@ def train_all_stacks(data: TrainingData) -> dict[str, optuna.Study]:
 
 def create_model_builders(
     studies: dict[str, optuna.Study], data: TrainingData
-) -> dict[str, Callable[[], object]]:
+) -> dict[str, Callable[[], Any]]:
     """Create model builder functions for each stack."""
     logger.info("\n📊 Creating model builders for ensemble...")
 
@@ -270,7 +270,7 @@ def create_model_builders(
 
 
 def generate_oof_predictions(
-    builders: dict[str, Callable[[], object]], data: TrainingData
+    builders: dict[str, Callable[[], Any]], data: TrainingData
 ) -> dict[str, pd.Series]:
     """Generate out-of-fold predictions for all stacks."""
     logger.info("\n🔮 Generating out-of-fold predictions...")
@@ -353,7 +353,7 @@ def optimize_ensemble_blending(
 
 
 def refit_and_predict(
-    builders: dict[str, Callable[[], object]],
+    builders: dict[str, Callable[[], Any]],
     best_weights: dict[str, float],
     data: TrainingData,
 ) -> tuple[pd.DataFrame, str]:
@@ -401,7 +401,7 @@ def refit_and_predict(
 
 
 def apply_pseudo_labelling(
-    builders: dict[str, Callable[[], object]],
+    builders: dict[str, Callable[[], Any]],
     best_weights: dict[str, float],
     data: TrainingData,
 ) -> TrainingData:
