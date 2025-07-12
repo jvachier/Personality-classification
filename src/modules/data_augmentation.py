@@ -73,27 +73,58 @@ def analyze_data_characteristics(X_train: pd.DataFrame, y_train: pd.Series) -> d
 def adaptive_augmentation_selection(
     characteristics: dict,
 ) -> tuple[AugmentationMethod, float]:
-    """Select optimal augmentation method based on data characteristics."""
+    """Select optimal augmentation method based on data characteristics.
+
+    Now respects configuration ratios from AugmentationConfig instead of hardcoded values.
+    """
+    # Use configuration ratios as base, with adaptive scaling
+    base_ratio = AugmentationConfig.BASE_AUGMENTATION_RATIO.value
+    min_ratio = AugmentationConfig.MIN_AUGMENTATION_RATIO.value
+    max_ratio = AugmentationConfig.MAX_AUGMENTATION_RATIO.value
+
+    logger.info(
+        f"   📊 Adaptive selection using config ratios: base={base_ratio}, min={min_ratio}, max={max_ratio}"
+    )
 
     if characteristics["is_small_dataset"] and characteristics["is_imbalanced"]:
-        # Small imbalanced dataset - use SMOTENC for reliable results
-        return AugmentationMethod.SMOTENC, 0.15
+        # Small imbalanced dataset - use higher ratio for SMOTENC
+        adaptive_ratio = min(base_ratio * 1.5, max_ratio)  # 150% of base, capped at max
+        logger.info(
+            f"   🎯 Small imbalanced dataset detected → SMOTENC with ratio {adaptive_ratio:.3f} (base*1.5)"
+        )
+        return AugmentationMethod.SMOTENC, adaptive_ratio
 
     elif characteristics["is_highly_categorical"]:
-        # High categorical ratio - use SDV Copula
-        return AugmentationMethod.SDV_COPULA, 0.08
+        # High categorical ratio - use moderate ratio for SDV Copula
+        adaptive_ratio = min(base_ratio * 0.8, max_ratio)  # 80% of base
+        logger.info(
+            f"   🎯 High categorical features detected → SDV_COPULA with ratio {adaptive_ratio:.3f} (base*0.8)"
+        )
+        return AugmentationMethod.SDV_COPULA, adaptive_ratio
 
     elif characteristics["n_samples"] > 10000 and not characteristics["is_imbalanced"]:
-        # Large balanced dataset - use ensemble approach
-        return AugmentationMethod.MIXED_ENSEMBLE, 0.05
+        # Large balanced dataset - use conservative ratio for ensemble
+        adaptive_ratio = max(base_ratio * 0.5, min_ratio)  # 50% of base, at least min
+        logger.info(
+            f"   🎯 Large balanced dataset detected → MIXED_ENSEMBLE with ratio {adaptive_ratio:.3f} (base*0.5)"
+        )
+        return AugmentationMethod.MIXED_ENSEMBLE, adaptive_ratio
 
     elif characteristics["class_balance_ratio"] < 0.3:
-        # Severe imbalance - use class-balanced approach
-        return AugmentationMethod.CLASS_BALANCED, 0.20
+        # Severe imbalance - use maximum ratio for class balancing
+        adaptive_ratio = max_ratio  # Use maximum configured ratio
+        logger.info(
+            f"   🎯 Severe class imbalance detected → CLASS_BALANCED with ratio {adaptive_ratio:.3f} (max ratio)"
+        )
+        return AugmentationMethod.CLASS_BALANCED, adaptive_ratio
 
     else:
-        # Default to SDV Copula for medium datasets (safer than TVAE)
-        return AugmentationMethod.SDV_COPULA, 0.06
+        # Default to SDV Copula with base ratio
+        adaptive_ratio = base_ratio
+        logger.info(
+            f"   🎯 Default case → SDV_COPULA with ratio {adaptive_ratio:.3f} (base ratio)"
+        )
+        return AugmentationMethod.SDV_COPULA, adaptive_ratio
 
 
 def tvae_augmentation(

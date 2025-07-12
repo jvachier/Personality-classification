@@ -90,7 +90,7 @@ class ModelConfig(Enum):
 
     RND = 42
     N_SPLITS = 5
-    N_TRIALS_STACK = 15  # Reduced for testing (original: 15)
+    N_TRIALS_STACK = 2  # Reduced for testing (original: 15)
     N_TRIALS_BLEND = 200  # Reduced for testing (original: 200)
 
     @property
@@ -121,8 +121,17 @@ class AugmentationConfig(Enum):
 
     # Dynamic ratios based on data characteristics
     MIN_AUGMENTATION_RATIO = 0.01
-    BASE_AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
-    MAX_AUGMENTATION_RATIO = 0.20
+    BASE_AUGMENTATION_RATIO = 0.10  # 10% additional synthetic data
+    MAX_AUGMENTATION_RATIO = 0.40
+
+    # Adaptive scaling multipliers for user control
+    ADAPTIVE_SCALING_ENABLED = True
+    SIMPLE_AUGMENTATION_MULTIPLIER = 1.0  # Base multiplier for simple augmentation
+    SDV_AUGMENTATION_MULTIPLIER = 1.2  # Slightly higher for SDV methods
+    SMOTE_AUGMENTATION_MULTIPLIER = 0.8  # Lower for SMOTE-based methods
+    ENSEMBLE_AUGMENTATION_MULTIPLIER = 1.5  # Higher for ensemble methods
+    ADAPTIVE_QUALITY_MULTIPLIER = 1.3  # Quality-based scaling
+    CLASS_BALANCE_MULTIPLIER = 1.1  # Class balancing multiplier
 
     # Quality and performance controls
     ENABLE_QUALITY_FILTERING = True
@@ -176,6 +185,17 @@ MAX_AUGMENTATION_TIME_SECONDS = AugmentationConfig.MAX_AUGMENTATION_TIME_SECONDS
 ENABLE_CACHING = AugmentationConfig.ENABLE_CACHING.value
 CACHE_AUGMENTED_DATA = AugmentationConfig.CACHE_AUGMENTED_DATA.value
 LABEL_NOISE_RATE = AugmentationConfig.LABEL_NOISE_RATE.value
+
+# Adaptive scaling multipliers
+ADAPTIVE_SCALING_ENABLED = AugmentationConfig.ADAPTIVE_SCALING_ENABLED.value
+SIMPLE_AUGMENTATION_MULTIPLIER = AugmentationConfig.SIMPLE_AUGMENTATION_MULTIPLIER.value
+SDV_AUGMENTATION_MULTIPLIER = AugmentationConfig.SDV_AUGMENTATION_MULTIPLIER.value
+SMOTE_AUGMENTATION_MULTIPLIER = AugmentationConfig.SMOTE_AUGMENTATION_MULTIPLIER.value
+ENSEMBLE_AUGMENTATION_MULTIPLIER = (
+    AugmentationConfig.ENSEMBLE_AUGMENTATION_MULTIPLIER.value
+)
+ADAPTIVE_QUALITY_MULTIPLIER = AugmentationConfig.ADAPTIVE_QUALITY_MULTIPLIER.value
+CLASS_BALANCE_MULTIPLIER = AugmentationConfig.CLASS_BALANCE_MULTIPLIER.value
 
 # Testing configuration
 TESTING_MODE = TestingConfig.TESTING_MODE.value.value
