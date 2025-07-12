@@ -121,8 +121,8 @@ class AugmentationConfig(Enum):
 
     # Dynamic ratios based on data characteristics
     MIN_AUGMENTATION_RATIO = 0.01
-    BASE_AUGMENTATION_RATIO = 0.10  # 10% additional synthetic data
-    MAX_AUGMENTATION_RATIO = 0.40
+    BASE_AUGMENTATION_RATIO = 0.05  # 5% additional synthetic data
+    MAX_AUGMENTATION_RATIO = 0.20
 
     # Adaptive scaling multipliers for user control
     ADAPTIVE_SCALING_ENABLED = True
@@ -147,6 +147,11 @@ class AugmentationConfig(Enum):
     # Class balancing
     ENABLE_CLASS_BALANCING = True
     TARGET_CLASS_BALANCE_RATIO = 0.7  # Aim for 70% balance minimum
+
+    # Pseudo labelling configuration
+    ENABLE_PSEUDO_LABELLING = True
+    PSEUDO_CONFIDENCE_THRESHOLD = 0.95  # Minimum confidence for pseudo-labels
+    PSEUDO_MAX_RATIO = 0.3  # Maximum ratio of pseudo-labels to original data
 
     # Legacy support
     AUGMENTATION_RATIO = 0.05  # Backward compatibility
@@ -196,6 +201,11 @@ ENSEMBLE_AUGMENTATION_MULTIPLIER = (
 )
 ADAPTIVE_QUALITY_MULTIPLIER = AugmentationConfig.ADAPTIVE_QUALITY_MULTIPLIER.value
 CLASS_BALANCE_MULTIPLIER = AugmentationConfig.CLASS_BALANCE_MULTIPLIER.value
+
+# Pseudo labelling configuration
+ENABLE_PSEUDO_LABELLING = AugmentationConfig.ENABLE_PSEUDO_LABELLING.value
+PSEUDO_CONFIDENCE_THRESHOLD = AugmentationConfig.PSEUDO_CONFIDENCE_THRESHOLD.value
+PSEUDO_MAX_RATIO = AugmentationConfig.PSEUDO_MAX_RATIO.value
 
 # Testing configuration
 TESTING_MODE = TestingConfig.TESTING_MODE.value.value
