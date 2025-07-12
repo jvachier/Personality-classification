@@ -92,10 +92,10 @@ LABEL_NOISE_RATE = 0.02
 
 def load_data_with_external_merge():
     """
-    Load and merge training data with external personality datasets using TOP-4 solution strategy.
+    Load and merge training data with external personality datasets using advanced merge strategy.
     This function merges external data as features rather than concatenating as new samples.
     """
-    logger.info("📊 Loading data with TOP-4 solution merge strategy...")
+    logger.info("📊 Loading data with advanced merge strategy...")
 
     # Load original datasets
     df_tr = pd.read_csv("./data/train.csv")
@@ -105,7 +105,7 @@ def load_data_with_external_merge():
     logger.info(f"Original train shape: {df_tr.shape}")
     logger.info(f"Original test shape: {df_te.shape}")
 
-    # Load external dataset using TOP-4 solution merge strategy
+    # Load external dataset using advanced merge strategy
     try:
         df_external = pd.read_csv("./data/personality_datasert.csv")
         logger.info(f"External dataset shape: {df_external.shape}")
@@ -532,9 +532,9 @@ def prep(
     df_tr: pd.DataFrame, df_te: pd.DataFrame, tgt="Personality", idx="id"
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
     """
-    Preprocess the training and test datasets with TOP-4 solution approach.
+    Preprocess the training and test datasets with advanced competitive approach.
     """
-    logger.info("🔧 Preprocessing data with TOP-4 solution approach...")
+    logger.info("🔧 Preprocessing data with advanced competitive approach...")
 
     # Define feature groups before any processing
     # Keep original column types for proper categorization
@@ -557,7 +557,7 @@ def prep(
     if idx in df_te.columns:
         df_te = df_te.drop(columns=[idx])
 
-    # Use TOP-4 solution correlation-based imputation
+    # Use advanced correlation-based imputation
     logger.info("🔄 Performing TOP-4 correlation-based imputation...")
 
     # Extract and encode target variable BEFORE combining data
@@ -567,14 +567,14 @@ def prep(
     # Remove target column from training data before combining
     df_tr_no_target = df_tr.drop(columns=[tgt])
 
-    # Combine train and test for imputation (as in TOP-4 solution)
+    # Combine train and test for imputation (as in advanced approach)
     ntrain = len(df_tr_no_target)
     all_data = pd.concat([df_tr_no_target, df_te], ignore_index=True)
 
     def fill_missing_by_quantile_group(
         df, group_source_col, target_col, quantiles=None
     ):
-        """Fill missing values using correlation-based grouping (from TOP-4 solution)"""
+        """Fill missing values using correlation-based grouping (from advanced approach)"""
         if quantiles is None:
             quantiles = [0, 0.25, 0.5, 0.75, 1.0]
         if target_col not in df.columns or group_source_col not in df.columns:
@@ -603,7 +603,7 @@ def prep(
         df.drop(columns=[temp_bin_col], inplace=True)
         return df
 
-    # Sequential imputation based on correlations (from TOP-4 solution)
+    # Sequential imputation based on correlations (from advanced approach)
     # 1. Time_spent_Alone using Social_event_attendance
     if (
         "Social_event_attendance" in all_data.columns
@@ -641,14 +641,14 @@ def prep(
         if target_col in all_data.columns and source_col in all_data.columns:
             all_data = fill_missing_by_quantile_group(all_data, source_col, target_col)
 
-    # Handle categorical features with "Unknown" (from TOP-4 solution)
+    # Handle categorical features with "Unknown" (from advanced approach)
     categorical_cols = ["Stage_fear", "Drained_after_socializing", "match_p"]
     for col in categorical_cols:
         if col in all_data.columns:
             # Fill missing values with 'Unknown'
             all_data[col] = all_data[col].fillna("Unknown")
 
-    # Apply one-hot encoding for categorical features using OneHotEncoder (TOP-4 solution approach)
+    # Apply one-hot encoding for categorical features using OneHotEncoder (advanced approach)
     logger.info("🔄 Applying one-hot encoding for categorical features...")
 
     # Identify categorical columns that exist in the data
@@ -706,7 +706,7 @@ def prep(
     logger.info(f"Final train shape: {df_tr.shape}")
     logger.info(f"Final test shape: {df_te.shape}")
 
-    logger.info("✅ Preprocessing completed with TOP-4 solution approach")
+    logger.info("✅ Preprocessing completed with advanced competitive approach")
     return df_tr, df_te, ytr, le_tgt
 
 
@@ -1056,7 +1056,7 @@ def build_stack(trial, seed: int, wide_hp: bool) -> Pipeline:
         n_lo, n_hi = 500, 1000
 
     # Since we're using one-hot encoding now, no need to specify categorical columns
-    # The TOP-4 solution approach uses one-hot encoding for all categorical features
+    # The advanced approach uses one-hot encoding for all categorical features
 
     # Enhanced XGBoost parameters - CPU ONLY
     grow_policy = trial.suggest_categorical("xgb_grow", ["depthwise", "lossguide"])
@@ -1955,10 +1955,10 @@ def main():
     logger.info("🎯 Six-Stack Personality Classification Pipeline (CPU-Only)")
     logger.info("=" * 60)
 
-    # Load data using TOP-4 solution merge strategy
+    # Load data using advanced merge strategy
     df_tr, df_te, submission = load_data_with_external_merge()
 
-    # Preprocess data with TOP-4 solution approach (do this first)
+    # Preprocess data with advanced competitive approach (do this first)
     X_full, X_test, y_full, le = prep(df_tr, df_te)
 
     # Apply new data augmentation after preprocessing
@@ -2327,7 +2327,7 @@ def main():
     # Print summary
     logger.info("\n📋 Summary:")
     logger.info("   - Combined training data: {len(df_tr):,} samples")
-    logger.info("   - External data merged as features using TOP-4 solution approach")
+    logger.info("   - External data merged as features using advanced approach")
     logger.info("   - 6 specialized stacks trained")
     logger.info("   - Best ensemble CV score: {study_improved.best_value:.6f}")
     if pseudo_stats["n_pseudo_added"] > 0:

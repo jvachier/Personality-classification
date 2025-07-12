@@ -99,7 +99,7 @@ def validate_data_integrity(df: pd.DataFrame,
 def prep(df_tr: pd.DataFrame, 
          df_te: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
     """
-    Complete preprocessing pipeline with TOP-4 solution approach.
+    Complete preprocessing pipeline with advanced competitive approach.
     
     Args:
         df_tr: Training dataframe

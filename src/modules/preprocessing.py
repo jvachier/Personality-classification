@@ -2,7 +2,6 @@
 Data preprocessing functions for the personality classification pipeline.
 """
 
-
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -19,7 +18,7 @@ def prep(
     df_tr: pd.DataFrame, df_te: pd.DataFrame, tgt="Personality", idx="id"
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, LabelEncoder]:
     """
-    Preprocess the training and test datasets with TOP-4 solution approach.
+    Preprocess the training and test datasets with advanced competitive approach.
 
     Args:
         df_tr: Training dataframe
@@ -30,7 +29,7 @@ def prep(
     Returns:
         Tuple of (X_train, X_test, y_train, label_encoder)
     """
-    logger.info("🔧 Preprocessing data with TOP-4 solution approach...")
+    logger.info("🔧 Preprocessing data with advanced competitive approach...")
 
     # Define feature groups before any processing
     # Keep original column types for proper categorization
@@ -53,7 +52,7 @@ def prep(
     if idx in df_te.columns:
         df_te = df_te.drop(columns=[idx])
 
-    # Use TOP-4 solution correlation-based imputation
+    # Use advanced correlation-based imputation
     logger.info("🔄 Performing TOP-4 correlation-based imputation...")
 
     # Extract and encode target variable BEFORE combining data
@@ -63,14 +62,14 @@ def prep(
     # Remove target column from training data before combining
     df_tr_no_target = df_tr.drop(columns=[tgt])
 
-    # Combine train and test for imputation (as in TOP-4 solution)
+    # Combine train and test for imputation (as in advanced approach)
     ntrain = len(df_tr_no_target)
     all_data = pd.concat([df_tr_no_target, df_te], ignore_index=True)
 
     def fill_missing_by_quantile_group(
         df, group_source_col, target_col, quantiles=None
     ):
-        """Fill missing values using correlation-based grouping (from TOP-4 solution)"""
+        """Fill missing values using correlation-based grouping (from advanced approach)"""
         if quantiles is None:
             quantiles = [0, 0.25, 0.5, 0.75, 1.0]
         if target_col not in df.columns or group_source_col not in df.columns:
@@ -99,7 +98,7 @@ def prep(
         df.drop(columns=[temp_bin_col], inplace=True)
         return df
 
-    # Sequential imputation based on correlations (from TOP-4 solution)
+    # Sequential imputation based on correlations (from advanced approach)
     # 1. Time_spent_Alone using Social_event_attendance
     if (
         "Social_event_attendance" in all_data.columns
@@ -137,14 +136,14 @@ def prep(
         if target_col in all_data.columns and source_col in all_data.columns:
             all_data = fill_missing_by_quantile_group(all_data, source_col, target_col)
 
-    # Handle categorical features with "Unknown" (from TOP-4 solution)
+    # Handle categorical features with "Unknown" (from advanced approach)
     categorical_cols = ["Stage_fear", "Drained_after_socializing", "match_p"]
     for col in categorical_cols:
         if col in all_data.columns:
             # Fill missing values with 'Unknown'
             all_data[col] = all_data[col].fillna("Unknown")
 
-    # Apply one-hot encoding for categorical features using OneHotEncoder (TOP-4 solution approach)
+    # Apply one-hot encoding for categorical features using OneHotEncoder (advanced approach)
     logger.info("🔄 Applying one-hot encoding for categorical features...")
 
     # Identify categorical columns that exist in the data
@@ -202,7 +201,7 @@ def prep(
     logger.info(f"Final train shape: {df_tr.shape}")
     logger.info(f"Final test shape: {df_te.shape}")
 
-    logger.info("✅ Preprocessing completed with TOP-4 solution approach")
+    logger.info("✅ Preprocessing completed with advanced competitive approach")
     return df_tr, df_te, ytr, le_tgt
 
 

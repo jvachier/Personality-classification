@@ -177,7 +177,7 @@ def improved_blend_obj(trial, *oof_predictions, y_true):
 
 ### External Data Integration
 
-The pipeline implements the **TOP-4 solution merge strategy**:
+The pipeline implements the **advanced external data merge strategy**:
 
 1. **Deduplication**: Remove duplicate rows from external dataset
 2. **Feature Matching**: Match samples based on feature similarity

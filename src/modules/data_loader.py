@@ -12,13 +12,13 @@ logger = get_logger(__name__)
 
 def load_data_with_external_merge():
     """
-    Load and merge training data with external personality datasets using TOP-4 solution strategy.
+    Load and merge training data with external personality datasets using advanced merge strategy.
     This function merges external data as features rather than concatenating as new samples.
 
     Returns:
         tuple: (df_tr, df_te, submission) - training data, test data, and submission template
     """
-    logger.info("📊 Loading data with TOP-4 solution merge strategy...")
+    logger.info("📊 Loading data with advanced merge strategy...")
 
     # Load original datasets
     df_tr = pd.read_csv("./data/train.csv")
@@ -28,7 +28,7 @@ def load_data_with_external_merge():
     logger.info(f"Original train shape: {df_tr.shape}")
     logger.info(f"Original test shape: {df_te.shape}")
 
-    # Load external dataset using TOP-4 solution merge strategy
+    # Load external dataset using advanced merge strategy
     try:
         df_external = pd.read_csv("./data/personality_datasert.csv")
         logger.info(f"External dataset shape: {df_external.shape}")

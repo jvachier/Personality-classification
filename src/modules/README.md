@@ -29,7 +29,7 @@ src/
 - Logging setup function
 
 ### `data_loader.py`
-- `load_data_with_external_merge()`: Loads and merges external personality data using TOP-4 solution strategy
+- `load_data_with_external_merge()`: Loads and merges external personality data using advanced merge strategy
 
 ### `data_augmentation.py`
 - `simple_mixed_augmentation()`: Basic noise-based augmentation
@@ -38,7 +38,7 @@ src/
 - `apply_data_augmentation()`: Main augmentation dispatcher function
 
 ### `preprocessing.py`
-- `prep()`: Main preprocessing function with TOP-4 solution approach
+- `prep()`: Main preprocessing function with advanced competitive approach
 - `add_pseudo_labeling_conservative()`: Conservative pseudo-labeling
 - `create_domain_balanced_dataset()`: Domain weighting for distribution alignment
 

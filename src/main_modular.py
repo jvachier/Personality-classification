@@ -87,7 +87,7 @@ def load_and_prepare_data(
     logger.info("🎯 Six-Stack Personality Classification Pipeline (Modular)")
     logger.info("=" * 60)
 
-    # Load data using TOP-4 solution merge strategy
+    # Load data using advanced merge strategy
     df_tr, df_te, submission = load_data_with_external_merge()
 
     # FOR TESTING: Limit to specified samples for faster execution
@@ -98,7 +98,7 @@ def load_and_prepare_data(
         df_tr = df_tr.sample(n=test_size, random_state=RND).reset_index(drop=True)
         logger.info(f"   📊 Using {len(df_tr)} samples for testing")
 
-    # Preprocess data with TOP-4 solution approach (do this first)
+    # Preprocess data with advanced competitive approach (do this first)
     X_full, X_test, y_full, le = prep(df_tr, df_te)
 
     # Apply new data augmentation after preprocessing
