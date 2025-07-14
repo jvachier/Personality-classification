@@ -1,4 +1,4 @@
-"""Configuration constants and global parameters for the personality classification pipeline."""
+"""Configuration constants and global parameters for personality classification."""
 
 import logging
 import sys

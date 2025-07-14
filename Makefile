@@ -33,6 +33,8 @@ help:
 	@echo "  add-dev        - Add development dependency (make add-dev PACKAGE=name)"
 	@echo "  remove         - Remove dependency (make remove PACKAGE=name)"
 	@echo "  outdated       - Check for outdated dependencies"
+	@echo "  dash           - Run Dash application"
+	@echo "  uv-help        - Show UV manager script help"
 	@echo ""
 
 # Environment setup
@@ -247,3 +249,12 @@ dev: install-dev format lint test
 # Production workflow
 prod: install check test run-pipeline
 	@echo "🎯 Production workflow complete!"
+
+# UV manager script
+uv-help:
+	@echo "🔧 UV Manager Script Help"
+	uv run python uv_manager.py --help
+
+dash:
+	@echo "📊 Starting Dash application..."
+	uv run python dash_app/main.py

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Six-Stack Personality Classification Pipeline (Modular Version).
 
-Complete implementation with Optuna optimization matching the monolithic script exactly.
+Complete implementation with Optuna optimization and integrated MLOps infrastructure.
 """
 
 from collections.abc import Callable
@@ -97,7 +97,8 @@ def load_and_prepare_data(
     # FOR TESTING: Limit to specified samples for faster execution
     if testing_mode and len(df_tr) > test_size:
         logger.info(
-            f"🔬 TESTING MODE: Limiting dataset to {test_size} samples (original: {len(df_tr)})"
+            f"🔬 TESTING MODE: Limiting dataset to {test_size} samples "
+            f"(original: {len(df_tr)})"
         )
         df_tr = df_tr.sample(n=test_size, random_state=RND).reset_index(drop=True)
         logger.info(f"   📊 Using {len(df_tr)} samples for testing")
@@ -483,49 +484,71 @@ def apply_pseudo_labelling(
 
 def main():
     """Main execution function for the Six-Stack Personality Classification Pipeline."""
-    # Load and prepare data
-    data = load_and_prepare_data(
-        testing_mode=TESTING_MODE, test_size=TESTING_SAMPLE_SIZE
-    )
 
-    # Train all stacks
-    studies = train_all_stacks(data)
+    logger.info("🚀 Starting Six-Stack Personality Classification Pipeline")
 
-    # Create model builders
-    builders = create_model_builders(studies, data)
+    try:
+        # Load and prepare data
+        data = load_and_prepare_data(
+            testing_mode=TESTING_MODE, test_size=TESTING_SAMPLE_SIZE
+        )
 
-    # Generate out-of-fold predictions
-    oof_predictions = generate_oof_predictions(builders, data)
+        logger.info(f"📊 Loaded data: {len(data.X_full)} training samples, {len(data.X_test)} test samples")
 
-    # Optimize ensemble blending
-    best_weights, best_cv_score = optimize_ensemble_blending(
-        oof_predictions, data.y_full
-    )
+        # Train all stacks
+        studies = train_all_stacks(data)
 
-    # Apply pseudo labelling using ensemble predictions
-    enhanced_data = apply_pseudo_labelling(builders, best_weights, data)
+        # Log stack optimization results
+        for stack_name, study in studies.items():
+            logger.info(f"📈 Stack {stack_name}: Best score = {study.best_value:.6f} ({len(study.trials)} trials)")
 
-    # Refit models and generate final predictions
-    submission_df, output_file = refit_and_predict(
-        builders, best_weights, enhanced_data
-    )
+        # Create model builders
+        builders = create_model_builders(studies, data)
 
-    # Print final results
-    logger.info(f"\n✅ Predictions saved to '{output_file}'")
-    logger.info(f"📊 Final submission shape: {submission_df.shape}")
-    logger.info("🎉 Six-stack ensemble pipeline completed successfully!")
+        # Generate out-of-fold predictions
+        oof_predictions = generate_oof_predictions(builders, data)
 
-    # Print summary
-    logger.info("\n📋 Summary:")
-    logger.info(f"   - Training samples: {len(enhanced_data.X_full):,}")
-    logger.info(f"   - Test samples: {len(enhanced_data.X_test):,}")
-    logger.info(f"   - Features: {enhanced_data.X_full.shape[1]}")
-    logger.info("   - Stacks trained: 6 (A-F)")
-    logger.info(f"   - Best ensemble CV score: {best_cv_score:.6f}")
-    logger.info(
-        f"   - Pseudo labelling: {'Enabled' if ENABLE_PSEUDO_LABELLING else 'Disabled'}"
-    )
-    logger.info("   - Modular architecture")
+        # Optimize ensemble blending
+        best_weights, best_cv_score = optimize_ensemble_blending(
+            oof_predictions, data.y_full
+        )
+
+        logger.info(f"🎯 Best ensemble CV score: {best_cv_score:.6f}")
+        logger.info(f"⚖️ Ensemble weights: {best_weights}")
+
+        # Apply pseudo labelling using ensemble predictions
+        enhanced_data = apply_pseudo_labelling(builders, best_weights, data)
+
+        # Log pseudo labelling results
+        if len(enhanced_data.X_full) > len(data.X_full):
+            pseudo_added = len(enhanced_data.X_full) - len(data.X_full)
+            logger.info(f"🏷️ Added {pseudo_added} pseudo-labeled samples")
+
+        # Refit models and generate final predictions
+        submission_df, output_file = refit_and_predict(
+            builders, best_weights, enhanced_data
+        )
+
+        # Print final results
+        logger.info(f"\n✅ Predictions saved to '{output_file}'")
+        logger.info(f"📊 Final submission shape: {submission_df.shape}")
+        logger.info("🎉 Six-stack ensemble pipeline completed successfully!")
+
+        # Print summary
+        logger.info("\n📋 Summary:")
+        logger.info(f"   - Training samples: {len(enhanced_data.X_full):,}")
+        logger.info(f"   - Test samples: {len(enhanced_data.X_test):,}")
+        logger.info(f"   - Features: {enhanced_data.X_full.shape[1]}")
+        logger.info("   - Stacks trained: 6 (A-F)")
+        logger.info(f"   - Best ensemble CV score: {best_cv_score:.6f}")
+        logger.info(
+            f"   - Pseudo labelling: {'Enabled' if ENABLE_PSEUDO_LABELLING else 'Disabled'}"
+        )
+        logger.info("   - Modular architecture")
+
+    except Exception as e:
+        logger.error(f"❌ Pipeline failed: {e}")
+        raise
 
 
 if __name__ == "__main__":
