@@ -105,6 +105,10 @@ def train_and_save_stack(stack_name: str, data_dict: dict, save_dir: Path) -> No
         "training_samples": len(X_train),
         "features": X_train.columns.tolist(),
         "target_classes": sorted(y_train.unique().tolist()),
+        "label_mapping": {
+            "0": "Extrovert",
+            "1": "Introvert"
+        },
     }
 
     metadata_file = save_dir / f"stack_{stack_name}_metadata.json"
@@ -158,6 +162,10 @@ def train_ensemble_model(data_dict: dict, save_dir: Path) -> None:
         "training_samples": len(X_train),
         "features": X_train.columns.tolist(),
         "target_classes": sorted(y_train.unique().tolist()),
+        "label_mapping": {
+            "0": "Extrovert",
+            "1": "Introvert"
+        },
     }
 
     metadata_file = save_dir / "ensemble_metadata.json"

@@ -52,7 +52,7 @@ train-models:
 # Dash application
 dash:
 	@echo "📊 Starting Dash application..."
-	uv run python dash_app/main.py
+	uv run python dash_app/main.py --model-name ensemble
 
 stop-dash:
 	@echo "🛑 Stopping Dash application..."

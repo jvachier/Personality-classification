@@ -1,0 +1,50 @@
+{
+  "stack_name": "D",
+  "model_type": "Pipeline",
+  "best_params": {
+    "rf_n": 745,
+    "rf_depth": 15,
+    "rf_min_split": 10,
+    "rf_min_leaf": 4,
+    "rf_max_features": "log2",
+    "rf_class_weight": "balanced",
+    "et_n": 772,
+    "et_depth": 22,
+    "et_min_split": 3,
+    "et_min_leaf": 4,
+    "et_max_features": "log2",
+    "et_class_weight": "balanced",
+    "hgb_n": 906,
+    "hgb_lr": 0.015682624130258928,
+    "hgb_depth": 18,
+    "hgb_min_leaf": 11,
+    "hgb_l2": 1.3057041731524905,
+    "meta_type": "ridge",
+    "meta_ridge_alpha": 0.12350426457354724
+  },
+  "training_samples": 18524,
+  "features": [
+    "Time_spent_Alone",
+    "Social_event_attendance",
+    "Going_outside",
+    "Friends_circle_size",
+    "Post_frequency",
+    "Stage_fear_No",
+    "Stage_fear_Unknown",
+    "Stage_fear_Yes",
+    "Drained_after_socializing_No",
+    "Drained_after_socializing_Unknown",
+    "Drained_after_socializing_Yes",
+    "match_p_Extrovert",
+    "match_p_Introvert",
+    "match_p_Unknown"
+  ],
+  "target_classes": [
+    0,
+    1
+  ],
+  "label_mapping": {
+    "0": "Extrovert",
+    "1": "Introvert"
+  }
+}

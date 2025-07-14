@@ -26,5 +26,9 @@
   "target_classes": [
     0,
     1
-  ]
+  ],
+  "label_mapping": {
+    "0": "Extrovert",
+    "1": "Introvert"
+  }
 }

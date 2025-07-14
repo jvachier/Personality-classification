@@ -179,13 +179,17 @@ class ModelLoader:
                 probabilities = proba.tolist()
                 confidence = float(max(proba))
 
-            # Convert prediction back to personality type
-            if prediction == 0:
+            # Convert prediction back to personality type using metadata if available
+            label_mapping = self.model_metadata.get("label_mapping", {})
+            if label_mapping:
+                personality_type = label_mapping.get(str(prediction), f"Class_{prediction}")
+            elif prediction == 0:
                 personality_type = "Extrovert"
             elif prediction == 1:
                 personality_type = "Introvert"
             else:
-                personality_type = f"Class_{prediction}"
+                # For any other predictions, default to binary classification
+                personality_type = "Introvert" if prediction > 0 else "Extrovert"
 
             result = {
                 "prediction": personality_type,
@@ -194,6 +198,7 @@ class ModelLoader:
                 else prediction,
                 "confidence": confidence,
                 "probabilities": probabilities,
+                # Based on LabelEncoder: Extrovert=0, Introvert=1
                 "probability_extrovert": probabilities[0] if probabilities else None,
                 "probability_introvert": probabilities[1] if probabilities else None,
                 "model_name": self.model_name,
