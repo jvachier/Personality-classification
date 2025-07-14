@@ -1,11 +1,12 @@
 """Tests for model building functionality."""
 
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import MagicMock, patch
 
-from modules.model_builders import build_stack, build_stack_c, build_sklearn_stack
+from modules.model_builders import build_sklearn_stack, build_stack, build_stack_c
 
 
 class TestModelBuilders:
