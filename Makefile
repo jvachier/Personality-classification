@@ -28,11 +28,11 @@ install:
 # Code quality with Ruff
 format:
 	@echo "🎨 Formatting code with ruff..."
-	uv run ruff format src/ dash_app/ tests/
+	uv run ruff format src/ dash_app/ tests/ scripts/
 
 lint:
 	@echo "🔍 Linting code with ruff..."
-	uv run ruff check src/ dash_app/ tests/ --output-format=github
+	uv run ruff check src/ dash_app/ tests/ scripts/ --output-format=github
 
 # Testing
 test:
