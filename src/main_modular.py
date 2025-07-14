@@ -192,7 +192,7 @@ def get_objective_function(config: StackConfig, data: TrainingData):
             data.X_full,
             data.y_full,
             seed=config.seed,
-            wide_hp=config.wide_hp,
+            wide_hp=config.wide_hp if config.wide_hp is not None else False,
             sample_weights=None,
         ),
         "make_stack_c_objective": lambda: make_stack_c_objective(
@@ -208,7 +208,7 @@ def get_objective_function(config: StackConfig, data: TrainingData):
             data.X_full,
             data.y_full,
             seed=config.seed,
-            noise_rate=config.noise_rate,
+            noise_rate=config.noise_rate if config.noise_rate is not None else 0.0,
             sample_weights=None,
         ),
     }
