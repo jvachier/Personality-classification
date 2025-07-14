@@ -23,7 +23,7 @@ on:
       - '.github/workflows/**'
 
 env:
-  # No need for UV_SYSTEM_PYTHON with uv sync
+  UV_SYSTEM_PYTHON: 1
 
 jobs:
   test:
@@ -44,7 +44,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv sync --all-extras --dev
+        uv sync --all-extras
 
     - name: Run pre-commit hooks
       run: |
