@@ -493,14 +493,18 @@ def main():
             testing_mode=TESTING_MODE, test_size=TESTING_SAMPLE_SIZE
         )
 
-        logger.info(f"📊 Loaded data: {len(data.X_full)} training samples, {len(data.X_test)} test samples")
+        logger.info(
+            f"📊 Loaded data: {len(data.X_full)} training samples, {len(data.X_test)} test samples"
+        )
 
         # Train all stacks
         studies = train_all_stacks(data)
 
         # Log stack optimization results
         for stack_name, study in studies.items():
-            logger.info(f"📈 Stack {stack_name}: Best score = {study.best_value:.6f} ({len(study.trials)} trials)")
+            logger.info(
+                f"📈 Stack {stack_name}: Best score = {study.best_value:.6f} ({len(study.trials)} trials)"
+            )
 
         # Create model builders
         builders = create_model_builders(studies, data)

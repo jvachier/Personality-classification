@@ -23,7 +23,7 @@ on:
       - '.github/workflows/**'
 
 env:
-  UV_SYSTEM_PYTHON: 1
+  # No need for UV_SYSTEM_PYTHON with uv sync
 
 jobs:
   test:

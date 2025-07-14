@@ -55,7 +55,9 @@ class ModelLoader:
                     else:
                         # Look for individual stack models
                         model_file = models_dir / f"stack_{self.model_name}_model.pkl"
-                        metadata_file = models_dir / f"stack_{self.model_name}_metadata.json"
+                        metadata_file = (
+                            models_dir / f"stack_{self.model_name}_metadata.json"
+                        )
 
                     if model_file.exists():
                         try:
@@ -150,7 +152,11 @@ class ModelLoader:
                 for feature in expected_features:
                     if feature not in features_df.columns:
                         # Set default values based on feature type
-                        if "Stage_fear_" in feature or "Drained_after_socializing_" in feature or "match_p_" in feature:
+                        if (
+                            "Stage_fear_" in feature
+                            or "Drained_after_socializing_" in feature
+                            or "match_p_" in feature
+                        ):
                             features_df[feature] = 0  # Binary features default to 0
                         else:
                             features_df[feature] = 0.0  # Numeric features default to 0
@@ -183,7 +189,9 @@ class ModelLoader:
 
             result = {
                 "prediction": personality_type,
-                "raw_prediction": prediction.tolist() if hasattr(prediction, "tolist") else prediction,
+                "raw_prediction": prediction.tolist()
+                if hasattr(prediction, "tolist")
+                else prediction,
                 "confidence": confidence,
                 "probabilities": probabilities,
                 "probability_extrovert": probabilities[0] if probabilities else None,

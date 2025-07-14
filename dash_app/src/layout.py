@@ -57,7 +57,9 @@ def create_layout(model_name: str, model_metadata: dict[str, Any]) -> html.Div:
                     html.H3("Make Predictions", style={"color": "#34495e"}),
                     # Input methods tabs (simplified to manual only)
                     html.Div(
-                        style={"display": "none"},  # Hide tabs since we only have manual input
+                        style={
+                            "display": "none"
+                        },  # Hide tabs since we only have manual input
                         children=[
                             dcc.Tabs(
                                 id="input-tabs",
@@ -215,13 +217,16 @@ def create_manual_input() -> html.Div:
                 "Enter your personality traits below:",
                 style={"fontSize": "16px", "marginBottom": "20px", "color": "#2c3e50"},
             ),
-
             # Time spent alone
             html.Div(
                 [
                     html.Label(
                         "Time Spent Alone (hours per day):",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Input(
                         id="time-spent-alone",
@@ -235,13 +240,16 @@ def create_manual_input() -> html.Div:
                 ],
                 style={"marginBottom": "15px"},
             ),
-
             # Social event attendance
             html.Div(
                 [
                     html.Label(
                         "Social Event Attendance (events per month):",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Input(
                         id="social-event-attendance",
@@ -255,13 +263,16 @@ def create_manual_input() -> html.Div:
                 ],
                 style={"marginBottom": "15px"},
             ),
-
             # Going outside
             html.Div(
                 [
                     html.Label(
                         "Going Outside (frequency per week):",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Input(
                         id="going-outside",
@@ -275,13 +286,16 @@ def create_manual_input() -> html.Div:
                 ],
                 style={"marginBottom": "15px"},
             ),
-
             # Friends circle size
             html.Div(
                 [
                     html.Label(
                         "Friends Circle Size:",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Input(
                         id="friends-circle-size",
@@ -295,13 +309,16 @@ def create_manual_input() -> html.Div:
                 ],
                 style={"marginBottom": "15px"},
             ),
-
             # Post frequency
             html.Div(
                 [
                     html.Label(
                         "Social Media Post Frequency (posts per week):",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Input(
                         id="post-frequency",
@@ -315,13 +332,16 @@ def create_manual_input() -> html.Div:
                 ],
                 style={"marginBottom": "15px"},
             ),
-
             # Stage fear
             html.Div(
                 [
                     html.Label(
                         "Do you have stage fear?",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Dropdown(
                         id="stage-fear",
@@ -336,13 +356,16 @@ def create_manual_input() -> html.Div:
                 ],
                 style={"marginBottom": "15px"},
             ),
-
             # Drained after socializing
             html.Div(
                 [
                     html.Label(
                         "Do you feel drained after socializing?",
-                        style={"display": "block", "fontWeight": "bold", "marginBottom": "5px"},
+                        style={
+                            "display": "block",
+                            "fontWeight": "bold",
+                            "marginBottom": "5px",
+                        },
                     ),
                     dcc.Dropdown(
                         id="drained-after-socializing",
@@ -393,7 +416,7 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
     elements = [
         html.H4(
             "Personality Classification Result",
-            style={"color": "#2c3e50", "marginBottom": "15px"}
+            style={"color": "#2c3e50", "marginBottom": "15px"},
         ),
         # Main prediction with personality-specific styling
         html.Div(
@@ -407,7 +430,7 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
                         "backgroundColor": "#ecf0f1",
                         "padding": "15px",
                         "borderRadius": "10px",
-                        "border": f"2px solid {personality_color}"
+                        "border": f"2px solid {personality_color}",
                     },
                 )
             ]
@@ -434,13 +457,23 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
         elements.append(
             html.Div(
                 [
-                    html.H5("Detailed Probabilities:", style={"margin": "20px 0 10px 0", "color": "#2c3e50"}),
+                    html.H5(
+                        "Detailed Probabilities:",
+                        style={"margin": "20px 0 10px 0", "color": "#2c3e50"},
+                    ),
                     html.Div(
                         [
                             # Extrovert bar
                             html.Div(
                                 [
-                                    html.Span("Extrovert: ", style={"fontWeight": "bold", "width": "100px", "display": "inline-block"}),
+                                    html.Span(
+                                        "Extrovert: ",
+                                        style={
+                                            "fontWeight": "bold",
+                                            "width": "100px",
+                                            "display": "inline-block",
+                                        },
+                                    ),
                                     html.Div(
                                         style={
                                             "backgroundColor": "#e74c3c",
@@ -452,14 +485,28 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
                                             "minWidth": "2px",
                                         }
                                     ),
-                                    html.Span(f"{prob_extrovert:.1%}", style={"fontWeight": "bold"}),
+                                    html.Span(
+                                        f"{prob_extrovert:.1%}",
+                                        style={"fontWeight": "bold"},
+                                    ),
                                 ],
-                                style={"margin": "10px 0", "display": "flex", "alignItems": "center"},
+                                style={
+                                    "margin": "10px 0",
+                                    "display": "flex",
+                                    "alignItems": "center",
+                                },
                             ),
                             # Introvert bar
                             html.Div(
                                 [
-                                    html.Span("Introvert: ", style={"fontWeight": "bold", "width": "100px", "display": "inline-block"}),
+                                    html.Span(
+                                        "Introvert: ",
+                                        style={
+                                            "fontWeight": "bold",
+                                            "width": "100px",
+                                            "display": "inline-block",
+                                        },
+                                    ),
                                     html.Div(
                                         style={
                                             "backgroundColor": "#3498db",
@@ -471,9 +518,16 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
                                             "minWidth": "2px",
                                         }
                                     ),
-                                    html.Span(f"{prob_introvert:.1%}", style={"fontWeight": "bold"}),
+                                    html.Span(
+                                        f"{prob_introvert:.1%}",
+                                        style={"fontWeight": "bold"},
+                                    ),
                                 ],
-                                style={"margin": "10px 0", "display": "flex", "alignItems": "center"},
+                                style={
+                                    "margin": "10px 0",
+                                    "display": "flex",
+                                    "alignItems": "center",
+                                },
                             ),
                         ],
                         style={

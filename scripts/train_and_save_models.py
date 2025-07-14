@@ -150,7 +150,11 @@ def train_ensemble_model(data_dict: dict, save_dir: Path) -> None:
     metadata = {
         "model_name": "ensemble",
         "model_type": "VotingClassifier",
-        "estimators": ["LogisticRegression", "RandomForestClassifier", "LGBMClassifier"],
+        "estimators": [
+            "LogisticRegression",
+            "RandomForestClassifier",
+            "LGBMClassifier",
+        ],
         "training_samples": len(X_train),
         "features": X_train.columns.tolist(),
         "target_classes": sorted(y_train.unique().tolist()),

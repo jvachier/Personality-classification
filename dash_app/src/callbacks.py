@@ -55,9 +55,13 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
             # Build the feature dictionary with proper encoding
             data = {
                 "Time_spent_Alone": time_alone if time_alone is not None else 2.0,
-                "Social_event_attendance": social_events if social_events is not None else 4.0,
+                "Social_event_attendance": social_events
+                if social_events is not None
+                else 4.0,
                 "Going_outside": going_outside if going_outside is not None else 3.0,
-                "Friends_circle_size": friends_size if friends_size is not None else 8.0,
+                "Friends_circle_size": friends_size
+                if friends_size is not None
+                else 8.0,
                 "Post_frequency": post_freq if post_freq is not None else 3.0,
                 # One-hot encode Stage_fear
                 "Stage_fear_No": 1 if stage_fear == "No" else 0,
@@ -65,7 +69,9 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
                 "Stage_fear_Yes": 1 if stage_fear == "Yes" else 0,
                 # One-hot encode Drained_after_socializing
                 "Drained_after_socializing_No": 1 if drained_social == "No" else 0,
-                "Drained_after_socializing_Unknown": 1 if drained_social == "Unknown" else 0,
+                "Drained_after_socializing_Unknown": 1
+                if drained_social == "Unknown"
+                else 0,
                 "Drained_after_socializing_Yes": 1 if drained_social == "Yes" else 0,
                 # Set external match features to Unknown (default)
                 "match_p_Extrovert": 0,

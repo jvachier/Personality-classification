@@ -21,5 +21,5 @@ def test_dash_app_layout(dash_app):
 @pytest.mark.integration
 def test_dash_app_server(dash_client):
     """Test that the Dash app server responds."""
-    response = dash_client.get('/')
+    response = dash_client.get("/")
     assert response.status_code == 200
