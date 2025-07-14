@@ -23,6 +23,7 @@ help:
 	@echo "  clean          - Clean cache and temporary files"
 	@echo "  run-pipeline   - Run the full modular pipeline"
 	@echo "  run-quick      - Run quick pipeline test (limited data)"
+	@echo "  train-models   - Train and save ML models for Dash app"
 	@echo "  setup-env      - Setup complete development environment"
 	@echo "  jupyter        - Start Jupyter Lab"
 	@echo "  data-check     - Verify data files exist"
@@ -106,6 +107,11 @@ run-quick:
 	@echo "⚡ Running quick pipeline test..."
 	@echo "This will run with limited data for testing purposes"
 	uv run python src/main_modular.py
+
+# Model training
+train-models:
+	@echo "🤖 Training and saving ML models..."
+	uv run python scripts/train_and_save_models.py
 
 # Data verification
 data-check:

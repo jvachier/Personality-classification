@@ -1,6 +1,6 @@
 # Dockerignore for Dash Application
 
-# Python
+# Python cache and build artifacts
 __pycache__/
 *.py[cod]
 *$py.class
@@ -32,14 +32,14 @@ ENV/
 env.bak/
 venv.bak/
 
-# IDEs
+# IDEs and editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# OS files
 .DS_Store
 .DS_Store?
 ._*
@@ -48,58 +48,32 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Logs
-*.log
+# Logs (exclude from container)
 logs/
+*.log
 
-# Testing
+# Testing and coverage
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .nox/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# MLflow
-mlruns/
-mlartifacts/
-
-# Data files (exclude large datasets)
-*.csv
-*.parquet
-*.h5
-*.hdf5
-*.pkl
-*.pickle
-
-# Documentation
-docs/_build/
-*.pdf
-
 # Git
 .git/
 .gitignore
-
-# Docker
-Dockerfile
-.dockerignore
-docker-compose.yml
-docker-compose.override.yml
 
 # CI/CD
 .github/
 .gitlab-ci.yml
 .travis.yml
 
-# Local development
+# Local development files
 .env.local
 .env.development
 .env.test
-.env.production
 
-# Node modules (if any)
+# Node modules
 node_modules/
 
 # Temporary files
@@ -107,3 +81,22 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# Documentation build
+docs/_build/
+
+# Data files (exclude large datasets but keep trained models)
+data/
+submissions/
+*.csv
+*.parquet
+*.h5
+*.hdf5
+# Don't exclude .pkl files as we need trained models
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Training artifacts
+catboost_info/
+best_params/
