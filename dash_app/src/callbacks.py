@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import datetime
-from typing import Any
 
 from dash import dash_table, html
 from dash.dependencies import Input, Output, State
 
 from .layout import (
-    create_file_input,
-    create_json_input,
-    create_manual_input,
     format_prediction_result,
 )
 
@@ -28,51 +23,55 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
     """
     logger = logging.getLogger(__name__)
 
-    @app.callback(Output("input-content", "children"), Input("input-tabs", "value"))
-    def update_input_content(tab_value):
-        """Update input content based on selected tab."""
-        if tab_value == "manual":
-            return create_manual_input()
-        elif tab_value == "json":
-            return create_json_input()
-        elif tab_value == "file":
-            return create_file_input()
-        return html.Div("Select an input method")
+    # No longer need tab switching callback since we only have manual input
 
     @app.callback(
         Output("prediction-results", "children"),
         Input("predict-button", "n_clicks"),
-        State("input-tabs", "value"),
-        State("feature1", "value"),
-        State("feature2", "value"),
-        State("feature3", "value"),
-        State("json-input", "value"),
+        State("time-spent-alone", "value"),
+        State("social-event-attendance", "value"),
+        State("going-outside", "value"),
+        State("friends-circle-size", "value"),
+        State("post-frequency", "value"),
+        State("stage-fear", "value"),
+        State("drained-after-socializing", "value"),
         prevent_initial_call=True,
     )
-    def make_prediction(n_clicks, input_type, feature1, feature2, feature3, json_input):
+    def make_prediction(
+        n_clicks,
+        time_alone,
+        social_events,
+        going_outside,
+        friends_size,
+        post_freq,
+        stage_fear,
+        drained_social,
+    ):
         """Handle prediction requests."""
         if not n_clicks:
             return ""
 
         try:
-            # Extract input data based on input type
-            if input_type == "manual":
-                data = {
-                    "feature1": feature1 if feature1 is not None else 0.5,
-                    "feature2": feature2 if feature2 is not None else 0.3,
-                    "feature3": feature3 if feature3 is not None else 0.8,
-                }
-            elif input_type == "json":
-                if not json_input:
-                    return html.Div("Please provide JSON input", style={"color": "red"})
-                try:
-                    data = json.loads(json_input)
-                except json.JSONDecodeError:
-                    return html.Div("Invalid JSON format", style={"color": "red"})
-            else:
-                return html.Div(
-                    "File upload not implemented yet", style={"color": "orange"}
-                )
+            # Build the feature dictionary with proper encoding
+            data = {
+                "Time_spent_Alone": time_alone if time_alone is not None else 2.0,
+                "Social_event_attendance": social_events if social_events is not None else 4.0,
+                "Going_outside": going_outside if going_outside is not None else 3.0,
+                "Friends_circle_size": friends_size if friends_size is not None else 8.0,
+                "Post_frequency": post_freq if post_freq is not None else 3.0,
+                # One-hot encode Stage_fear
+                "Stage_fear_No": 1 if stage_fear == "No" else 0,
+                "Stage_fear_Unknown": 1 if stage_fear == "Unknown" else 0,
+                "Stage_fear_Yes": 1 if stage_fear == "Yes" else 0,
+                # One-hot encode Drained_after_socializing
+                "Drained_after_socializing_No": 1 if drained_social == "No" else 0,
+                "Drained_after_socializing_Unknown": 1 if drained_social == "Unknown" else 0,
+                "Drained_after_socializing_Yes": 1 if drained_social == "Yes" else 0,
+                # Set external match features to Unknown (default)
+                "match_p_Extrovert": 0,
+                "match_p_Introvert": 0,
+                "match_p_Unknown": 1,
+            }
 
             # Make prediction
             result = model_loader.predict(data)

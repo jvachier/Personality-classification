@@ -1,0 +1,30 @@
+{
+  "model_name": "ensemble",
+  "model_type": "VotingClassifier",
+  "estimators": [
+    "LogisticRegression",
+    "RandomForestClassifier",
+    "LGBMClassifier"
+  ],
+  "training_samples": 18524,
+  "features": [
+    "Time_spent_Alone",
+    "Social_event_attendance",
+    "Going_outside",
+    "Friends_circle_size",
+    "Post_frequency",
+    "Stage_fear_No",
+    "Stage_fear_Unknown",
+    "Stage_fear_Yes",
+    "Drained_after_socializing_No",
+    "Drained_after_socializing_Unknown",
+    "Drained_after_socializing_Yes",
+    "match_p_Extrovert",
+    "match_p_Introvert",
+    "match_p_Unknown"
+  ],
+  "target_classes": [
+    0,
+    1
+  ]
+}
