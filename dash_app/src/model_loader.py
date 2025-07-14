@@ -182,7 +182,9 @@ class ModelLoader:
             # Convert prediction back to personality type using metadata if available
             label_mapping = self.model_metadata.get("label_mapping", {})
             if label_mapping:
-                personality_type = label_mapping.get(str(prediction), f"Class_{prediction}")
+                personality_type = label_mapping.get(
+                    str(prediction), f"Class_{prediction}"
+                )
             elif prediction == 0:
                 personality_type = "Extrovert"
             elif prediction == 1:
