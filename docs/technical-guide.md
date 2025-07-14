@@ -439,7 +439,510 @@ def register_augmentation_method(name, method_class):
     logger.info(f"Registered new augmentation method: {name}")
 ```
 
-## Future Enhancements
+## Dash Application Architecture
+
+### Overview
+
+The Dash application provides an interactive web interface for personality classification using the trained ensemble models. Built with Plotly Dash, it offers real-time predictions with confidence scores and probability visualizations.
+
+### Application Structure
+
+```
+dash_app/
+├── main.py              # Entry point and CLI argument handling
+├── src/
+│   ├── __init__.py
+│   ├── app.py           # Core Dash application setup
+│   ├── layout.py        # UI components and layout definition
+│   ├── callbacks.py     # Interactive callbacks and prediction logic
+│   └── model_loader.py  # Model management and prediction interface
+├── Dockerfile           # Container configuration
+├── docker-compose.yml   # Multi-container orchestration
+└── .dockerignore        # Docker build exclusions
+```
+
+### Core Components
+
+#### 1. Application Bootstrap (`main.py`)
+
+```python
+def main():
+    """Main entry point with CLI argument parsing."""
+    parser = argparse.ArgumentParser(description="Personality Classification Dashboard")
+    parser.add_argument("--model-name", required=True, help="Model name to load")
+    parser.add_argument("--model-version", help="Specific model version")
+    parser.add_argument("--model-stage", default="Production", help="Model stage")
+    parser.add_argument("--host", default="127.0.0.1", help="Host address")
+    parser.add_argument("--port", type=int, default=8050, help="Port number")
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+
+    args = parser.parse_args()
+
+    # Initialize and run application
+    app = create_dash_app(args.model_name, args.model_version, args.model_stage)
+    app.run_server(host=args.host, port=args.port, debug=args.debug)
+```
+
+#### 2. Model Loader (`model_loader.py`)
+
+The model loader handles multiple model sources and provides a unified prediction interface:
+
+```python
+class ModelLoader:
+    """Handles loading and managing ML models from various sources."""
+
+    def __init__(self, model_name: str, model_version: str | None = None,
+                 model_stage: str = "Production"):
+        self.model_name = model_name
+        self.model = None
+        self.model_metadata = {}
+        self._load_model()
+
+    def _load_model(self):
+        """Load model with fallback strategies."""
+        # Priority order:
+        # 1. Local models directory (ensemble_model.pkl, stack_X_model.pkl)
+        # 2. Best params directory (saved optimization results)
+        # 3. Dummy model for demonstration
+
+    def predict(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Make prediction with metadata-driven label mapping."""
+        # Feature engineering and validation
+        # Prediction with confidence scores
+        # Label mapping using metadata
+        return {
+            "prediction": personality_type,
+            "confidence": confidence,
+            "probability_extrovert": prob_extrovert,
+            "probability_introvert": prob_introvert,
+            "model_name": self.model_name
+        }
+```
+
+**Key Features:**
+- **Multi-source loading**: Supports ensemble and individual stack models
+- **Metadata-driven mapping**: Uses saved label mapping for consistent predictions
+- **Feature validation**: Ensures proper feature ordering and defaults
+- **Graceful fallbacks**: Creates dummy model if no trained model available
+
+#### 3. User Interface (`layout.py`)
+
+The UI is designed with a modern, responsive layout using Dash Bootstrap Components:
+
+```python
+def create_personality_input_form():
+    """Create the main personality assessment form."""
+    return dbc.Card([
+        dbc.CardHeader("Personality Assessment"),
+        dbc.CardBody([
+            # Time spent alone (0-10 scale)
+            create_slider_input("time-spent-alone", "Time Spent Alone", 0, 10, 5),
+
+            # Social event attendance (0-10 scale)
+            create_slider_input("social-event-attendance", "Social Event Attendance", 0, 10, 5),
+
+            # Categorical inputs with dropdowns
+            create_dropdown_input("stage-fear", "Stage Fear", ["No", "Yes", "Unknown"]),
+            create_dropdown_input("drained-after-socializing", "Drained After Socializing",
+                                ["No", "Yes", "Unknown"]),
+
+            # Prediction button and results
+            dbc.Button("Predict Personality", id="predict-button", color="primary"),
+            html.Div(id="prediction-results")
+        ])
+    ])
+```
+
+**UI Features:**
+- **Interactive sliders**: For numerical personality traits
+- **Dropdown selectors**: For categorical responses
+- **Real-time validation**: Input validation and feedback
+- **Responsive design**: Mobile-friendly layout
+- **Accessibility**: ARIA labels and keyboard navigation
+
+#### 4. Prediction Display (`layout.py`)
+
+```python
+def format_prediction_result(result: dict[str, Any]) -> html.Div:
+    """Format prediction result with visual enhancements."""
+    prediction = result.get("prediction", "Unknown")
+    confidence = result.get("confidence", 0)
+    prob_extrovert = result.get("probability_extrovert", 0)
+    prob_introvert = result.get("probability_introvert", 0)
+
+    # Dynamic styling based on prediction
+    personality_color = "#e74c3c" if prediction == "Extrovert" else "#3498db"
+    confidence_color = "#27ae60" if confidence > 0.7 else "#f39c12" if confidence > 0.5 else "#e74c3c"
+
+    return html.Div([
+        # Main prediction with personality-specific styling
+        html.H2(f"🧠 You are classified as: {prediction}",
+                style={"color": personality_color, "textAlign": "center"}),
+
+        # Confidence score with color coding
+        html.P(f"Confidence Score: {confidence:.1%}",
+               style={"color": confidence_color, "textAlign": "center"}),
+
+        # Probability bars for both classes
+        create_probability_bars(prob_extrovert, prob_introvert),
+
+        # Personality description
+        create_personality_description(prediction)
+    ])
+```
+
+#### 5. Interactive Callbacks (`callbacks.py`)
+
+The callback system handles user interactions and real-time predictions:
+
+```python
+@app.callback(
+    Output("prediction-results", "children"),
+    Input("predict-button", "n_clicks"),
+    [State("time-spent-alone", "value"),
+     State("social-event-attendance", "value"),
+     State("going-outside", "value"),
+     State("friends-circle-size", "value"),
+     State("post-frequency", "value"),
+     State("stage-fear", "value"),
+     State("drained-after-socializing", "value")],
+    prevent_initial_call=True
+)
+def make_prediction(n_clicks, time_alone, social_events, going_outside,
+                   friends_size, post_freq, stage_fear, drained_social):
+    """Handle prediction requests with comprehensive feature engineering."""
+    if not n_clicks:
+        return ""
+
+    try:
+        # Build feature dictionary with proper encoding
+        data = {
+            "Time_spent_Alone": time_alone if time_alone is not None else 2.0,
+            "Social_event_attendance": social_events if social_events is not None else 4.0,
+            "Going_outside": going_outside if going_outside is not None else 3.0,
+            "Friends_circle_size": friends_size if friends_size is not None else 8.0,
+            "Post_frequency": post_freq if post_freq is not None else 3.0,
+
+            # One-hot encode categorical features
+            "Stage_fear_No": 1 if stage_fear == "No" else 0,
+            "Stage_fear_Unknown": 1 if stage_fear == "Unknown" else 0,
+            "Stage_fear_Yes": 1 if stage_fear == "Yes" else 0,
+
+            "Drained_after_socializing_No": 1 if drained_social == "No" else 0,
+            "Drained_after_socializing_Unknown": 1 if drained_social == "Unknown" else 0,
+            "Drained_after_socializing_Yes": 1 if drained_social == "Yes" else 0,
+
+            # External match features (set to Unknown as default)
+            "match_p_Extrovert": 0,
+            "match_p_Introvert": 0,
+            "match_p_Unknown": 1
+        }
+
+        # Make prediction and format results
+        result = model_loader.predict(data)
+        return format_prediction_result(result)
+
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        return html.Div(f"Error: {e!s}", style={"color": "red"})
+```
+
+### Prediction History & Monitoring
+
+```python
+@app.callback(
+    Output("prediction-history", "children"),
+    [Input("interval-component", "n_intervals"),
+     Input("predict-button", "n_clicks")]
+)
+def update_prediction_history(n_intervals, n_clicks):
+    """Update prediction history display with recent predictions."""
+    if not prediction_history:
+        return html.Div("No predictions yet", style={"color": "#7f8c8d"})
+
+    # Create interactive history table
+    table_data = []
+    for i, pred in enumerate(reversed(prediction_history[-10:])):
+        table_data.append({
+            "ID": f"#{len(prediction_history) - i}",
+            "Timestamp": pred["timestamp"][:19],
+            "Prediction": pred["result"].get("prediction", "N/A"),
+            "Confidence": f"{pred['result'].get('confidence', 0):.3f}"
+        })
+
+    return dash_table.DataTable(
+        data=table_data,
+        columns=[
+            {"name": "ID", "id": "ID"},
+            {"name": "Timestamp", "id": "Timestamp"},
+            {"name": "Prediction", "id": "Prediction"},
+            {"name": "Confidence", "id": "Confidence"}
+        ],
+        style_cell={"textAlign": "left", "padding": "10px"},
+        style_header={"backgroundColor": "#3498db", "color": "white"}
+    )
+```
+
+### Deployment Options
+
+#### 1. Local Development
+
+```bash
+# Start with default ensemble model
+make dash
+
+# Start with specific model
+uv run python dash_app/main.py --model-name ensemble --debug
+
+# Start with stack model
+uv run python dash_app/main.py --model-name A --port 8051
+```
+
+#### 2. Docker Deployment
+
+```dockerfile
+# Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+EXPOSE 8050
+
+CMD ["python", "dash_app/main.py", "--model-name", "ensemble", "--host", "0.0.0.0"]
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  personality-dashboard:
+    build: .
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./models:/app/models:ro
+      - ./data:/app/data:ro
+    environment:
+      - MODEL_NAME=ensemble
+      - DEBUG=false
+    restart: unless-stopped
+```
+
+#### 3. Production Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Scale for high availability
+docker-compose up --scale personality-dashboard=3 -d
+
+# Behind reverse proxy (nginx/traefik)
+# Configure load balancing and SSL termination
+```
+
+### Performance Optimization
+
+#### Caching Strategy
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=1000)
+def cached_prediction(feature_hash: str):
+    """Cache predictions for identical feature combinations."""
+    # Convert hash back to features and predict
+    # Useful for repeated identical inputs
+    pass
+
+# Memory-efficient model loading
+class LazyModelLoader:
+    """Load models only when needed."""
+    def __init__(self):
+        self._model = None
+        self._model_path = None
+
+    @property
+    def model(self):
+        if self._model is None:
+            self._model = self._load_model()
+        return self._model
+```
+
+#### Resource Management
+
+```python
+# Graceful shutdown handling
+import signal
+import sys
+
+def signal_handler(sig, frame):
+    """Handle graceful shutdown."""
+    logger.info("Shutting down Dash application...")
+    # Cleanup resources
+    if hasattr(app, 'cleanup'):
+        app.cleanup()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+```
+
+### Security Considerations
+
+#### Input Validation
+
+```python
+def validate_input_data(data: dict) -> dict:
+    """Comprehensive input validation and sanitization."""
+    validated = {}
+
+    # Numerical range validation
+    for key, value in data.items():
+        if key in NUMERICAL_FEATURES:
+            validated[key] = max(0, min(10, float(value)))  # Clamp to valid range
+        elif key in CATEGORICAL_FEATURES:
+            validated[key] = value if value in VALID_CATEGORIES[key] else "Unknown"
+        else:
+            validated[key] = value
+
+    return validated
+```
+
+#### Rate Limiting
+
+```python
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+limiter = Limiter(
+    app.server,
+    key_func=get_remote_address,
+    default_limits=["100 per hour", "20 per minute"]
+)
+
+@limiter.limit("5 per minute")
+def prediction_endpoint():
+    """Rate-limited prediction endpoint."""
+    pass
+```
+
+### Monitoring & Analytics
+
+#### Application Metrics
+
+```python
+import time
+from collections import defaultdict
+
+class DashboardMetrics:
+    """Track application performance and usage."""
+
+    def __init__(self):
+        self.prediction_count = 0
+        self.prediction_times = []
+        self.error_count = 0
+        self.user_sessions = defaultdict(int)
+
+    def record_prediction(self, duration: float, user_id: str = None):
+        """Record prediction metrics."""
+        self.prediction_count += 1
+        self.prediction_times.append(duration)
+        if user_id:
+            self.user_sessions[user_id] += 1
+
+    def get_stats(self) -> dict:
+        """Get performance statistics."""
+        return {
+            "total_predictions": self.prediction_count,
+            "avg_prediction_time": sum(self.prediction_times) / len(self.prediction_times),
+            "error_rate": self.error_count / max(1, self.prediction_count),
+            "active_sessions": len(self.user_sessions)
+        }
+```
+
+### Testing Strategy
+
+#### Unit Tests
+
+```python
+# tests/dash_app/test_model_loader.py
+def test_model_loader_prediction():
+    """Test model loader prediction functionality."""
+    loader = ModelLoader("ensemble")
+
+    test_data = {
+        "Time_spent_Alone": 5.0,
+        "Social_event_attendance": 7.0,
+        "Stage_fear": "No",
+        "Drained_after_socializing": "Yes"
+    }
+
+    result = loader.predict(test_data)
+
+    assert "prediction" in result
+    assert result["prediction"] in ["Extrovert", "Introvert"]
+    assert 0 <= result["confidence"] <= 1
+```
+
+#### Integration Tests
+
+```python
+# tests/dash_app/test_app_integration.py
+def test_full_prediction_workflow():
+    """Test complete prediction workflow."""
+    from dash.testing.application_runners import import_app
+
+    app = import_app("dash_app.main")
+    dash_duo.start_server(app)
+
+    # Simulate user input
+    dash_duo.find_element("#time-spent-alone").send_keys("5")
+    dash_duo.find_element("#predict-button").click()
+
+    # Verify prediction result
+    dash_duo.wait_for_element("#prediction-results", timeout=10)
+    result_text = dash_duo.find_element("#prediction-results").text
+    assert "You are classified as:" in result_text
+```
+
+### Usage Guidelines
+
+#### Starting the Application
+
+```bash
+# Method 1: Using Makefile (recommended)
+make dash
+
+# Method 2: Direct Python execution
+uv run python dash_app/main.py --model-name ensemble
+
+# Method 3: Docker deployment
+docker-compose up -d
+
+# Stop the application
+make stop-dash
+# or
+Ctrl+C (for local development)
+```
+
+#### Model Selection
+
+- **ensemble**: Recommended for production use (balanced performance)
+- **A-F**: Individual stack models for specialized analysis
+- **Auto-detection**: Falls back to dummy model if no trained model available
+
+#### Interpreting Results
+
+- **Prediction**: Primary personality classification (Extrovert/Introvert)
+- **Confidence**: Model certainty (0-100%, higher is better)
+- **Probabilities**: Individual class probabilities (sum to 100%)
+- **Personality Description**: Detailed trait explanations
+
+### Future Enhancements
 
 ### Planned Features
 
@@ -462,9 +965,21 @@ def register_augmentation_method(name, method_class):
 
 ## Document Revision Notes
 
-**Last Updated**: July 12, 2025
+**Last Updated**: July 14, 2025
 
-### Corrections Made
+### Recent Updates
+
+- **Dash Application Documentation**: Added comprehensive documentation for the interactive web dashboard
+  - Application architecture and component structure
+  - Model loader with metadata-driven predictions
+  - User interface design and responsive layout
+  - Interactive callbacks and real-time predictions
+  - Deployment options (local, Docker, production)
+  - Performance optimization and caching strategies
+  - Security considerations and input validation
+  - Monitoring, testing, and usage guidelines
+
+### Previous Corrections
 
 - **Stack A/B Models**: Corrected from "Random Forest, Logistic Regression, XGBoost, LightGBM, CatBoost" to "XGBoost, LightGBM, CatBoost"
 - **Stack C Models**: Clarified as "XGBoost, CatBoost" (dual boosting specialists)
@@ -475,4 +990,4 @@ def register_augmentation_method(name, method_class):
 - **Parameter Ranges**: Updated Stack A (500-1000) and Stack B (600-1200) estimator ranges
 - **Stack Summary Table**: Added comprehensive table showing exact model compositions
 
-All descriptions now accurately reflect the actual code implementation in `src/modules/model_builders.py`.
+All descriptions now accurately reflect the actual code implementation in `src/modules/model_builders.py` and `dash_app/` directory.
