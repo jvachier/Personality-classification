@@ -1,0 +1,100 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'dash_app/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'dash_app/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
+
+env:
+  UV_SYSTEM_PYTHON: 1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras --dev
+
+    - name: Run pre-commit hooks
+      run: |
+        uv run pre-commit run --all-files
+
+    - name: Run tests
+      run: |
+        uv run pytest tests/ -v --tb=short
+
+    - name: Check code style with ruff
+      run: |
+        uv run ruff check .
+        uv run ruff format --check .
+
+    - name: Type check with mypy
+      run: |
+        uv run mypy src/ --ignore-missing-imports
+
+    - name: Security check with bandit
+      run: |
+        uv run bandit -r src/ -f json
+
+    - name: Test Dash app imports
+      run: |
+        uv run python -c "
+        import sys
+        sys.path.append('dash_app/src')
+        try:
+            from app import create_app
+            from model_loader import ModelLoader
+            from layout import create_layout
+            from callbacks import register_callbacks
+            print('✅ All Dash app modules imported successfully')
+        except Exception as e:
+            print(f'❌ Import failed: {e}')
+            sys.exit(1)
+        "
+
+    - name: Test model loading
+      run: |
+        uv run python -c "
+        import sys
+        sys.path.append('dash_app/src')
+        from model_loader import ModelLoader
+        try:
+            loader = ModelLoader('ensemble')
+            print(f'✅ Model loader created: {loader.is_loaded()}')
+            print(f'Model metadata: {loader.get_metadata()}')
+        except Exception as e:
+            print(f'❌ Model loading test failed: {e}')
+            # Don't fail CI if model files are missing (expected in CI)
+            print('ℹ️  Model files may not be available in CI environment')
+        "
