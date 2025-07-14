@@ -14,7 +14,7 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-added-large-files
-        args: ["--maxkb=10000"] # 10MB limit
+        args: ["--maxkb=150000"] # 150MB limit for ML model files
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: debug-statements

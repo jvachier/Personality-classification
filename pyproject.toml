@@ -25,33 +25,26 @@ dependencies = [
     "pandas>=2.0.0,<3.0.0",
     "scikit-learn>=1.3.0,<1.6.0",
 
-    # Advanced ML models
+    # Advanced ML models (gradient boosting)
     "catboost>=1.2.0,<2.0.0",
     "lightgbm>=4.0.0,<5.0.0",
     "xgboost>=2.0.0,<3.0.0",
 
-    # Deep learning and neural networks
-    "torch>=2.0.0,<3.0.0",
-    "pytorch-tabnet>=4.1.0,<5.0.0",
-
-    # Feature engineering and preprocessing
-    "category-encoders>=2.6.0,<3.0.0",
-    "imbalanced-learn>=0.11.0,<1.0.0",
+    # Statistical computing and preprocessing
     "scipy>=1.11.0,<2.0.0",
+    "imbalanced-learn>=0.11.0,<1.0.0",  # For SMOTE data augmentation
 
     # Hyperparameter optimization
     "optuna>=3.4.0,<4.0.0",
 
-    # Data augmentation and synthetic data
-    "sdv>=1.24.0,<2.0.0",
+    # Data augmentation and synthetic data generation
+    "sdv>=1.24.0,<2.0.0",  # For advanced synthetic data
 
-    # Plotting and visualization
-    "matplotlib>=3.6.0,<4.0.0",
-    "seaborn>=0.11.0,<1.0.0",
+    # Model serialization and utilities
+    "joblib>=1.3.0,<2.0.0",
 
-    # Progress bars and utilities
-    "tqdm>=4.65.0,<5.0.0",
-    "typing-extensions>=4.7.0,<5.0.0",
+    # Web application framework
+    "dash>=2.14.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -60,20 +53,12 @@ automl = [
     "h2o>=3.44.0,<4.0.0",
 ]
 dev = [
-    # Jupyter and interactive development
-    "jupyter>=1.0.0,<2.0.0",
-    "notebook>=7.0.0,<8.0.0",
-    "ipython>=8.12.0,<9.0.0",
-    "ipykernel>=6.25.0,<7.0.0",
-
     # Testing
     "pytest>=7.4.0,<8.0.0",
     "pytest-cov>=4.1.0,<5.0.0",
     "pytest-xdist>=3.3.0,<4.0.0",  # Parallel testing
 
     # Code formatting and linting
-    "black>=23.7.0,<25.0.0",
-    "isort>=5.12.0,<6.0.0",
     "ruff>=0.4.0,<1.0.0",
 
     # Type checking
@@ -87,10 +72,6 @@ dev = [
 
     # Pre-commit hooks
     "pre-commit>=3.3.0,<4.0.0",
-
-    # Notebook tools
-    "nbstripout>=0.7.0,<1.0.0",
-    "nbqa>=1.8.0,<2.0.0",
 ]
 
 [project.urls]
@@ -131,49 +112,17 @@ include = [
 [tool.uv]
 dev-dependencies = [
     "ruff>=0.12.2,<1.0.0",
-    "jupyter>=1.0.0,<2.0.0",
-    "notebook>=7.0.0,<8.0.0",
-    "ipython>=8.12.0,<9.0.0",
-    "ipykernel>=6.25.0,<7.0.0",
     "pytest>=7.4.0,<8.0.0",
     "pytest-cov>=4.1.0,<5.0.0",
     "mypy>=1.5.0,<2.0.0",
     "pre-commit>=3.3.0,<4.0.0",
+    "bandit>=1.7.0,<2.0.0",
+    "pydocstyle>=6.3.0,<7.0.0",
 ]
 
 # Pre-commit configuration
 [tool.pre-commit]
 default_language_version.python = "python3.11"
-
-# Black configuration (Python formatter)
-[tool.black]
-line-length = 88
-target-version = ["py311", "py312"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-    \.git
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | catboost_info
-)/
-'''
-
-# isort configuration (import sorting)
-[tool.isort]
-profile = "black"
-line_length = 88
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-src_paths = ["src", "tests", "scripts"]
 
 # Ruff configuration (fast Python linter)
 [tool.ruff]

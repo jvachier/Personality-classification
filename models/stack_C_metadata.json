@@ -1,0 +1,55 @@
+{
+  "stack_name": "C",
+  "model_type": "Pipeline",
+  "best_params": {
+    "xgb_grow": "lossguide",
+    "xgb_n": 701,
+    "xgb_lr": 0.020624274642988345,
+    "xgb_d": 7,
+    "xgb_sub": 0.8610830464362675,
+    "xgb_col": 0.6965264178053349,
+    "xgb_alpha": 0.09008395574321286,
+    "xgb_lambda": 9.36584087681387,
+    "xgb_gamma": 0.7798753632253319,
+    "xgb_min_child": 6,
+    "xgb_leaves": 127,
+    "cat_bootstrap": "Bernoulli",
+    "cat_n": 684,
+    "cat_lr": 0.01030534324084031,
+    "cat_d": 7,
+    "cat_l2": 14.091119227117058,
+    "cat_rs": 7.469842035114688,
+    "cat_leaf_iters": 11,
+    "cat_grow": "Depthwise",
+    "cat_min_data": 13,
+    "cat_border_count": 272,
+    "cat_subsample": 0.8126942129388055,
+    "c_meta_type": "ridge",
+    "c_meta_alpha": 0.1659152996100115
+  },
+  "training_samples": 18524,
+  "features": [
+    "Time_spent_Alone",
+    "Social_event_attendance",
+    "Going_outside",
+    "Friends_circle_size",
+    "Post_frequency",
+    "Stage_fear_No",
+    "Stage_fear_Unknown",
+    "Stage_fear_Yes",
+    "Drained_after_socializing_No",
+    "Drained_after_socializing_Unknown",
+    "Drained_after_socializing_Yes",
+    "match_p_Extrovert",
+    "match_p_Introvert",
+    "match_p_Unknown"
+  ],
+  "target_classes": [
+    0,
+    1
+  ],
+  "label_mapping": {
+    "0": "Extrovert",
+    "1": "Introvert"
+  }
+}

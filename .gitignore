@@ -216,3 +216,21 @@ best_params/
 catboost_info/
 submissions/*.csv
 six_stack_personality_predictions*.csv
+
+# MLflow
+mlruns/
+mlartifacts/
+.mlflow/
+*.db
+# MLflow logs and tracking files
+mlflow.db
+mlflow-runs.db
+mlflow.log
+# MLflow artifact storage
+artifacts/
+# MLflow temporary files
+.mlruns/
+mlflow_tracking_uri.txt
+
+# Large trained model files (can be regenerated with train_and_save_models.py)
+models/stack_*.pkl  # Exclude large stack models but keep ensemble model
