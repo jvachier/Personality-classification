@@ -582,7 +582,7 @@ def create_personality_insights(prediction: str, confidence: float) -> html.Div:
     """Create personality insights based on prediction."""
     insights = {
         "Introvert": [
-            "� You likely process information internally before sharing",
+            "💭 You likely process information internally before sharing",
             "⚡ You recharge through quiet, solitary activities",
             "👥 You prefer deep, meaningful conversations over small talk",
             "🎯 You tend to think before speaking",
