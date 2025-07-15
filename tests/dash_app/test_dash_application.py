@@ -80,7 +80,7 @@ class TestPersonalityClassifierApp:
             mock_loader.return_value = MagicMock()
 
             with patch("dash_app.dashboard.app.register_callbacks") as mock_callbacks:
-                app = PersonalityClassifierApp(model_name="test_model")
+                PersonalityClassifierApp(model_name="test_model")
 
                 # Verify register_callbacks was called
                 mock_callbacks.assert_called_once()

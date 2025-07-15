@@ -5,9 +5,8 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from dash import dash_table, html
+from dash import html
 from dash.dependencies import Input, Output, State
-import plotly.graph_objects as go
 
 from .layout import (
     format_prediction_result,

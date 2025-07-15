@@ -1,8 +1,8 @@
 """Tests for dashboard layout components."""
 
-import pytest
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+import pytest
 from dash import html
 
 from dash_app.dashboard.layout import (
