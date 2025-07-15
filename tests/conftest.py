@@ -22,11 +22,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "dash_app"))
 
 # Import Dash app components for testing
 try:
-    from dash_app.dashboard import PersonalityClassifierApp
+    from dash_app.dashboard.app import PersonalityClassifierApp
+    from dash_app.dashboard.model_loader import ModelLoader
 
     DASH_AVAILABLE = True
 except ImportError:
     PersonalityClassifierApp = None
+    ModelLoader = None
     DASH_AVAILABLE = False
 
 
@@ -185,6 +187,40 @@ def mock_environment_variables():
     # Restore original environment
     os.environ.clear()
     os.environ.update(original_env)
+
+
+@pytest.fixture
+def mock_model_file(temp_dir):
+    """Create a mock model file for testing."""
+    model_file = temp_dir / "test_model.pkl"
+    model_file.write_text("mock_model_data")
+    return str(model_file)
+
+
+@pytest.fixture
+def sample_prediction_data():
+    """Sample input data for dashboard predictions."""
+    return {
+        "time_alone": 3.0,
+        "social_events": 2.0,
+        "going_outside": 4.0,
+        "friends_size": 3.0,
+        "post_freq": 2.0,
+        "stage_fear": 1.0,
+        "drained_social": 2.0,
+    }
+
+
+@pytest.fixture
+def sample_prediction_probabilities():
+    """Sample prediction probabilities for testing."""
+    return {
+        "Extroversion": 0.8,
+        "Agreeableness": 0.6,
+        "Conscientiousness": 0.7,
+        "Neuroticism": 0.4,
+        "Openness": 0.9,
+    }
 
 
 # Custom assertions for ML testing
