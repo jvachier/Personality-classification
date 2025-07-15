@@ -51,7 +51,7 @@ class PersonalityClassifierApp:
         )
 
         # Add custom CSS to ensure white background
-        self.app.index_string = '''
+        self.app.index_string = """
         <!DOCTYPE html>
         <html>
             <head>
@@ -88,7 +88,7 @@ class PersonalityClassifierApp:
                 </footer>
             </body>
         </html>
-        '''
+        """
 
         # Load model
         self.model_loader = ModelLoader(model_name, model_version, model_stage)

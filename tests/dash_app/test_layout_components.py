@@ -24,9 +24,9 @@ class TestLayoutComponents:
         # The header returns a dbc.Container, not html.Div
         assert isinstance(header, dbc.Container)
         # Check for required styling
-        assert hasattr(header, 'style')
+        assert hasattr(header, "style")
         # Check for children components
-        assert hasattr(header, 'children')
+        assert hasattr(header, "children")
 
     def test_create_input_panel(self):
         """Test input panel creation."""
@@ -34,7 +34,7 @@ class TestLayoutComponents:
 
         assert isinstance(panel, dbc.Card)
         # Should have card header and body
-        assert hasattr(panel, 'children')
+        assert hasattr(panel, "children")
 
     def test_create_layout_structure(self):
         """Test main layout structure."""
@@ -44,7 +44,7 @@ class TestLayoutComponents:
         layout = create_layout(model_name, model_metadata)
 
         assert isinstance(layout, html.Div)
-        assert hasattr(layout, 'children')
+        assert hasattr(layout, "children")
         assert len(layout.children) >= 2  # Header + Content
 
 
@@ -58,7 +58,7 @@ class TestPersonalityRadar:
             "Agreeableness": 0.6,
             "Conscientiousness": 0.7,
             "Neuroticism": 0.4,
-            "Openness": 0.9
+            "Openness": 0.9,
         }
 
         fig = create_personality_radar(probabilities)
@@ -74,12 +74,9 @@ class TestPersonalityRadar:
             "Agreeableness": 0.6,
             "Conscientiousness": 0.7,
             "Neuroticism": 0.4,
-            "Openness": 0.9
+            "Openness": 0.9,
         }
-        input_data = {
-            "time_alone": 3.0,
-            "social_events": 2.0
-        }
+        input_data = {"time_alone": 3.0, "social_events": 2.0}
 
         fig = create_personality_radar(probabilities, input_data)
 
@@ -119,7 +116,7 @@ class TestPredictionFormatting:
                 "Agreeableness": 0.6,
                 "Conscientiousness": 0.7,
                 "Neuroticism": 0.4,
-                "Openness": 0.9
+                "Openness": 0.9,
             },
             "input_data": {
                 "time_alone": 3.0,
@@ -128,24 +125,19 @@ class TestPredictionFormatting:
                 "friends_size": 3.0,
                 "post_freq": 2.0,
                 "stage_fear": 1.0,
-                "drained_social": 2.0
-            }
+                "drained_social": 2.0,
+            },
         }
 
         result = format_prediction_result(result_dict)
 
         assert isinstance(result, dbc.Card)
         # Should contain formatted components
-        assert hasattr(result, 'children')
+        assert hasattr(result, "children")
 
     def test_format_prediction_result_missing_data(self):
         """Test formatting with missing input data."""
-        result_dict = {
-            "probabilities": {
-                "Extroversion": 0.8,
-                "Agreeableness": 0.6
-            }
-        }
+        result_dict = {"probabilities": {"Extroversion": 0.8, "Agreeableness": 0.6}}
 
         # Should handle missing input data gracefully
         result = format_prediction_result(result_dict)
@@ -164,9 +156,14 @@ class TestLayoutIntegration:
             "created_date": "2025-01-15",
             "accuracy": 0.92,
             "features": [
-                "time_alone", "social_events", "going_outside",
-                "friends_size", "post_freq", "stage_fear", "drained_social"
-            ]
+                "time_alone",
+                "social_events",
+                "going_outside",
+                "friends_size",
+                "post_freq",
+                "stage_fear",
+                "drained_social",
+            ],
         }
 
         layout = create_layout(model_name, model_metadata)

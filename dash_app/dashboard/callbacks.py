@@ -105,10 +105,10 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
         [
             Output("predict-button", "children"),
             Output("predict-button", "disabled"),
-            Output("predict-button", "color")
+            Output("predict-button", "color"),
         ],
         [Input("predict-button", "n_clicks")],
-        prevent_initial_call=True
+        prevent_initial_call=True,
     )
     def update_predict_button(n_clicks):
         """Update predict button state with loading animation."""
@@ -117,20 +117,17 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
             return [
                 [
                     html.I(className="fas fa-spinner fa-spin me-2"),
-                    "Analyzing Your Personality..."
+                    "Analyzing Your Personality...",
                 ],
                 True,
-                "warning"
+                "warning",
             ]
 
         # Default state
         return [
-            [
-                html.I(className="fas fa-magic me-2"),
-                "Analyze My Personality"
-            ],
+            [html.I(className="fas fa-magic me-2"), "Analyze My Personality"],
             False,
-            "primary"
+            "primary",
         ]
 
     # Reset button state after prediction
@@ -138,28 +135,22 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
         [
             Output("predict-button", "children", allow_duplicate=True),
             Output("predict-button", "disabled", allow_duplicate=True),
-            Output("predict-button", "color", allow_duplicate=True)
+            Output("predict-button", "color", allow_duplicate=True),
         ],
         [Input("prediction-results", "children")],
-        prevent_initial_call=True
+        prevent_initial_call=True,
     )
     def reset_predict_button(results):
         """Reset predict button after prediction is complete."""
         if results:
             return [
-                [
-                    html.I(className="fas fa-magic me-2"),
-                    "Analyze Again"
-                ],
+                [html.I(className="fas fa-magic me-2"), "Analyze Again"],
                 False,
-                "success"
+                "success",
             ]
 
         return [
-            [
-                html.I(className="fas fa-magic me-2"),
-                "Analyze My Personality"
-            ],
+            [html.I(className="fas fa-magic me-2"), "Analyze My Personality"],
             False,
-            "primary"
+            "primary",
         ]

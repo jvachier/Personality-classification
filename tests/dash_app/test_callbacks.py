@@ -52,7 +52,7 @@ class TestPredictionCallback:
             "Agreeableness": 0.6,
             "Conscientiousness": 0.7,
             "Neuroticism": 0.4,
-            "Openness": 0.9
+            "Openness": 0.9,
         }
 
         return mock_app, mock_model_loader, prediction_history
@@ -136,19 +136,32 @@ class TestCallbackInputValidation:
     @pytest.fixture
     def callback_function_mock(self):
         """Mock the actual callback function for testing."""
-        with patch('dash_app.dashboard.callbacks.register_callbacks') as mock_register:
+        with patch("dash_app.dashboard.callbacks.register_callbacks") as mock_register:
             # Create a mock prediction function
             def mock_prediction_callback(
-                n_clicks, time_alone, social_events, going_outside,
-                friends_size, post_freq, stage_fear, drained_social
+                n_clicks,
+                time_alone,
+                social_events,
+                going_outside,
+                friends_size,
+                post_freq,
+                stage_fear,
+                drained_social,
             ):
                 # Simulate input validation
                 if n_clicks is None or n_clicks == 0:
                     return "No prediction made"
 
                 # Validate input ranges
-                inputs = [time_alone, social_events, going_outside,
-                         friends_size, post_freq, stage_fear, drained_social]
+                inputs = [
+                    time_alone,
+                    social_events,
+                    going_outside,
+                    friends_size,
+                    post_freq,
+                    stage_fear,
+                    drained_social,
+                ]
 
                 if any(x is None for x in inputs):
                     return "Invalid input: None values"
@@ -163,37 +176,27 @@ class TestCallbackInputValidation:
 
     def test_callback_with_none_clicks(self, callback_function_mock):
         """Test callback behavior with no button clicks."""
-        result = callback_function_mock(
-            None, 3.0, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0
-        )
+        result = callback_function_mock(None, 3.0, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0)
         assert result == "No prediction made"
 
     def test_callback_with_zero_clicks(self, callback_function_mock):
         """Test callback behavior with zero button clicks."""
-        result = callback_function_mock(
-            0, 3.0, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0
-        )
+        result = callback_function_mock(0, 3.0, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0)
         assert result == "No prediction made"
 
     def test_callback_with_none_inputs(self, callback_function_mock):
         """Test callback behavior with None input values."""
-        result = callback_function_mock(
-            1, None, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0
-        )
+        result = callback_function_mock(1, None, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0)
         assert result == "Invalid input: None values"
 
     def test_callback_with_invalid_inputs(self, callback_function_mock):
         """Test callback behavior with invalid input types."""
-        result = callback_function_mock(
-            1, "invalid", 2.0, 4.0, 3.0, 2.0, 1.0, 2.0
-        )
+        result = callback_function_mock(1, "invalid", 2.0, 4.0, 3.0, 2.0, 1.0, 2.0)
         assert result == "Invalid input: Non-numeric values"
 
     def test_callback_with_valid_inputs(self, callback_function_mock):
         """Test callback behavior with valid inputs."""
-        result = callback_function_mock(
-            1, 3.0, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0
-        )
+        result = callback_function_mock(1, 3.0, 2.0, 4.0, 3.0, 2.0, 1.0, 2.0)
         assert result == "Valid prediction"
 
 
@@ -209,7 +212,7 @@ class TestCallbackHistoryManagement:
         # Configure mock to return a prediction
         mock_model_loader.predict.return_value = {
             "Extroversion": 0.8,
-            "Agreeableness": 0.6
+            "Agreeableness": 0.6,
         }
 
         register_callbacks(mock_app, mock_model_loader, prediction_history)

@@ -11,9 +11,7 @@ class TestModelLoader:
     def test_model_loader_initialization(self):
         """Test ModelLoader initialization."""
         loader = ModelLoader(
-            model_name="test_model",
-            model_version="1.0",
-            model_stage="Testing"
+            model_name="test_model", model_version="1.0", model_stage="Testing"
         )
         assert loader.model_name == "test_model"
         assert loader.model_version == "1.0"
@@ -86,7 +84,7 @@ class TestModelPrediction:
         """Test prediction with missing input features."""
         input_data = {
             "Time_spent_Alone": 3.0,
-            "Social_event_attendance": 2.0
+            "Social_event_attendance": 2.0,
             # Missing other features - should be handled by default values
         }
 

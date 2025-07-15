@@ -13,7 +13,7 @@ class TestPersonalityClassifierApp:
 
     def test_app_initialization_default_params(self):
         """Test app initialization with default parameters."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(model_name="test_model")
@@ -26,7 +26,7 @@ class TestPersonalityClassifierApp:
 
     def test_app_initialization_custom_params(self):
         """Test app initialization with custom parameters."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(
@@ -34,7 +34,7 @@ class TestPersonalityClassifierApp:
                 model_version="v1.0",
                 model_stage="Staging",
                 host="0.0.0.0",
-                port=9000
+                port=9000,
             )
 
             assert app.model_name == "custom_model"
@@ -45,17 +45,17 @@ class TestPersonalityClassifierApp:
 
     def test_app_has_dash_instance(self):
         """Test that app creates a Dash instance."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(model_name="test_model")
 
-            assert hasattr(app, 'app')
+            assert hasattr(app, "app")
             assert isinstance(app.app, dash.Dash)
 
     def test_app_title_configuration(self):
         """Test that app title is configured correctly."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(model_name="test_model")
@@ -64,10 +64,10 @@ class TestPersonalityClassifierApp:
 
     def test_app_layout_is_set(self):
         """Test that app layout is properly set."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
-            with patch('dash_app.dashboard.app.create_layout') as mock_layout:
+            with patch("dash_app.dashboard.app.create_layout") as mock_layout:
                 mock_layout.return_value = MagicMock()
 
                 app = PersonalityClassifierApp(model_name="test_model")
@@ -76,10 +76,10 @@ class TestPersonalityClassifierApp:
 
     def test_app_callbacks_registration(self):
         """Test that callbacks are registered."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
-            with patch('dash_app.dashboard.app.register_callbacks') as mock_callbacks:
+            with patch("dash_app.dashboard.app.register_callbacks") as mock_callbacks:
                 app = PersonalityClassifierApp(model_name="test_model")
 
                 # Verify register_callbacks was called
@@ -87,18 +87,18 @@ class TestPersonalityClassifierApp:
 
     def test_app_prediction_history_initialization(self):
         """Test that prediction history is initialized."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(model_name="test_model")
 
-            assert hasattr(app, 'prediction_history')
+            assert hasattr(app, "prediction_history")
             assert isinstance(app.prediction_history, list)
             assert len(app.prediction_history) == 0
 
     def test_get_app_method(self):
         """Test the get_app method."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(model_name="test_model")
@@ -113,15 +113,15 @@ class TestAppRunning:
 
     def test_app_run_method_exists(self):
         """Test that run method exists."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.return_value = MagicMock()
 
             app = PersonalityClassifierApp(model_name="test_model")
 
-            assert hasattr(app, 'run')
+            assert hasattr(app, "run")
             assert callable(app.run)
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_run_with_debug_false(self, mock_loader):
         """Test app running with debug=False."""
         mock_loader.return_value = MagicMock()
@@ -135,12 +135,10 @@ class TestAppRunning:
 
         # Verify run_server was called with correct parameters
         app.app.run_server.assert_called_once_with(
-            host="127.0.0.1",
-            port=8050,
-            debug=False
+            host="127.0.0.1", port=8050, debug=False
         )
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_run_with_debug_true(self, mock_loader):
         """Test app running with debug=True."""
         mock_loader.return_value = MagicMock()
@@ -151,29 +149,23 @@ class TestAppRunning:
         app.run(debug=True)
 
         app.app.run_server.assert_called_once_with(
-            host="127.0.0.1",
-            port=8050,
-            debug=True
+            host="127.0.0.1", port=8050, debug=True
         )
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_run_with_custom_host_port(self, mock_loader):
         """Test app running with custom host and port."""
         mock_loader.return_value = MagicMock()
 
         app = PersonalityClassifierApp(
-            model_name="test_model",
-            host="0.0.0.0",
-            port=9000
+            model_name="test_model", host="0.0.0.0", port=9000
         )
         app.app.run_server = MagicMock()
 
         app.run()
 
         app.app.run_server.assert_called_once_with(
-            host="0.0.0.0",
-            port=9000,
-            debug=False
+            host="0.0.0.0", port=9000, debug=False
         )
 
 
@@ -184,7 +176,7 @@ class TestCreateAppFunction:
         """Test that create_app function exists."""
         assert callable(create_app)
 
-    @patch('dash_app.dashboard.app.PersonalityClassifierApp')
+    @patch("dash_app.dashboard.app.PersonalityClassifierApp")
     def test_create_app_with_default_params(self, mock_app_class):
         """Test create_app function with default parameters."""
         mock_instance = MagicMock()
@@ -193,28 +185,22 @@ class TestCreateAppFunction:
         result = create_app("test_model")
 
         mock_app_class.assert_called_once_with(
-            model_name="test_model",
-            model_version=None,
-            model_stage="Production"
+            model_name="test_model", model_version=None, model_stage="Production"
         )
         assert result == mock_instance.get_app.return_value
 
-    @patch('dash_app.dashboard.app.PersonalityClassifierApp')
+    @patch("dash_app.dashboard.app.PersonalityClassifierApp")
     def test_create_app_with_custom_params(self, mock_app_class):
         """Test create_app function with custom parameters."""
         mock_instance = MagicMock()
         mock_app_class.return_value = mock_instance
 
         result = create_app(
-            model_name="custom_model",
-            model_version="v2.0",
-            model_stage="Staging"
+            model_name="custom_model", model_version="v2.0", model_stage="Staging"
         )
 
         mock_app_class.assert_called_once_with(
-            model_name="custom_model",
-            model_version="v2.0",
-            model_stage="Staging"
+            model_name="custom_model", model_version="v2.0", model_stage="Staging"
         )
         assert result == mock_instance.get_app.return_value
 
@@ -224,13 +210,13 @@ class TestAppErrorHandling:
 
     def test_app_with_invalid_model_name(self):
         """Test app initialization with invalid model name."""
-        with patch('dash_app.dashboard.app.ModelLoader') as mock_loader:
+        with patch("dash_app.dashboard.app.ModelLoader") as mock_loader:
             mock_loader.side_effect = FileNotFoundError("Model not found")
 
             with pytest.raises(FileNotFoundError):
                 PersonalityClassifierApp(model_name="nonexistent_model")
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_with_model_loading_error(self, mock_loader):
         """Test app behavior when model loading fails."""
         mock_loader.side_effect = OSError("Model loading failed")
@@ -238,7 +224,7 @@ class TestAppErrorHandling:
         with pytest.raises(OSError):  # More specific exception
             PersonalityClassifierApp(model_name="test_model")
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_run_server_error(self, mock_loader):
         """Test app behavior when run_server fails."""
         mock_loader.return_value = MagicMock()
@@ -253,7 +239,7 @@ class TestAppErrorHandling:
 class TestAppIntegration:
     """Integration tests for the complete app."""
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_full_app_initialization_workflow(self, mock_loader):
         """Test complete app initialization workflow."""
         # Setup mock model loader
@@ -263,7 +249,7 @@ class TestAppIntegration:
             "Agreeableness": 0.6,
             "Conscientiousness": 0.7,
             "Neuroticism": 0.4,
-            "Openness": 0.9
+            "Openness": 0.9,
         }
         mock_loader.return_value = mock_model
 
@@ -279,7 +265,7 @@ class TestAppIntegration:
         # Verify model loader was called
         mock_loader.assert_called_once()
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_with_real_model_path(self, mock_loader):
         """Test app with realistic model path."""
         mock_loader.return_value = MagicMock()
@@ -294,7 +280,7 @@ class TestAppIntegration:
 class TestAppConfiguration:
     """Test app configuration and settings."""
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_external_stylesheets(self, mock_loader):
         """Test that external stylesheets are properly configured."""
         mock_loader.return_value = MagicMock()
@@ -303,11 +289,11 @@ class TestAppConfiguration:
 
         # Check that the app has external stylesheets configured
         # Since Dash doesn't expose external_stylesheets directly, we check the config
-        assert hasattr(app.app, 'config')
+        assert hasattr(app.app, "config")
         # Verify the app was created with stylesheets (implicit test)
         assert app.app is not None
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_suppress_callback_exceptions(self, mock_loader):
         """Test that callback exceptions are properly configured."""
         mock_loader.return_value = MagicMock()
@@ -317,14 +303,14 @@ class TestAppConfiguration:
         # Should suppress callback exceptions for dynamic layouts
         assert app.app.config.suppress_callback_exceptions is True
 
-    @patch('dash_app.dashboard.app.ModelLoader')
+    @patch("dash_app.dashboard.app.ModelLoader")
     def test_app_logging_configuration(self, mock_loader):
         """Test that logging is properly configured."""
         mock_loader.return_value = MagicMock()
 
         app = PersonalityClassifierApp(model_name="test_model")
 
-        assert hasattr(app, 'logger')
+        assert hasattr(app, "logger")
         assert app.logger is not None
 
 
