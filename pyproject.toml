@@ -168,3 +168,20 @@ skips = ["B101", "B601"]  # Skip assert_used and shell_injection in paramiko
 [tool.pydocstyle]
 convention = "google"
 add-ignore = ["D100", "D104", "D105"]  # Allow missing docstrings for modules, packages, magic methods
+
+# MyPy configuration (type checking)
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+no_strict_optional = true
+explicit_package_bases = true
+namespace_packages = true
+exclude = [
+    "tests/",
+    "scripts/",
+    "examples/",
+    "catboost_info/",
+]

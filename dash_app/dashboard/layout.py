@@ -26,12 +26,12 @@ def create_layout(model_name: str, model_metadata: dict[str, Any]) -> html.Div:
         # Main Content
         dbc.Container([
             dbc.Row([
-                # Input Panel
+                # Input Panel - Original size
                 dbc.Col([
                     create_input_panel()
                 ], md=5, className="d-flex align-self-stretch"),
 
-                # Results Panel
+                # Results Panel - Original size
                 dbc.Col([
                     html.Div(id="prediction-results", children=[
                         dbc.Card([
@@ -54,7 +54,7 @@ def create_layout(model_name: str, model_metadata: dict[str, Any]) -> html.Div:
                     ], className="h-100 d-flex flex-column")
                 ], md=7, className="d-flex align-self-stretch")
             ], justify="center", className="g-4", style={"minHeight": "80vh"})
-        ], fluid=True, className="py-4", style={"backgroundColor": "#ffffff"})
+        ], fluid=True, className="py-4", style={"backgroundColor": "#ffffff", "maxWidth": "1400px", "margin": "0 auto"})
     ], className="personality-dashboard", style={
         "backgroundColor": "#ffffff !important",
         "minHeight": "100vh"
@@ -63,25 +63,27 @@ def create_layout(model_name: str, model_metadata: dict[str, Any]) -> html.Div:
 
 def create_professional_header() -> dbc.Row:
     """Create a professional header."""
-    return dbc.Row([
-        dbc.Col([
-            dbc.Card([
-                dbc.CardBody([
-                    html.Div([
-                        html.I(className="fas fa-brain me-3", style={"fontSize": "2.5rem", "color": "#2c3e50"}),
-                        html.H1("Personality Classification", className="d-inline-block mb-0",
-                               style={"color": "#2c3e50", "fontWeight": "300"}),
-                    ], className="d-flex align-items-center justify-content-center"),
+    return dbc.Container([
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        html.Div([
+                            html.I(className="fas fa-brain me-3", style={"fontSize": "2.5rem", "color": "#2c3e50"}),
+                            html.H1("Personality Classification", className="d-inline-block mb-0",
+                                   style={"color": "#2c3e50", "fontWeight": "300"}),
+                        ], className="d-flex align-items-center justify-content-center"),
 
-                    html.P(
-                        "Advanced AI-powered personality assessment platform using ensemble machine learning to analyze behavioral patterns and predict introversion-extraversion tendencies based on social, lifestyle, and digital behavior indicators.",
-                        className="text-center text-muted mt-2 mb-0",
-                        style={"fontSize": "1.0rem", "maxWidth": "800px", "margin": "0 auto"}
-                    )
-                ], className="py-3")
-            ], className="shadow-sm border-0", style={"backgroundColor": "#ffffff"})
-        ])
-    ], className="mb-4")
+                        html.P(
+                            "Advanced AI-powered personality assessment platform using ensemble machine learning to analyze behavioral patterns and predict introversion-extraversion tendencies based on social, lifestyle, and digital behavior indicators.",
+                            className="text-center text-muted mt-2 mb-0",
+                            style={"fontSize": "1.0rem", "maxWidth": "800px", "margin": "0 auto"}
+                        )
+                    ], className="py-3")
+                ], className="shadow-sm border-0", style={"backgroundColor": "#ffffff"})
+            ])
+        ], className="mb-4")
+    ], fluid=True, style={"maxWidth": "1400px", "margin": "0 auto"})
 
 
 def create_input_panel() -> dbc.Card:
@@ -304,15 +306,17 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
             dbc.Row([
                 dbc.Col([
                     html.H5("Personality Dimensions", className="text-center mb-3"),
-                    dcc.Graph(
-                        figure=create_personality_radar({
-                            "Introvert": prob_introvert,
-                            "Extrovert": prob_extrovert
-                        }, input_data),
-                        config={"displayModeBar": False},
-                        className="personality-radar",
-                        style={"height": "500px"}
-                    )
+                    html.Div([
+                        dcc.Graph(
+                            figure=create_personality_radar({
+                                "Introvert": prob_introvert,
+                                "Extrovert": prob_extrovert
+                            }, input_data),
+                            config={"displayModeBar": False},
+                            className="personality-radar",
+                            style={"height": "450px", "width": "100%"}
+                        )
+                    ], style={"padding": "0 20px"})
                 ], md=12, className="text-center")
             ], className="mt-4"),
 
@@ -380,7 +384,7 @@ def create_personality_insights(prediction: str, confidence: float) -> html.Div:
     ], className="insights-list")
 
 
-def create_personality_radar(probabilities: dict, input_data: dict = None) -> go.Figure:
+def create_personality_radar(probabilities: dict, input_data: dict[str, Any] | None = None) -> go.Figure:
     """Create radar chart for personality visualization."""
     categories = ["Social Energy", "Processing Style", "Decision Making",
                  "Lifestyle", "Communication"]
@@ -411,13 +415,15 @@ def create_personality_radar(probabilities: dict, input_data: dict = None) -> go
     ))
 
     fig.update_layout(
-        polar={"radialaxis": {"visible": True, "range": [0, 1]}},
+        polar={
+            "radialaxis": {"visible": True, "range": [0, 1]},
+            "angularaxis": {"tickfont": {"size": 12}}
+        },
         showlegend=False,
-        height=500,
-        width=500,
-        font={"size": 14},
+        height=450,
+        font={"size": 12},
         title="Personality Dimensions",
-        margin=dict(l=50, r=50, t=60, b=50)
+        margin={"l": 80, "r": 80, "t": 60, "b": 80}
     )
 
     return fig

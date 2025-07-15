@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "dash_app"))
 
 # Import Dash app components for testing
 try:
-    from dash_app.src import PersonalityClassifierApp
+    from dash_app.dashboard import PersonalityClassifierApp
 
     DASH_AVAILABLE = True
 except ImportError:
