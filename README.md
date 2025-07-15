@@ -28,7 +28,7 @@ A state-of-the-art, production-ready machine learning pipeline for personality c
   <em>Prediction results with confidence visualization and detailed personality insights</em>
 </div>
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Clone and setup
@@ -53,7 +53,7 @@ uv run python examples/main_demo.py     # Demo with dummy models
 uv run python examples/minimal_test.py  # Installation verification
 ```
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Dashboard Preview](#-dashboard-preview)
 - [Features](#-features)
@@ -67,16 +67,16 @@ uv run python examples/minimal_test.py  # Installation verification
 - [Documentation](#-documentation)
 - [Contributing](#-contributing)
 
-## 🎯 Features
+## Features
 
-### **🏗️ Modern Modular Architecture**
+### ** Modern Modular Architecture**
 
 - **8 specialized modules** with single responsibility principle
 - **Clean separation of concerns** for maximum maintainability
 - **Independent testing** and validation of each component
 - **Thread-safe configuration** management
 
-### **🤖 Advanced Machine Learning Pipeline**
+### ** Advanced Machine Learning Pipeline**
 
 - **6 specialized ensemble stacks** (A-F) with complementary algorithms
 - **Automated hyperparameter optimization** using Optuna
@@ -84,7 +84,7 @@ uv run python examples/minimal_test.py  # Installation verification
 - **Advanced data augmentation** with quality filtering and diversity control
 - **Adaptive augmentation strategies** based on dataset characteristics
 
-### **🏭 Production-Ready Infrastructure**
+### ** Production-Ready Infrastructure**
 
 - **Interactive Dashboard**: Modern Dash-based web interface for model inference and exploration
 - **Model Training Pipeline**: Automated training and saving of ensemble models with metadata
@@ -92,7 +92,7 @@ uv run python examples/minimal_test.py  # Installation verification
 - **Comprehensive Testing**: Full pytest coverage for all components with CI/CD integration
 - **Modular Architecture**: Clean separation of concerns for maintainability and extensibility
 
-### **📊 Data Science Excellence**
+### ** Data Science Excellence**
 
 - **External data integration** using advanced merge strategy
 - **Sophisticated preprocessing** with correlation-based imputation
@@ -100,7 +100,7 @@ uv run python examples/minimal_test.py  # Installation verification
 - **Cross-validation** with stratified folds for robust evaluation
 - **Label noise injection** for improved generalization
 
-### **🛠️ Modern Development Tools**
+### ** Modern Development Tools**
 
 - **uv Package Manager**: Lightning-fast dependency resolution and virtual environment management
 - **Ruff Integration**: Ultra-fast Python linting and formatting (replaces Black, isort, flake8)
@@ -110,7 +110,7 @@ uv run python examples/minimal_test.py  # Installation verification
 - **GitHub Actions CI/CD**: Automated testing, linting, and validation on push
 - **Make Automation**: Simple Makefile for common development tasks
 
-### **🚀 Production Features**
+### ** Production Features**
 
 - **Professional logging** with structured output and configurable levels
 - **Comprehensive error handling** and timeout protection for robust operation
@@ -119,7 +119,7 @@ uv run python examples/minimal_test.py  # Installation verification
 - **Health monitoring** with dashboard health checks and status endpoints
 - **Container support** with Docker and docker-compose for easy deployment
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 src/
@@ -172,7 +172,7 @@ best_params/                        # 💾 Optimized parameters
 └── stack_*_best_params.json        # Per-stack best parameters
 ```
 
-## 💻 Installation
+## Installation
 
 ### Prerequisites
 
@@ -200,16 +200,16 @@ uv run python examples/minimal_test.py
 pip install -r requirements.txt  # Generated from pyproject.toml
 ```
 
-## 📖 Usage
+## Usage
 
-### 🎯 Production Pipeline
+### Production Pipeline
 
 ```bash
 # Full six-stack ensemble (recommended)
 uv run python src/main_modular.py
 ```
 
-### 🖥️ Interactive Dashboard
+### Interactive Dashboard
 
 ```bash
 # Train models (one-time setup)
@@ -222,7 +222,7 @@ make dash
 make stop-dash
 ```
 
-### ⚡ Quick Examples
+### Quick Examples
 
 ```bash
 # Lightweight version
@@ -235,7 +235,7 @@ uv run python examples/main_demo.py
 uv run python examples/test_modules.py
 ```
 
-### 🛠️ Development Commands
+### Development Commands
 
 Available Makefile targets for streamlined development:
 
@@ -250,7 +250,7 @@ make stop-dash     # Stop dashboard
 make help          # Show all available targets
 ```
 
-### 🔧 Development
+### Development
 
 ```bash
 # Run linting
@@ -269,7 +269,7 @@ make test
 make train-models
 ```
 
-## 🖥️ Dashboard
+## Dashboard
 
 The project includes a modern, interactive Dash web application for real-time personality classification and model exploration.
 
@@ -357,7 +357,7 @@ cd dash_app
 docker-compose down
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 The pipeline is highly configurable through `src/modules/config.py`:
 
@@ -407,7 +407,7 @@ TESTING_SAMPLE_SIZE = 1000           # Samples in testing mode
 LOG_LEVEL = "INFO"                   # DEBUG, INFO, WARNING, ERROR
 ```
 
-## 🤖 Model Stacks
+## Model Stacks
 
 The pipeline employs six specialized ensemble stacks, each optimized for different aspects of the problem:
 
@@ -427,7 +427,7 @@ The pipeline employs six specialized ensemble stacks, each optimized for differe
 - **Meta-learning approach** with Logistic Regression as final combiner
 - **Stratified cross-validation** ensures robust evaluation
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 ### Target Performance
 
@@ -449,22 +449,7 @@ The pipeline is designed to achieve high accuracy through ensemble learning and 
 └── Reproducibility: ✅ Fixed random seeds
 ```
 
-### Stack Configuration
-
-The pipeline employs six specialized ensemble stacks optimized for different aspects:
-
-| Stack | Focus                   | Algorithms                                                      | Hyperparameter Space         | Training Approach           |
-| ----- | ----------------------- | --------------------------------------------------------------- | ---------------------------- | --------------------------- |
-| **A** | Traditional ML (Narrow) | Random Forest, Logistic Regression, XGBoost, LightGBM, CatBoost | Conservative search space    | Stable baseline performance |
-| **B** | Traditional ML (Wide)   | Same as Stack A                                                 | Extended search space        | Broader exploration         |
-| **C** | Gradient Boosting       | XGBoost, CatBoost                                               | Gradient boosting focused    | Tree-based specialists      |
-| **D** | Sklearn Ensemble        | Extra Trees, Hist Gradient Boosting, SVM, Gaussian NB           | Sklearn-native models        | Diverse algorithm mix       |
-| **E** | Neural Networks         | MLPClassifier, Deep architectures                               | Neural network tuning        | Non-linear pattern capture  |
-| **F** | Noise-Robust Training   | Same as Stack A                                                 | Standard space + label noise | Improved generalization     |
-
-> **Note**: To see actual performance metrics, run the pipeline with your data. Use `make train-models` to train models and generate real performance reports.
-
-## 🧪 Testing & Validation
+## Testing & Validation
 
 ### Quick Validation
 
@@ -491,7 +476,7 @@ TESTING_SAMPLE_SIZE = 1000
 uv run python src/main_modular.py
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -558,7 +543,7 @@ LOG_LEVEL = "DEBUG"
 uv run python src/main_modular.py 2>&1 | tee debug.log
 ```
 
-## 📚 Documentation
+## Documentation
 
 Comprehensive documentation is available in the `docs/` directory:
 
@@ -576,7 +561,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [`examples/README.md`](examples/README.md) - Usage examples
 - [Architecture Diagram](docs/architecture.md) - Visual system overview
 
-## 👨‍💻 Lead Developer & Maintainer
+## Lead Developer & Maintainer
 
 **[Jeremy Vachier](https://github.com/jvachier)** - Lead Developer & Maintainer
 
@@ -587,9 +572,9 @@ For questions, suggestions, or collaboration opportunities:
 - 📧 **Direct Contact**: Contact the maintainer through GitHub
 - 💬 **Discussions**: Use GitHub Discussions for general questions
 
-## 🤝 Contributing
+## Contributing
 
-We welcome contributions! Please follow these guidelines:
+The contributions are welcome! Please follow these guidelines:
 
 ### Development Setup
 
@@ -629,19 +614,11 @@ uv run pre-commit install
 - 🧪 **Test coverage expansion**
 - 🔧 **Configuration enhancements**
 
-## 📄 License
+## License
 
 This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **Optuna Team** - For excellent hyperparameter optimization framework
-- **scikit-learn Community** - For robust machine learning foundations
-- **SDV Team** - For advanced synthetic data generation
-- **uv/Ruff Teams** - For modern Python tooling
-- **Dash/Plotly Team** - For powerful visualization and dashboarding
-
-## 📈 Project Status
+## Project Status
 
 | Component                | Status               | Version | Last Updated |
 | ------------------------ | -------------------- | ------- | ------------ |
