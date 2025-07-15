@@ -3,7 +3,7 @@
 import argparse
 import logging
 
-from src import PersonalityClassifierApp
+from .src import PersonalityClassifierApp
 
 
 def main():

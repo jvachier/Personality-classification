@@ -1,0 +1,466 @@
+/* Enhanced UI/UX Styles for Personality Dashboard */
+
+/* CSS Variables for consistent theming */
+:root {
+    /* Personality colors */
+    --intro-color: #3498db;
+    --extro-color: #e74c3c;
+    --neutral-color: #95a5a6;
+
+    /* Brand colors */
+    --primary: #2c3e50;
+    --secondary: #34495e;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --info: #3498db;
+    --light: #ecf0f1;
+    --dark: #2c3e50;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* Border radius */
+    --border-radius: 0.5rem;
+    --border-radius-lg: 1rem;
+
+    /* Shadows */
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-normal: 0.3s ease-in-out;
+    --transition-slow: 0.5s ease-in-out;
+}
+
+/* Global styles */
+.personality-dashboard {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: var(--spacing-lg);
+}
+
+/* Header styles */
+.personality-dashboard h1 {
+    background: linear-gradient(45deg, var(--intro-color), var(--extro-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    font-size: 2.5rem;
+}
+
+/* Card enhancements */
+.input-panel,
+.feedback-panel,
+.results-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.input-panel:hover,
+.feedback-panel:hover,
+.results-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 1rem 4rem rgba(0, 0, 0, 0.2);
+}
+
+/* Section titles */
+.section-title {
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--light);
+}
+
+/* Enhanced sliders */
+.personality-slider {
+    margin: var(--spacing-lg) 0;
+}
+
+.personality-slider .rc-slider-track {
+    background: linear-gradient(90deg, var(--intro-color), var(--extro-color));
+    height: 8px;
+    border-radius: 4px;
+}
+
+.personality-slider .rc-slider-handle {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #fff;
+    box-shadow: var(--shadow-md);
+    background: var(--primary);
+    transition: all var(--transition-fast);
+}
+
+.personality-slider .rc-slider-handle:hover,
+.personality-slider .rc-slider-handle:focus {
+    transform: scale(1.2);
+    box-shadow: var(--shadow-lg);
+}
+
+.personality-slider .rc-slider-rail {
+    background: var(--light);
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Slider containers with category styling */
+.slider-social .rc-slider-track {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+.slider-lifestyle .rc-slider-track {
+    background: linear-gradient(90deg, #27ae60, #229954);
+}
+
+.slider-digital .rc-slider-track {
+    background: linear-gradient(90deg, #9b59b6, #8e44ad);
+}
+
+/* Slider labels and help text */
+.slider-label {
+    color: var(--primary);
+    margin-bottom: var(--spacing-sm);
+    display: block;
+}
+
+.slider-help {
+    font-style: italic;
+    margin-top: var(--spacing-xs);
+    display: block;
+}
+
+.slider-container {
+    background: rgba(52, 73, 94, 0.05);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    transition: background var(--transition-normal);
+}
+
+.slider-container:hover {
+    background: rgba(52, 73, 94, 0.1);
+}
+
+/* Enhanced dropdowns */
+.personality-dropdown .Select-control {
+    border: 2px solid var(--light);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-fast);
+    min-height: 45px;
+}
+
+.personality-dropdown .Select-control:hover {
+    border-color: var(--info);
+}
+
+.personality-dropdown .Select-control.is-focused {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(52, 73, 94, 0.1);
+}
+
+.dropdown-label {
+    color: var(--primary);
+    margin-bottom: var(--spacing-sm);
+    display: block;
+}
+
+.dropdown-container {
+    background: rgba(52, 73, 94, 0.05);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    transition: background var(--transition-normal);
+}
+
+.dropdown-container:hover {
+    background: rgba(52, 73, 94, 0.1);
+}
+
+/* Predict button enhancement */
+.predict-button {
+    background: linear-gradient(45deg, var(--intro-color), var(--extro-color));
+    border: none;
+    border-radius: 25px;
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.predict-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.predict-button:active {
+    transform: translateY(0);
+}
+
+.predict-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left var(--transition-slow);
+}
+
+.predict-button:hover::before {
+    left: 100%;
+}
+
+/* Feedback panel styles */
+.meter-container {
+    height: 20px;
+    background: var(--light);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    margin: var(--spacing-md) 0;
+}
+
+.meter-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 50%; /* This would be dynamic based on current input */
+    background: linear-gradient(90deg, var(--intro-color), var(--extro-color));
+    border-radius: 10px;
+    transition: width var(--transition-normal);
+}
+
+.meter-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.meter-label.intro {
+    color: var(--intro-color);
+}
+
+.meter-label.extro {
+    color: var(--extro-color);
+}
+
+.insights-container {
+    background: rgba(52, 73, 94, 0.05);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--info);
+}
+
+/* Results panel styles */
+.personality-result {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--intro-color), var(--extro-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--spacing-md);
+}
+
+.confidence-score {
+    font-size: 1.2rem;
+    color: var(--secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.confidence-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.personality-label {
+    flex: 0 0 100px;
+    font-weight: 500;
+    color: var(--primary);
+}
+
+.confidence-bar {
+    flex: 1;
+    height: 25px;
+    border-radius: 12px;
+}
+
+.confidence-text {
+    flex: 0 0 50px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Personality insights */
+.insights-list {
+    list-style: none;
+    padding: 0;
+}
+
+.insight-item {
+    background: rgba(52, 152, 219, 0.1);
+    margin: var(--spacing-sm) 0;
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--info);
+    transition: all var(--transition-fast);
+}
+
+.insight-item:hover {
+    background: rgba(52, 152, 219, 0.15);
+    transform: translateX(5px);
+}
+
+/* Radar chart container */
+.personality-radar {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .personality-dashboard {
+        padding: var(--spacing-md);
+    }
+
+    .personality-dashboard h1 {
+        font-size: 2rem;
+    }
+
+    .personality-result {
+        font-size: 2rem;
+    }
+
+    .slider-container,
+    .dropdown-container {
+        padding: var(--spacing-md);
+    }
+
+    .confidence-row {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .personality-label,
+    .confidence-text {
+        flex: none;
+        text-align: center;
+    }
+}
+
+/* Animation keyframes */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Loading states */
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.slide-in {
+    animation: slideIn 0.5s ease-out;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Focus states for accessibility */
+.personality-slider:focus-within,
+.personality-dropdown:focus-within,
+.dropdown-container:focus-within {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --intro-color: #0066cc;
+        --extro-color: #cc0000;
+        --primary: #000000;
+        --light: #ffffff;
+    }
+
+    .input-panel,
+    .feedback-panel,
+    .results-panel {
+        border: 2px solid var(--primary);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary: #ecf0f1;
+        --secondary: #bdc3c7;
+        --light: #34495e;
+        --dark: #ecf0f1;
+    }
+
+    .personality-dashboard {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+
+    .input-panel,
+    .feedback-panel,
+    .results-panel {
+        background: rgba(44, 62, 80, 0.95);
+        color: var(--primary);
+    }
+}

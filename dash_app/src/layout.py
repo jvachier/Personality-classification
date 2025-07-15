@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 from dash import dcc, html
 
 
@@ -17,378 +19,222 @@ def create_layout(model_name: str, model_metadata: dict[str, Any]) -> html.Div:
     Returns:
         Dash HTML layout
     """
-    return html.Div(
-        [
-            # Header
-            html.Div(
-                [
-                    html.H1(
-                        "Personality Classification Dashboard",
-                        style={
-                            "textAlign": "center",
-                            "color": "#2c3e50",
-                            "marginBottom": "10px",
-                        },
-                    ),
-                    html.H3(
-                        f"Model: {model_name}",
-                        style={
-                            "textAlign": "center",
-                            "color": "#7f8c8d",
-                            "marginBottom": "30px",
-                        },
-                    ),
-                ]
-            ),
-            # Model Status Section
-            html.Div(
-                [
-                    html.H3("Model Status", style={"color": "#34495e"}),
-                    html.Div(
-                        id="model-status",
-                        children=[create_status_cards(model_metadata)],
-                        style={"marginBottom": "30px"},
-                    ),
-                ]
-            ),
-            # Prediction Section
-            html.Div(
-                [
-                    html.H3("Make Predictions", style={"color": "#34495e"}),
-                    # Input methods tabs (simplified to manual only)
-                    html.Div(
-                        style={
-                            "display": "none"
-                        },  # Hide tabs since we only have manual input
-                        children=[
-                            dcc.Tabs(
-                                id="input-tabs",
-                                value="manual",
-                                children=[
-                                    dcc.Tab(label="Manual Input", value="manual"),
-                                ],
-                            )
-                        ],
-                    ),
-                    # Input content (always manual input)
-                    html.Div(
-                        id="input-content",
-                        style={"marginTop": "20px"},
-                        children=[create_manual_input()],
-                    ),
-                    # Predict button
-                    html.Div(
-                        [
-                            html.Button(
-                                "Predict",
-                                id="predict-button",
-                                style={
-                                    "backgroundColor": "#3498db",
-                                    "color": "white",
-                                    "border": "none",
-                                    "padding": "10px 20px",
-                                    "fontSize": "16px",
-                                    "borderRadius": "5px",
-                                    "cursor": "pointer",
-                                    "marginTop": "20px",
-                                },
-                            )
-                        ],
-                        style={"textAlign": "center"},
-                    ),
-                    # Results
-                    html.Div(id="prediction-results", style={"marginTop": "30px"}),
-                ],
-                style={"marginBottom": "30px"},
-            ),
-            # Prediction History Section
-            html.Div(
-                [
-                    html.H3("Prediction History", style={"color": "#34495e"}),
-                    html.Div(id="prediction-history"),
-                    # Auto-refresh toggle
-                    html.Div(
-                        [
-                            dcc.Checklist(
-                                id="auto-refresh-toggle",
-                                options=[
-                                    {"label": "Auto-refresh (5s)", "value": "auto"}
-                                ],
-                                value=[],
-                                style={"marginTop": "10px"},
-                            ),
-                            dcc.Interval(
-                                id="interval-component",
-                                interval=5 * 1000,  # in milliseconds
-                                n_intervals=0,
-                                disabled=True,
-                            ),
-                        ]
-                    ),
-                ]
-            ),
-        ],
-        style={"margin": "20px", "fontFamily": "Arial, sans-serif"},
-    )
+    return html.Div([
+        # Professional Header
+        create_professional_header(),
+
+        # Main Content
+        dbc.Container([
+            dbc.Row([
+                # Input Panel
+                dbc.Col([
+                    create_input_panel()
+                ], md=5, className="d-flex align-self-stretch"),
+
+                # Results Panel
+                dbc.Col([
+                    html.Div(id="prediction-results", children=[
+                        dbc.Card([
+                            dbc.CardHeader([
+                                html.H4("Analysis Results", className="mb-0 text-center",
+                                       style={"color": "#2c3e50", "fontWeight": "400"})
+                            ], style={"backgroundColor": "#ffffff", "border": "none"}),
+                            dbc.CardBody([
+                                html.Div([
+                                    html.I(className="fas fa-chart-radar fa-3x mb-3",
+                                          style={"color": "#bdc3c7"}),
+                                    html.H5("Ready for Analysis",
+                                           style={"color": "#7f8c8d"}),
+                                    html.P("Adjust the parameters and click 'Analyze Personality' to see your results.",
+                                          style={"color": "#95a5a6"})
+                                ], className="text-center py-5")
+                            ], style={"padding": "2rem"})
+                        ], className="shadow-sm h-100",
+                          style={"border": "none", "borderRadius": "15px"})
+                    ], className="h-100 d-flex flex-column")
+                ], md=7, className="d-flex align-self-stretch")
+            ], justify="center", className="g-4", style={"minHeight": "80vh"})
+        ], fluid=True, className="py-4", style={"backgroundColor": "#ffffff"})
+    ], className="personality-dashboard", style={
+        "backgroundColor": "#ffffff !important",
+        "minHeight": "100vh"
+    })
 
 
-def create_status_cards(model_metadata: dict[str, Any]) -> html.Div:
-    """Create status cards showing model information.
+def create_professional_header() -> dbc.Row:
+    """Create a professional header."""
+    return dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.Div([
+                        html.I(className="fas fa-brain me-3", style={"fontSize": "2.5rem", "color": "#2c3e50"}),
+                        html.H1("Personality Classification", className="d-inline-block mb-0",
+                               style={"color": "#2c3e50", "fontWeight": "300"}),
+                    ], className="d-flex align-items-center justify-content-center"),
 
-    Args:
-        model_metadata: Model metadata dictionary
-
-    Returns:
-        Div containing status cards
-    """
-    model_loaded = bool(model_metadata)
-    status_color = "#27ae60" if model_loaded else "#e74c3c"
-    status_text = "Loaded" if model_loaded else "Not Loaded"
-
-    return html.Div(
-        [
-            # Model Status Card
-            html.Div(
-                [
-                    html.H4("Model Status", style={"margin": "0", "color": "#2c3e50"}),
                     html.P(
-                        status_text,
-                        style={
-                            "margin": "5px 0",
-                            "color": status_color,
-                            "fontWeight": "bold",
-                        },
-                    ),
-                    html.P(
-                        f"Version: {model_metadata.get('version', 'Unknown')}",
-                        style={"margin": "5px 0", "color": "#7f8c8d"},
-                    ),
-                    html.P(
-                        f"Stage: {model_metadata.get('stage', 'Unknown')}",
-                        style={"margin": "5px 0", "color": "#7f8c8d"},
-                    ),
-                ],
-                style={
-                    "border": "1px solid #bdc3c7",
-                    "padding": "15px",
-                    "borderRadius": "5px",
-                    "width": "300px",
-                    "display": "inline-block",
-                    "margin": "10px",
-                },
-            ),
-            # Prediction Stats Card (placeholder)
-            html.Div(
-                [
-                    html.H4(
-                        "Prediction Stats", style={"margin": "0", "color": "#2c3e50"}
-                    ),
-                    html.P(
-                        "Total Predictions: 0",
-                        style={"margin": "5px 0", "color": "#7f8c8d"},
-                    ),
-                    html.P(
-                        "Last Prediction: None",
-                        style={"margin": "5px 0", "color": "#7f8c8d"},
-                    ),
-                ],
-                style={
-                    "border": "1px solid #bdc3c7",
-                    "padding": "15px",
-                    "borderRadius": "5px",
-                    "width": "300px",
-                    "display": "inline-block",
-                    "margin": "10px",
-                },
-            ),
-        ]
-    )
+                        "Advanced AI-powered personality assessment platform using ensemble machine learning to analyze behavioral patterns and predict introversion-extraversion tendencies based on social, lifestyle, and digital behavior indicators.",
+                        className="text-center text-muted mt-2 mb-0",
+                        style={"fontSize": "1.0rem", "maxWidth": "800px", "margin": "0 auto"}
+                    )
+                ], className="py-3")
+            ], className="shadow-sm border-0", style={"backgroundColor": "#ffffff"})
+        ])
+    ], className="mb-4")
 
 
-def create_manual_input() -> html.Div:
-    """Create manual input form with actual personality features.
+def create_input_panel() -> dbc.Card:
+    """Create a clean, professional input panel."""
+    return dbc.Card([
+        dbc.CardHeader([
+            html.H4("Assessment Parameters", className="mb-0 text-center",
+                   style={"color": "#2c3e50", "fontWeight": "400"})
+        ], style={"backgroundColor": "#ffffff", "border": "none"}),
+        dbc.CardBody([
+            # Social Behavior Section
+            html.H5([
+                html.I(className="fas fa-users me-2", style={"color": "#3498db"}),
+                "Social Behavior"
+            ], className="section-title mb-4"),
 
-    Returns:
-        Div containing manual input components
-    """
-    return html.Div(
-        [
-            html.P(
-                "Enter your personality traits below:",
-                style={"fontSize": "16px", "marginBottom": "20px", "color": "#2c3e50"},
+            create_enhanced_slider(
+                "time-spent-alone",
+                "Time Spent Alone (hours/day)",
+                0, 24, 8,
+                "Less alone time",
+                "More alone time",
+                "slider-social"
             ),
-            # Time spent alone
-            html.Div(
+
+            create_enhanced_slider(
+                "social-event-attendance",
+                "Social Event Attendance (events/month)",
+                0, 20, 4,
+                "Fewer events",
+                "More events",
+                "slider-social"
+            ),
+
+            # Lifestyle Section
+            html.H5([
+                html.I(className="fas fa-compass me-2", style={"color": "#27ae60"}),
+                "Lifestyle"
+            ], className="section-title mt-5 mb-4"),
+
+            create_enhanced_slider(
+                "going-outside",
+                "Going Outside Frequency (times/week)",
+                0, 15, 5,
+                "Stay indoors",
+                "Go out frequently",
+                "slider-lifestyle"
+            ),
+
+            create_enhanced_slider(
+                "friends-circle-size",
+                "Friends Circle Size",
+                0, 50, 12,
+                "Small circle",
+                "Large network",
+                "slider-lifestyle"
+            ),
+
+            # Digital Behavior Section
+            html.H5([
+                html.I(className="fas fa-share-alt me-2", style={"color": "#9b59b6"}),
+                "Digital Behavior"
+            ], className="section-title mt-5 mb-4"),
+
+            create_enhanced_slider(
+                "post-frequency",
+                "Social Media Posts (per week)",
+                0, 20, 3,
+                "Rarely post",
+                "Frequently post",
+                "slider-digital"
+            ),
+
+            # Psychological Assessment Section
+            html.H5([
+                html.I(className="fas fa-mind-share me-2", style={"color": "#e67e22"}),
+                "Psychological Assessment"
+            ], className="section-title mt-5 mb-4"),
+
+            create_enhanced_dropdown(
+                "stage-fear",
+                "Do you have stage fear?",
                 [
-                    html.Label(
-                        "Time Spent Alone (hours per day):",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Input(
-                        id="time-spent-alone",
-                        type="number",
-                        value=2.0,
-                        min=0,
-                        max=24,
-                        step=0.5,
-                        style={"margin": "5px", "width": "200px", "padding": "5px"},
-                    ),
+                    {"label": "No - I'm comfortable with public speaking", "value": "No"},
+                    {"label": "Yes - I avoid speaking in public", "value": "Yes"},
+                    {"label": "Sometimes - It depends on the situation", "value": "Unknown"}
                 ],
-                style={"marginBottom": "15px"},
+                "No"
             ),
-            # Social event attendance
-            html.Div(
+
+            create_enhanced_dropdown(
+                "drained-after-socializing",
+                "Do you feel drained after socializing?",
                 [
-                    html.Label(
-                        "Social Event Attendance (events per month):",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Input(
-                        id="social-event-attendance",
-                        type="number",
-                        value=4.0,
-                        min=0,
-                        max=30,
-                        step=1,
-                        style={"margin": "5px", "width": "200px", "padding": "5px"},
-                    ),
+                    {"label": "No - I feel energized by social interaction", "value": "No"},
+                    {"label": "Yes - I need time alone to recharge", "value": "Yes"},
+                    {"label": "It varies - Depends on the context", "value": "Unknown"}
                 ],
-                style={"marginBottom": "15px"},
+                "No"
             ),
-            # Going outside
-            html.Div(
-                [
-                    html.Label(
-                        "Going Outside (frequency per week):",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Input(
-                        id="going-outside",
-                        type="number",
-                        value=3.0,
-                        min=0,
-                        max=7,
-                        step=1,
-                        style={"margin": "5px", "width": "200px", "padding": "5px"},
-                    ),
-                ],
-                style={"marginBottom": "15px"},
-            ),
-            # Friends circle size
-            html.Div(
-                [
-                    html.Label(
-                        "Friends Circle Size:",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Input(
-                        id="friends-circle-size",
-                        type="number",
-                        value=8.0,
-                        min=0,
-                        max=50,
-                        step=1,
-                        style={"margin": "5px", "width": "200px", "padding": "5px"},
-                    ),
-                ],
-                style={"marginBottom": "15px"},
-            ),
-            # Post frequency
-            html.Div(
-                [
-                    html.Label(
-                        "Social Media Post Frequency (posts per week):",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Input(
-                        id="post-frequency",
-                        type="number",
-                        value=3.0,
-                        min=0,
-                        max=20,
-                        step=1,
-                        style={"margin": "5px", "width": "200px", "padding": "5px"},
-                    ),
-                ],
-                style={"marginBottom": "15px"},
-            ),
-            # Stage fear
-            html.Div(
-                [
-                    html.Label(
-                        "Do you have stage fear?",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Dropdown(
-                        id="stage-fear",
-                        options=[
-                            {"label": "No", "value": "No"},
-                            {"label": "Yes", "value": "Yes"},
-                            {"label": "Unknown", "value": "Unknown"},
-                        ],
-                        value="No",
-                        style={"width": "200px"},
-                    ),
-                ],
-                style={"marginBottom": "15px"},
-            ),
-            # Drained after socializing
-            html.Div(
-                [
-                    html.Label(
-                        "Do you feel drained after socializing?",
-                        style={
-                            "display": "block",
-                            "fontWeight": "bold",
-                            "marginBottom": "5px",
-                        },
-                    ),
-                    dcc.Dropdown(
-                        id="drained-after-socializing",
-                        options=[
-                            {"label": "No", "value": "No"},
-                            {"label": "Yes", "value": "Yes"},
-                            {"label": "Unknown", "value": "Unknown"},
-                        ],
-                        value="No",
-                        style={"width": "200px"},
-                    ),
-                ],
-                style={"marginBottom": "15px"},
-            ),
-        ],
-        id="manual-inputs",
-        style={
-            "padding": "20px",
-            "backgroundColor": "#f8f9fa",
-            "borderRadius": "10px",
-            "border": "1px solid #dee2e6",
-        },
-    )
+
+            # Analysis Button
+            html.Div([
+                dbc.Button(
+                    [
+                        html.I(className="fas fa-brain me-2"),
+                        "Analyze Personality"
+                    ],
+                    id="predict-button",
+                    color="primary",
+                    size="lg",
+                    className="predict-button px-5 py-3",
+                    style={"fontSize": "1.1rem", "fontWeight": "500"}
+                )
+            ], className="text-center mt-5")
+        ], style={"padding": "2rem"})
+    ], className="shadow-sm h-100", style={"border": "none", "borderRadius": "15px"})
+
+
+def create_enhanced_slider(slider_id: str, label: str, min_val: int, max_val: int,
+                          default: int, intro_text: str, extro_text: str,
+                          css_class: str) -> html.Div:
+    """Create an enhanced slider with personality hints."""
+    return html.Div([
+        html.Label(label, className="slider-label fw-bold"),
+        dcc.Slider(
+            id=slider_id,
+            min=min_val,
+            max=max_val,
+            step=1,
+            value=default,
+            marks={
+                min_val: {"label": intro_text, "style": {"color": "#3498db", "fontSize": "0.8rem"}},
+                max_val: {"label": extro_text, "style": {"color": "#e74c3c", "fontSize": "0.8rem"}}
+            },
+            tooltip={"placement": "bottom", "always_visible": True},
+            className=f"personality-slider {css_class}"
+        )
+    ], className="slider-container mb-3")
+
+
+def create_enhanced_dropdown(dropdown_id: str, label: str, options: list,
+                           default: str) -> html.Div:
+    """Create an enhanced dropdown with better styling."""
+    return html.Div([
+        html.Label(label, className="dropdown-label fw-bold"),
+        dcc.Dropdown(
+            id=dropdown_id,
+            options=options,
+            value=default,
+            className="personality-dropdown"
+        )
+    ], className="dropdown-container mb-3")
 
 
 def format_prediction_result(result: dict[str, Any]) -> html.Div:
@@ -404,201 +250,174 @@ def format_prediction_result(result: dict[str, Any]) -> html.Div:
     confidence = result.get("confidence", 0)
     prob_extrovert = result.get("probability_extrovert", 0)
     prob_introvert = result.get("probability_introvert", 0)
+    input_data = result.get("input_data", {})
 
-    # Create visual elements
-    confidence_color = (
-        "#27ae60" if confidence > 0.7 else "#f39c12" if confidence > 0.5 else "#e74c3c"
-    )
-
-    # Choose personality color
-    personality_color = "#e74c3c" if prediction == "Extrovert" else "#3498db"
-
-    elements = [
-        html.H4(
-            "Personality Classification Result",
-            style={"color": "#2c3e50", "marginBottom": "15px"},
-        ),
-        # Main prediction with personality-specific styling
-        html.Div(
-            [
-                html.H2(
-                    f"🧠 You are classified as: {prediction}",
-                    style={
-                        "color": personality_color,
-                        "margin": "10px 0",
-                        "textAlign": "center",
-                        "backgroundColor": "#ecf0f1",
-                        "padding": "15px",
-                        "borderRadius": "10px",
-                        "border": f"2px solid {personality_color}",
-                    },
-                )
-            ]
-        ),
-        # Confidence score
-        html.Div(
-            [
-                html.P(
-                    f"Confidence Score: {confidence:.1%}",
-                    style={
-                        "fontSize": "18px",
-                        "color": confidence_color,
-                        "margin": "15px 0",
-                        "textAlign": "center",
-                        "fontWeight": "bold",
-                    },
-                )
-            ]
-        ),
-    ]
-
-    # Add detailed probability breakdown
-    if prob_extrovert is not None and prob_introvert is not None:
-        elements.append(
-            html.Div(
-                [
-                    html.H5(
-                        "Detailed Probabilities:",
-                        style={"margin": "20px 0 10px 0", "color": "#2c3e50"},
-                    ),
-                    html.Div(
-                        [
-                            # Extrovert bar
-                            html.Div(
-                                [
-                                    html.Span(
-                                        "Extrovert: ",
-                                        style={
-                                            "fontWeight": "bold",
-                                            "width": "100px",
-                                            "display": "inline-block",
-                                        },
-                                    ),
-                                    html.Div(
-                                        style={
-                                            "backgroundColor": "#e74c3c",
-                                            "width": f"{prob_extrovert * 100}%",
-                                            "height": "20px",
-                                            "borderRadius": "10px",
-                                            "display": "inline-block",
-                                            "marginRight": "10px",
-                                            "minWidth": "2px",
-                                        }
-                                    ),
-                                    html.Span(
-                                        f"{prob_extrovert:.1%}",
-                                        style={"fontWeight": "bold"},
-                                    ),
-                                ],
-                                style={
-                                    "margin": "10px 0",
-                                    "display": "flex",
-                                    "alignItems": "center",
-                                },
-                            ),
-                            # Introvert bar
-                            html.Div(
-                                [
-                                    html.Span(
-                                        "Introvert: ",
-                                        style={
-                                            "fontWeight": "bold",
-                                            "width": "100px",
-                                            "display": "inline-block",
-                                        },
-                                    ),
-                                    html.Div(
-                                        style={
-                                            "backgroundColor": "#3498db",
-                                            "width": f"{prob_introvert * 100}%",
-                                            "height": "20px",
-                                            "borderRadius": "10px",
-                                            "display": "inline-block",
-                                            "marginRight": "10px",
-                                            "minWidth": "2px",
-                                        }
-                                    ),
-                                    html.Span(
-                                        f"{prob_introvert:.1%}",
-                                        style={"fontWeight": "bold"},
-                                    ),
-                                ],
-                                style={
-                                    "margin": "10px 0",
-                                    "display": "flex",
-                                    "alignItems": "center",
-                                },
-                            ),
-                        ],
-                        style={
-                            "backgroundColor": "#f8f9fa",
-                            "padding": "15px",
-                            "borderRadius": "8px",
-                            "border": "1px solid #dee2e6",
-                        },
-                    ),
-                ]
-            )
-        )
-
-    # Add personality description
-    if prediction == "Extrovert":
-        description = "🎉 Extroverts typically enjoy social situations, feel energized by being around people, and tend to be outgoing and expressive."
-        description_color = "#e74c3c"
-    elif prediction == "Introvert":
-        description = "🤔 Introverts typically prefer quieter environments, feel energized by alone time, and tend to be more reflective and reserved."
-        description_color = "#3498db"
+    # Determine confidence level
+    if confidence > 0.7:
+        confidence_color = "success"
+        confidence_badge = "High Confidence"
+    elif confidence > 0.5:
+        confidence_color = "warning"
+        confidence_badge = "Medium Confidence"
     else:
-        description = "The model could not clearly determine your personality type."
-        description_color = "#7f8c8d"
+        confidence_color = "danger"
+        confidence_badge = "Low Confidence"
 
-    elements.append(
-        html.Div(
-            [
-                html.P(
-                    description,
-                    style={
-                        "fontSize": "14px",
-                        "color": description_color,
-                        "margin": "15px 0",
-                        "padding": "10px",
-                        "backgroundColor": "#ecf0f1",
-                        "borderRadius": "5px",
-                        "fontStyle": "italic",
-                    },
-                )
-            ]
+    # Create enhanced results with Bootstrap components
+    return dbc.Card([
+        dbc.CardHeader([
+            html.H4("Analysis Results", className="mb-0 text-center",
+                   style={"color": "#2c3e50", "fontWeight": "400"})
+        ], style={"backgroundColor": "#ffffff", "border": "none"}),
+        dbc.CardBody([
+            dbc.Row([
+                # Main Result
+                dbc.Col([
+                    html.Div([
+                        html.H2(
+                            f"🧠 {prediction}",
+                            className="personality-result text-center"
+                        ),
+                        html.P(
+                            f"Confidence: {confidence:.1%}",
+                            className="confidence-score text-center"
+                        ),
+                        dbc.Badge(
+                            confidence_badge,
+                            color=confidence_color,
+                            className="mb-3"
+                        )
+                    ], className="text-center")
+                ], md=6),
+
+                # Confidence Bars
+                dbc.Col([
+                    html.H5("Probability Breakdown"),
+                    create_confidence_bars({
+                        "Extrovert": prob_extrovert,
+                        "Introvert": prob_introvert
+                    })
+                ], md=6)
+            ]),
+
+            # Larger Radar Chart - Full Width
+            dbc.Row([
+                dbc.Col([
+                    html.H5("Personality Dimensions", className="text-center mb-3"),
+                    dcc.Graph(
+                        figure=create_personality_radar({
+                            "Introvert": prob_introvert,
+                            "Extrovert": prob_extrovert
+                        }, input_data),
+                        config={"displayModeBar": False},
+                        className="personality-radar",
+                        style={"height": "500px"}
+                    )
+                ], md=12, className="text-center")
+            ], className="mt-4"),
+
+            # Personality Insights
+            html.Hr(),
+            html.Div([
+                html.H5("Personality Insights"),
+                create_personality_insights(prediction, confidence)
+            ]),
+
+            # Metadata
+            html.Hr(),
+            html.Small([
+                f"Model: {result.get('model_name', 'Unknown')} | ",
+                f"Version: {result.get('model_version', 'Unknown')} | ",
+                f"Timestamp: {result.get('timestamp', 'Unknown')}"
+            ], className="text-muted")
+        ], style={"padding": "2rem"})
+    ], className="shadow-sm h-100", style={"border": "none", "borderRadius": "15px"})
+
+
+def create_confidence_bars(probabilities: dict) -> html.Div:
+    """Create animated confidence bars."""
+    bars = []
+    for personality, prob in probabilities.items():
+        color = "primary" if personality == "Introvert" else "danger"
+        bars.append(
+            html.Div([
+                html.Span(personality, className="personality-label"),
+                dbc.Progress(
+                    value=prob * 100,
+                    color=color,
+                    className="confidence-bar mb-2",
+                    animated=True,
+                    striped=True
+                ),
+                html.Span(f"{prob:.1%}", className="confidence-text")
+            ], className="confidence-row mb-2")
         )
+    return html.Div(bars)
+
+
+def create_personality_insights(prediction: str, confidence: float) -> html.Div:
+    """Create personality insights based on prediction."""
+    insights = {
+        "Introvert": [
+            "� You likely process information internally before sharing",
+            "⚡ You recharge through quiet, solitary activities",
+            "👥 You prefer deep, meaningful conversations over small talk",
+            "🎯 You tend to think before speaking"
+        ],
+        "Extrovert": [
+            "🗣️ You likely think out loud and enjoy verbal processing",
+            "⚡ You gain energy from social interactions",
+            "👥 You enjoy meeting new people and large gatherings",
+            "🎯 You tend to speak spontaneously"
+        ]
+    }
+
+    prediction_insights = insights.get(prediction, ["Analysis in progress..."])
+
+    return html.Ul([
+        html.Li(insight, className="insight-item")
+        for insight in prediction_insights
+    ], className="insights-list")
+
+
+def create_personality_radar(probabilities: dict, input_data: dict = None) -> go.Figure:
+    """Create radar chart for personality visualization."""
+    categories = ["Social Energy", "Processing Style", "Decision Making",
+                 "Lifestyle", "Communication"]
+
+    # Calculate values based on probabilities and input data
+    intro_tendency = probabilities.get("Introvert", 0.5)
+
+    # Map input data to personality dimensions (simplified)
+    if input_data:
+        social_energy = 1 - (input_data.get("Time_spent_Alone", 12) / 24)
+        processing_style = 1 - (input_data.get("Post_frequency", 10) / 20)
+        decision_making = 0.8 if input_data.get("Stage_fear_Yes", 0) else 0.3
+        lifestyle = 1 - (input_data.get("Going_outside", 7) / 15)
+        communication = 1 - (input_data.get("Friends_circle_size", 25) / 50)
+
+        values = [social_energy, processing_style, decision_making, lifestyle, communication]
+    else:
+        # Default values based on prediction
+        values = [intro_tendency] * len(categories)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=values,
+        theta=categories,
+        fill='toself',
+        name='Your Profile',
+        line_color='#3498db' if intro_tendency > 0.5 else '#e74c3c'
+    ))
+
+    fig.update_layout(
+        polar={"radialaxis": {"visible": True, "range": [0, 1]}},
+        showlegend=False,
+        height=500,
+        width=500,
+        font={"size": 14},
+        title="Personality Dimensions",
+        margin=dict(l=50, r=50, t=60, b=50)
     )
 
-    # Add metadata
-    elements.append(
-        html.Div(
-            [
-                html.Hr(style={"margin": "20px 0"}),
-                html.P(
-                    f"Model: {result.get('model_name', 'Unknown')}",
-                    style={"color": "#7f8c8d", "margin": "5px 0", "fontSize": "12px"},
-                ),
-                html.P(
-                    f"Version: {result.get('model_version', 'Unknown')}",
-                    style={"color": "#7f8c8d", "margin": "5px 0", "fontSize": "12px"},
-                ),
-                html.P(
-                    f"Timestamp: {result.get('timestamp', 'Unknown')}",
-                    style={"color": "#7f8c8d", "margin": "5px 0", "fontSize": "12px"},
-                ),
-            ]
-        )
-    )
-
-    return html.Div(
-        elements,
-        style={
-            "border": "2px solid " + confidence_color,
-            "padding": "20px",
-            "borderRadius": "10px",
-            "backgroundColor": "#ffffff",
-            "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
-        },
-    )
+    return fig
