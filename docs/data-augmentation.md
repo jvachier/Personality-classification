@@ -1,21 +1,33 @@
 # Data Augmentation Guide
 
-## Data Augmentation Guide
-
-### Strategy
+## Strategy
 - Adaptive selection based on dataset size, balance, and feature types
 
-### Decision Matrix
+## Decision Matrix
 | Data Type         | Method         |
 |-------------------|---------------|
 | Small/Imbalanced  | SMOTE/ADASYN  |
 | High Categorical  | Basic         |
 | Complex Numeric   | SDV Copula    |
 
-### Main Method
-**SDV Copula** (recommended):
-- Preserves feature distributions and correlations
-- Fast mode for development
+## Main Method
+
+### 1. SDV Copula (Recommended)
+
+**Best for**: Complex datasets with mixed feature types
+
+#### Features
+
+- **Preserves feature distributions and correlations**
+- **Fast mode for development**
+- **Handles mixed data types effectively**
+- **Statistical validation built-in**
+
+#### Implementation
+
+```python
+def sdv_copula_augmentation(X, y, n_samples):
+    """SDV Copula-based synthetic data generation."""
     synthesizer = GaussianCopula(
         enforce_rounding=True,
         enforce_min_max_values=True

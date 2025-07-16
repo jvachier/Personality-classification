@@ -1,8 +1,10 @@
 # Performance Tuning Guide
 
-## Performance Tuning Guide
+## Overview
 
-### Key Levers
+This guide covers optimization strategies for speed, memory usage, and accuracy in the personality classification pipeline.
+
+## Key Performance Levers
 - Training speed: TESTING_MODE, N_TRIALS_STACK, N_TRIALS_BLEND
 - Memory: TESTING_SAMPLE_SIZE, ENABLE_DATA_AUGMENTATION
 - Accuracy: Ensemble optimization, feature engineering
