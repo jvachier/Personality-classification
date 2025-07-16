@@ -63,7 +63,6 @@ uv run python src/main_modular.py   # Run pipeline
 ```
 src/
 ├── main_modular.py                 # 🎯 Main production pipeline (MLOps-enhanced)
-├── six_stack_personality_classifier.py  # 📚 Reference implementation
 ├── modules/                        # 🧩 Core modules
 │   ├── config.py                   # ⚙️ Configuration & logging
 │   ├── data_loader.py              # 📊 Data loading & external merge
@@ -248,19 +247,6 @@ The pipeline is designed to achieve high accuracy through ensemble learning and 
 
 ## Testing & Validation
 
-### Quick Validation
-
-```bash
-# Test installation and imports
-uv run python examples/minimal_test.py
-
-# Run lightweight demo
-uv run python examples/main_demo.py
-
-# Test individual modules
-uv run python examples/test_modules.py
-```
-
 ### Development Testing
 
 ```bash
@@ -320,13 +306,6 @@ uv run python -c "import sklearn, pandas, numpy, dash; print('OK')"
 class ThreadConfig(Enum):
     N_JOBS = 2              # Reduce from 4
     THREAD_COUNT = 2        # Reduce from 4
-```
-
-#### Optuna Crashes
-
-```bash
-# Use simpler models
-uv run python examples/main_final.py  # Lightweight version
 ```
 
 ### Debug Mode
