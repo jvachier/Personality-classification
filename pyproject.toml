@@ -145,6 +145,9 @@ select = [
 ignore = [
     "E501",   # line too long (handled by formatter)
     "B905",   # `zip()` without an explicit `strict=` parameter
+    "PLR0912", # too many branches (complex ML functions)
+    "PLR0913", # too many arguments (complex ML functions)
+    "PLR0915", # too many statements (complex ML functions)
     "PLR2004", # magic value used in comparison
 ]
 

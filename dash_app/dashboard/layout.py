@@ -2,11 +2,25 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 from dash import dcc, html
+
+
+@dataclass
+class SliderConfig:
+    """Configuration for enhanced sliders."""
+    slider_id: str
+    label: str
+    min_val: int
+    max_val: int
+    default: int
+    intro_text: str
+    extro_text: str
+    css_class: str
 
 
 def create_layout(model_name: str, model_metadata: dict[str, Any]) -> html.Div:
@@ -207,24 +221,28 @@ def create_input_panel() -> dbc.Card:
                         className="section-title mb-4",
                     ),
                     create_enhanced_slider(
-                        "time-spent-alone",
-                        "Time Spent Alone (hours/day)",
-                        0,
-                        24,
-                        8,
-                        "Less alone time",
-                        "More alone time",
-                        "slider-social",
+                        SliderConfig(
+                            slider_id="time-spent-alone",
+                            label="Time Spent Alone (hours/day)",
+                            min_val=0,
+                            max_val=24,
+                            default=8,
+                            intro_text="Less alone time",
+                            extro_text="More alone time",
+                            css_class="slider-social",
+                        )
                     ),
                     create_enhanced_slider(
-                        "social-event-attendance",
-                        "Social Event Attendance (events/month)",
-                        0,
-                        20,
-                        4,
-                        "Fewer events",
-                        "More events",
-                        "slider-social",
+                        SliderConfig(
+                            slider_id="social-event-attendance",
+                            label="Social Event Attendance (events/month)",
+                            min_val=0,
+                            max_val=20,
+                            default=4,
+                            intro_text="Fewer events",
+                            extro_text="More events",
+                            css_class="slider-social",
+                        )
                     ),
                     # Lifestyle Section
                     html.H5(
@@ -238,24 +256,28 @@ def create_input_panel() -> dbc.Card:
                         className="section-title mt-5 mb-4",
                     ),
                     create_enhanced_slider(
-                        "going-outside",
-                        "Going Outside Frequency (times/week)",
-                        0,
-                        15,
-                        5,
-                        "Stay indoors",
-                        "Go out frequently",
-                        "slider-lifestyle",
+                        SliderConfig(
+                            slider_id="going-outside",
+                            label="Going Outside Frequency (times/week)",
+                            min_val=0,
+                            max_val=15,
+                            default=5,
+                            intro_text="Stay indoors",
+                            extro_text="Go out frequently",
+                            css_class="slider-lifestyle",
+                        )
                     ),
                     create_enhanced_slider(
-                        "friends-circle-size",
-                        "Friends Circle Size",
-                        0,
-                        50,
-                        12,
-                        "Small circle",
-                        "Large network",
-                        "slider-lifestyle",
+                        SliderConfig(
+                            slider_id="friends-circle-size",
+                            label="Friends Circle Size",
+                            min_val=0,
+                            max_val=50,
+                            default=12,
+                            intro_text="Small circle",
+                            extro_text="Large network",
+                            css_class="slider-lifestyle",
+                        )
                     ),
                     # Digital Behavior Section
                     html.H5(
@@ -269,14 +291,16 @@ def create_input_panel() -> dbc.Card:
                         className="section-title mt-5 mb-4",
                     ),
                     create_enhanced_slider(
-                        "post-frequency",
-                        "Social Media Posts (per week)",
-                        0,
-                        20,
-                        3,
-                        "Rarely post",
-                        "Frequently post",
-                        "slider-digital",
+                        SliderConfig(
+                            slider_id="post-frequency",
+                            label="Social Media Posts (per week)",
+                            min_val=0,
+                            max_val=20,
+                            default=3,
+                            intro_text="Rarely post",
+                            extro_text="Frequently post",
+                            css_class="slider-digital",
+                        )
                     ),
                     # Psychological Assessment Section
                     html.H5(
@@ -353,38 +377,36 @@ def create_input_panel() -> dbc.Card:
     )
 
 
-def create_enhanced_slider(
-    slider_id: str,
-    label: str,
-    min_val: int,
-    max_val: int,
-    default: int,
-    intro_text: str,
-    extro_text: str,
-    css_class: str,
-) -> html.Div:
-    """Create an enhanced slider with personality hints."""
+def create_enhanced_slider(config: SliderConfig) -> html.Div:
+    """Create an enhanced slider with personality hints.
+
+    Args:
+        config: Slider configuration containing all parameters
+
+    Returns:
+        HTML div containing the slider component
+    """
     return html.Div(
         [
-            html.Label(label, className="slider-label fw-bold"),
+            html.Label(config.label, className="slider-label fw-bold"),
             dcc.Slider(
-                id=slider_id,
-                min=min_val,
-                max=max_val,
+                id=config.slider_id,
+                min=config.min_val,
+                max=config.max_val,
                 step=1,
-                value=default,
+                value=config.default,
                 marks={
-                    min_val: {
-                        "label": intro_text,
+                    config.min_val: {
+                        "label": config.intro_text,
                         "style": {"color": "#3498db", "fontSize": "0.8rem"},
                     },
-                    max_val: {
-                        "label": extro_text,
+                    config.max_val: {
+                        "label": config.extro_text,
                         "style": {"color": "#e74c3c", "fontSize": "0.8rem"},
                     },
                 },
                 tooltip={"placement": "bottom", "always_visible": True},
-                className=f"personality-slider {css_class}",
+                className=f"personality-slider {config.css_class}",
             ),
         ],
         className="slider-container mb-3",
