@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 
 from dash import html
@@ -11,6 +12,64 @@ from dash.dependencies import Input, Output, State
 from .layout import (
     format_prediction_result,
 )
+
+
+# Default values for prediction inputs
+class PredictionDefaults:
+    """Default values for personality prediction features."""
+
+    TIME_ALONE = 2.0
+    SOCIAL_EVENTS = 4.0
+    GOING_OUTSIDE = 3.0
+    FRIENDS_SIZE = 8.0
+    POST_FREQUENCY = 3.0
+
+
+@dataclass
+class PredictionInputs:
+    """Data class for prediction input parameters."""
+
+    time_alone: float | None = None
+    social_events: float | None = None
+    going_outside: float | None = None
+    friends_size: float | None = None
+    post_freq: float | None = None
+    stage_fear: str | None = None
+    drained_social: str | None = None
+
+    def to_feature_dict(self) -> dict[str, int | float]:
+        """Convert inputs to feature dictionary for model prediction."""
+        return {
+            "Time_spent_Alone": self.time_alone
+            if self.time_alone is not None
+            else PredictionDefaults.TIME_ALONE,
+            "Social_event_attendance": self.social_events
+            if self.social_events is not None
+            else PredictionDefaults.SOCIAL_EVENTS,
+            "Going_outside": self.going_outside
+            if self.going_outside is not None
+            else PredictionDefaults.GOING_OUTSIDE,
+            "Friends_circle_size": self.friends_size
+            if self.friends_size is not None
+            else PredictionDefaults.FRIENDS_SIZE,
+            "Post_frequency": self.post_freq
+            if self.post_freq is not None
+            else PredictionDefaults.POST_FREQUENCY,
+            # One-hot encode Stage_fear
+            "Stage_fear_No": 1 if self.stage_fear == "No" else 0,
+            "Stage_fear_Unknown": 1 if self.stage_fear == "Unknown" else 0,
+            "Stage_fear_Yes": 1 if self.stage_fear == "Yes" else 0,
+            # One-hot encode Drained_after_socializing
+            "Drained_after_socializing_No": 1 if self.drained_social == "No" else 0,
+            "Drained_after_socializing_Unknown": 1
+            if self.drained_social == "Unknown"
+            else 0,
+            "Drained_after_socializing_Yes": 1 if self.drained_social == "Yes" else 0,
+            # Set external match features to Unknown (default)
+            "match_p_Extrovert": 0,
+            "match_p_Introvert": 0,
+            "match_p_Unknown": 1,
+        }
 
 
 def register_callbacks(app, model_loader, prediction_history: list) -> None:
@@ -37,47 +96,25 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
         State("drained-after-socializing", "value"),
         prevent_initial_call=True,
     )
-    def make_prediction(
-        n_clicks,
-        time_alone,
-        social_events,
-        going_outside,
-        friends_size,
-        post_freq,
-        stage_fear,
-        drained_social,
-    ):
+    def make_prediction(n_clicks, *input_values):
         """Handle prediction requests."""
         if not n_clicks:
             return ""
 
         try:
-            # Build the feature dictionary with proper encoding
-            data = {
-                "Time_spent_Alone": time_alone if time_alone is not None else 2.0,
-                "Social_event_attendance": social_events
-                if social_events is not None
-                else 4.0,
-                "Going_outside": going_outside if going_outside is not None else 3.0,
-                "Friends_circle_size": friends_size
-                if friends_size is not None
-                else 8.0,
-                "Post_frequency": post_freq if post_freq is not None else 3.0,
-                # One-hot encode Stage_fear
-                "Stage_fear_No": 1 if stage_fear == "No" else 0,
-                "Stage_fear_Unknown": 1 if stage_fear == "Unknown" else 0,
-                "Stage_fear_Yes": 1 if stage_fear == "Yes" else 0,
-                # One-hot encode Drained_after_socializing
-                "Drained_after_socializing_No": 1 if drained_social == "No" else 0,
-                "Drained_after_socializing_Unknown": 1
-                if drained_social == "Unknown"
-                else 0,
-                "Drained_after_socializing_Yes": 1 if drained_social == "Yes" else 0,
-                # Set external match features to Unknown (default)
-                "match_p_Extrovert": 0,
-                "match_p_Introvert": 0,
-                "match_p_Unknown": 1,
-            }
+            # Create prediction inputs from callback arguments
+            inputs = PredictionInputs(
+                time_alone=input_values[0],
+                social_events=input_values[1],
+                going_outside=input_values[2],
+                friends_size=input_values[3],
+                post_freq=input_values[4],
+                stage_fear=input_values[5],
+                drained_social=input_values[6],
+            )
+
+            # Convert to feature dictionary
+            data = inputs.to_feature_dict()
 
             # Make prediction
             result = model_loader.predict(data)

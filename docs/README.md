@@ -1,7 +1,5 @@
 # Documentation Index
 
-# Documentation Index
-
 Welcome! This documentation covers all aspects of the Six-Stack Personality Classification Pipeline.
 
 ## Main Guides
@@ -42,7 +40,7 @@ docker build -t personality-classifier .
 docker run -p 8080:8080 personality-classifier
 ```
 
-## ️ Resources
+## 📚 Resources
 
 - Code: `src/main_modular.py`, `examples/`
 - Config templates: [Configuration Guide](configuration.md)

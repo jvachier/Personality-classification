@@ -1,48 +1,49 @@
 # API Reference - Six-Stack Personality Classification Pipeline
-## Modules & Functions
 
-**config.py**
-- RND: int = 42
-- N_SPLITS: int = 5
-- N_TRIALS_STACK: int = 15
-- N_TRIALS_BLEND: int = 200
-- LOG_LEVEL: str = "INFO"
-- ENABLE_DATA_AUGMENTATION: bool = True
-- AUGMENTATION_METHOD: str = "sdv_copula"
-- AUGMENTATION_RATIO: float = 0.05
-- DIVERSITY_THRESHOLD: float = 0.95
-- QUALITY_THRESHOLD: float = 0.7
-- class ThreadConfig(Enum): N_JOBS, THREAD_COUNT
-- setup_logging(), get_logger(name)
+## Overview
 
-**data_loader.py**
-- load_data_with_external_merge() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+This document provides comprehensive API documentation for all modules and functions in the personality classification pipeline.
 
-**preprocessing.py**
-- preprocess_data(df) -> pd.DataFrame
+## Configuration Module (`config.py`)
 
-**data_augmentation.py**
-- augment_data(X, y, method, ratio) -> pd.DataFrame
+### Constants
 
-**model_builders.py**
-- build_stack(stack_id, X, y) -> model
+- `RND: int = 42` - Random seed for reproducibility
+- `N_SPLITS: int = 5` - Number of cross-validation splits
+- `N_TRIALS_STACK: int = 15` - Optimization trials per stack
+- `N_TRIALS_BLEND: int = 200` - Optimization trials for blending
+- `LOG_LEVEL: str = "INFO"` - Logging level
+- `ENABLE_DATA_AUGMENTATION: bool = True` - Data augmentation toggle
+- `AUGMENTATION_METHOD: str = "sdv_copula"` - Augmentation method
+- `AUGMENTATION_RATIO: float = 0.05` - Augmentation ratio
+- `DIVERSITY_THRESHOLD: float = 0.95` - Diversity threshold
+- `QUALITY_THRESHOLD: float = 0.7` - Quality threshold
 
-**ensemble.py**
-- blend_predictions(preds_list) -> np.ndarray
+### Classes
 
-**optimization.py**
-- optimize_hyperparameters(model, X, y) -> dict
+```python
+class ThreadConfig(Enum):
+    """Thread configuration enumeration."""
+    N_JOBS = "n_jobs"
+    THREAD_COUNT = "thread_count"
+```
 
-**utils.py**
-- Utility functions for metrics, logging, etc.
-    Returns:
-        tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-            (train_df, test_df, submission_template)
-    """
+### Functions
 
-def merge_external_features(df_main: pd.DataFrame,
-                          df_external: pd.DataFrame,
-                          is_training: bool = True) -> pd.DataFrame:
+```python
+def setup_logging() -> None:
+    """Setup logging configuration."""
+
+def get_logger(name: str) -> logging.Logger:
+    """Get logger instance with specified name."""
+```
+
+## Data Loading Module (`data_loader.py`)
+
+### Main Functions
+
+```python
+def load_data_with_external_merge() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Merge external dataset features using strategic matching.
 

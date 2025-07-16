@@ -17,15 +17,9 @@ Production-ready machine learning pipeline for personality classification using 
 
 ## Dashboard Preview
 
-<div align="center">
-  <video width="80%" controls>
-    <source src="docs/images/personality_classification_app.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-    <a href="docs/images/personality_classification_app.mp4">Download the video</a>.
-  </video>
-  <br>
-  <em>Watch a live demo of the Personality Classification Dashboard in action</em>
-</div>
+![Dashboard Demo](docs/images/personality_classification_app.mp4)
+
+*Watch a live demo of the Personality Classification Dashboard in action*
 
 ## Quick Start
 
