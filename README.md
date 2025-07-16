@@ -17,7 +17,7 @@ Production-ready machine learning pipeline for personality classification using 
 
 ## Dashboard Preview
 
-![Dashboard Demo](docs/images/personality_classification_app.mp4)
+![Dashboard Demo](https://github.com/user-attachments/assets/3541a036-0363-44cf-ae78-7be6b66b553e)
 
 *Watch a live demo of the Personality Classification Dashboard in action*
 
