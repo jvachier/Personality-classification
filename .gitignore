@@ -234,3 +234,6 @@ mlflow_tracking_uri.txt
 
 # Large trained model files (can be regenerated with train_and_save_models.py)
 models/stack_*.pkl  # Exclude large stack models but keep ensemble model
+
+# Remove Mac file
+*.DS_Store
