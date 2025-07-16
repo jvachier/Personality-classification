@@ -14,6 +14,17 @@ from .layout import (
 )
 
 
+# Default values for prediction inputs
+class PredictionDefaults:
+    """Default values for personality prediction features."""
+
+    TIME_ALONE = 2.0
+    SOCIAL_EVENTS = 4.0
+    GOING_OUTSIDE = 3.0
+    FRIENDS_SIZE = 8.0
+    POST_FREQUENCY = 3.0
+
+
 @dataclass
 class PredictionInputs:
     """Data class for prediction input parameters."""
@@ -26,20 +37,24 @@ class PredictionInputs:
     stage_fear: str | None = None
     drained_social: str | None = None
 
-    def to_feature_dict(self) -> dict[str, float]:
+    def to_feature_dict(self) -> dict[str, int | float]:
         """Convert inputs to feature dictionary for model prediction."""
         return {
-            "Time_spent_Alone": self.time_alone if self.time_alone is not None else 2.0,
+            "Time_spent_Alone": self.time_alone
+            if self.time_alone is not None
+            else PredictionDefaults.TIME_ALONE,
             "Social_event_attendance": self.social_events
             if self.social_events is not None
-            else 4.0,
+            else PredictionDefaults.SOCIAL_EVENTS,
             "Going_outside": self.going_outside
             if self.going_outside is not None
-            else 3.0,
+            else PredictionDefaults.GOING_OUTSIDE,
             "Friends_circle_size": self.friends_size
             if self.friends_size is not None
-            else 8.0,
-            "Post_frequency": self.post_freq if self.post_freq is not None else 3.0,
+            else PredictionDefaults.FRIENDS_SIZE,
+            "Post_frequency": self.post_freq
+            if self.post_freq is not None
+            else PredictionDefaults.POST_FREQUENCY,
             # One-hot encode Stage_fear
             "Stage_fear_No": 1 if self.stage_fear == "No" else 0,
             "Stage_fear_Unknown": 1 if self.stage_fear == "Unknown" else 0,
