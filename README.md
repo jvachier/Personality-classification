@@ -34,12 +34,19 @@ uv run python src/main_modular.py   # Run pipeline
 
 ## Table of Contents
 
-**Contents:**
-- Dashboard Preview
-- Quick Start
-- Features
-- Usage
-- Documentation
+- [Dashboard Preview](#dashboard-preview)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Dashboard](#dashboard)
+- [Configuration](#configuration)
+- [Model Stacks](#model-stacks)
+- [Performance Metrics](#performance-metrics)
+- [Testing & Validation](#testing--validation)
+- [Troubleshooting](#troubleshooting)
+- [Documentation](#documentation)
 
 ## Features
 
@@ -136,8 +143,6 @@ make dash
 # Stop dashboard
 make stop-dash
 ```
-
-## Dashboard
 
 ## Dashboard
 
@@ -257,6 +262,8 @@ uv run python examples/test_modules.py
 ```
 
 ### Development Testing
+
+```bash
 # Enable testing mode (faster execution)
 # Edit src/modules/config.py:
 TESTING_MODE = True
@@ -305,16 +312,7 @@ uv sync                     # Reinstall dependencies
 uv run python -c "import sklearn, pandas, numpy, dash; print('OK')"
 ```
 
-
-Key folders:
-- src/: Main pipeline and modules
-- dash_app/: Dashboard app and Docker config
-- models/: Trained models and metadata
-- scripts/: Model training scripts
-- examples/: Usage examples
-- data/: Datasets
-- docs/: Documentation
-- best_params/: Optimized parameters
+#### Performance Issues
 
 ```bash
 # Optimize for your system
