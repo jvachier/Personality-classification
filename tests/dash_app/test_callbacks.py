@@ -171,7 +171,7 @@ class TestCallbackInputValidation:
                     return "Invalid input: None values"
 
                 # Check numeric inputs
-                if any(not isinstance(x, (int, float)) for x in inputs if x is not None):
+                if any(not isinstance(x, int | float) for x in inputs if x is not None):
                     return "Invalid input: Non-numeric values"
 
                 return "Valid prediction"
