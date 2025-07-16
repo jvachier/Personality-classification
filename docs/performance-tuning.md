@@ -1,60 +1,24 @@
 # Performance Tuning Guide
 
-## Overview
+## Performance Tuning Guide
 
-This guide provides comprehensive strategies for optimizing the Six-Stack Personality Classification Pipeline performance across different dimensions: speed, memory usage, accuracy, and resource utilization.
+### Key Levers
+- Training speed: TESTING_MODE, N_TRIALS_STACK, N_TRIALS_BLEND
+- Memory: TESTING_SAMPLE_SIZE, ENABLE_DATA_AUGMENTATION
+- Accuracy: Ensemble optimization, feature engineering
+- Resource: N_JOBS, THREAD_COUNT
 
-## Performance Dimensions
-
-### 1. Training Speed
-
-- Hyperparameter optimization trials
-- Data augmentation complexity
-- Threading configuration
-- Model complexity
-
-### 2. Memory Efficiency
-
-- Dataset size management
-- Model memory footprint
-- Parallel processing overhead
-- Synthetic data generation
-
-### 3. Prediction Accuracy
-
-- Ensemble optimization
-- Cross-validation strategy
-- Feature engineering
-- Model diversity
-
-### 4. Resource Utilization
-
-- CPU core usage
-- Memory allocation
-- I/O optimization
-- Caching strategies
-
-## Speed Optimization
-
-### Quick Development Setup
-
+### Recommended Settings
+**Fast Dev:**
 ```python
-# Ultra-fast configuration for development iteration
 TESTING_MODE = True
 TESTING_SAMPLE_SIZE = 500
 N_TRIALS_STACK = 3
 N_TRIALS_BLEND = 20
 ENABLE_DATA_AUGMENTATION = False
-SHOW_PROGRESS_BARS = False
-
-# Expected time: 2-3 minutes
-# Accuracy trade-off: 2-3% lower than production
 ```
-
-### Balanced Development Setup
-
+**Balanced:**
 ```python
-# Moderate speed with reasonable accuracy
 TESTING_MODE = True
 TESTING_SAMPLE_SIZE = 1000
 N_TRIALS_STACK = 10

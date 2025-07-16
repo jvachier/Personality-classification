@@ -1,63 +1,21 @@
 # Data Augmentation Guide
 
-## Overview
+## Data Augmentation Guide
 
-The Six-Stack Personality Classification Pipeline features an advanced, adaptive data augmentation system designed to improve model generalization and performance through high-quality synthetic data generation.
-
-## Architecture
-
-### Adaptive Strategy Selection
-
-The pipeline automatically selects the optimal augmentation method based on dataset characteristics:
-
-```python
-def analyze_data_characteristics(X, y):
-    """Analyze dataset to determine optimal augmentation strategy."""
-    return {
-        'n_samples': len(X),
-        'n_features': X.shape[1],
-        'class_balance_ratio': min(y.value_counts()) / max(y.value_counts()),
-        'categorical_ratio': (X.dtypes == 'object').sum() / len(X.columns),
-        'feature_complexity': calculate_feature_complexity(X),
-        'is_small_dataset': len(X) < 1000,
-        'is_imbalanced': min(y.value_counts()) / max(y.value_counts()) < 0.3,
-        'is_highly_categorical': (X.dtypes == 'object').sum() / len(X.columns) > 0.5
-    }
-```
+### Strategy
+- Adaptive selection based on dataset size, balance, and feature types
 
 ### Decision Matrix
+| Data Type         | Method         |
+|-------------------|---------------|
+| Small/Imbalanced  | SMOTE/ADASYN  |
+| High Categorical  | Basic         |
+| Complex Numeric   | SDV Copula    |
 
-| Dataset Characteristics          | Recommended Method | Rationale                         |
-| -------------------------------- | ------------------ | --------------------------------- |
-| Small datasets (<1K samples)     | SMOTE              | Fast, proven for small data       |
-| Severe imbalance (<30% minority) | ADASYN             | Adaptive sampling for minorities  |
-| High categorical (>50%)          | Basic              | Simple methods for categorical    |
-| Complex numerical data           | SDV Copula         | Preserves complex distributions   |
-| Large balanced datasets          | SDV Copula         | Best quality for complex patterns |
-
-## Augmentation Methods
-
-### 1. SDV Copula (Recommended)
-
-**Best for**: Large datasets with complex feature distributions
-
-#### Features
-
-- **Gaussian Copula modeling** for complex dependency structures
-- **Marginal distribution preservation** for each feature
-- **Correlation structure maintenance** across features
-- **Fast training mode** for development/testing
-
-#### Implementation
-
-```python
-def sdv_copula_augmentation(X, y, n_samples):
-    """Generate synthetic data using SDV Gaussian Copula."""
-    # Combine features and target
-    data = X.copy()
-    data['target'] = y
-
-    # Configure copula synthesizer
+### Main Method
+**SDV Copula** (recommended):
+- Preserves feature distributions and correlations
+- Fast mode for development
     synthesizer = GaussianCopula(
         enforce_rounding=True,
         enforce_min_max_values=True
