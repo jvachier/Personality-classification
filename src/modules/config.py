@@ -23,7 +23,7 @@ class Paths(Enum):
     TRAIN_CSV = DATA_DIR / "train.csv"
     TEST_CSV = DATA_DIR / "test.csv"
     SAMPLE_SUBMISSION_CSV = DATA_DIR / "sample_submission.csv"
-    PERSONALITY_DATASET_CSV = DATA_DIR / "personality_dataset.csv"
+    PERSONALITY_DATASET_CSV = DATA_DIR / "personality_datasert.csv"
 
     # Log files
     PERSONALITY_CLASSIFIER_LOG = BASE_DIR / "personality_classifier.log"

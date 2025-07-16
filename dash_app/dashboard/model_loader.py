@@ -49,7 +49,7 @@ class ModelLoader:
             for models_dir in models_paths:
                 if models_dir.exists():
                     # Look for saved models based on model name
-                    if self.model_name == "ensemble":
+                    if self.model_name in ["ensemble", "ensemble_model"]:
                         model_file = models_dir / "ensemble_model.pkl"
                         metadata_file = models_dir / "ensemble_metadata.json"
                     else:

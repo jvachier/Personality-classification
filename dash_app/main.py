@@ -2,8 +2,15 @@
 
 import argparse
 import logging
+import sys
+from pathlib import Path
 
-from src import PersonalityClassifierApp
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# Import after path modification
+from dash_app.dashboard.app import PersonalityClassifierApp  # noqa: E402
 
 
 def main():

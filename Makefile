@@ -2,7 +2,7 @@
 # Author: AI Assistant
 # Date: 2025-07-14
 
-.PHONY: help install format lint test run train-models dash stop-dash
+.PHONY: help install format lint typecheck security check-all test run train-models dash stop-dash
 
 # Default target
 help:
@@ -12,7 +12,10 @@ help:
 	@echo "Available targets:"
 	@echo "  install       - Install dependencies using uv"
 	@echo "  format        - Format code with ruff"
-	@echo "  lint          - Lint code with ruff"
+	@echo "  lint          - Lint code with ruff (includes format check)"
+	@echo "  typecheck     - Type check with mypy"
+	@echo "  security      - Security check with bandit"
+	@echo "  check-all     - Run all code quality checks (lint, typecheck, security)"
 	@echo "  test          - Run tests"
 	@echo "  run           - Run the modular pipeline"
 	@echo "  train-models  - Train and save ML models"
@@ -32,7 +35,22 @@ format:
 
 lint:
 	@echo "🔍 Linting code with ruff..."
-	uv run ruff check src/ dash_app/ tests/ scripts/ --output-format=github
+	uv run ruff check . --fix
+	uv run ruff format --check .
+
+# Type checking
+typecheck:
+	@echo "🔎 Type checking with mypy..."
+	uv run mypy src/ --ignore-missing-imports
+
+# Security checking
+security:
+	@echo "🔒 Security checking with bandit..."
+	uv run bandit -r src/ -f json
+
+# Run all quality checks
+check-all: lint typecheck security
+	@echo "✅ All code quality checks completed!"
 
 # Testing
 test:

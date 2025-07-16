@@ -10,10 +10,6 @@ This document provides a deep technical dive into the Six-Stack Personality Clas
 
 The pipeline follows **SOLID principles** and **separation of concerns**:
 
-- **Single Responsibility**: Each module has one clear purpose
-- **Open/Closed**: Easy to extend without modifying existing code
-- **Dependency Inversion**: High-level modules don't depend on low-level details
-- **Interface Segregation**: Clean, focused interfaces between modules
 
 ### Core Architecture Pattern
 
@@ -42,10 +38,6 @@ Each stack is designed to capture different aspects of the data:
 
 #### Stack A: Gradient Boosting Core (Narrow)
 
-- **Purpose**: Stable baseline with conservative hyperparameters
-- **Models**: XGBoost, LightGBM, CatBoost
-- **Meta-learner**: Adaptive (Logistic Regression, Ridge, or XGBoost)
-- **Search Space**: Conservative ranges (500-1000 estimators)
 
 ```python
 # Example hyperparameter ranges for Stack A
@@ -57,6 +49,25 @@ xgb_params = {
     'colsample_bytree': (0.5, 1.0)
 }
 ```
+
+# Technical Guide
+
+## Philosophy
+- Modular, SOLID design
+- Separation of concerns: data, processing, models, config, ensemble, utils
+
+## Stacks
+- A: Stable baseline (XGBoost, LightGBM, CatBoost)
+- B: Wide search
+- C: XGBoost/CatBoost specialists
+- D: Sklearn ensemble
+- E: Neural networks
+- F: Noise-robust
+
+## Advanced Features
+- Optuna hyperparameter optimization
+- SDV Copula data augmentation
+- Out-of-fold ensemble blending
 
 #### Stack B: Gradient Boosting Core (Wide)
 

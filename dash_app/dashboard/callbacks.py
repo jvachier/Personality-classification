@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from dash import dash_table, html
+from dash import html
 from dash.dependencies import Input, Output, State
 
 from .layout import (
@@ -82,6 +82,7 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
             # Make prediction
             result = model_loader.predict(data)
             result["timestamp"] = datetime.now().isoformat()
+            result["input_data"] = data  # Add input data for radar chart
 
             # Add to history
             prediction_history.append(
@@ -98,64 +99,57 @@ def register_callbacks(app, model_loader, prediction_history: list) -> None:
             logger.error(f"Prediction error: {e}")
             return html.Div(f"Error: {e!s}", style={"color": "red"})
 
+    # Enhanced predict button with loading states
     @app.callback(
-        Output("prediction-history", "children"),
-        Input("interval-component", "n_intervals"),
-        Input("predict-button", "n_clicks"),
-    )
-    def update_prediction_history(n_intervals, n_clicks):
-        """Update prediction history display."""
-        if not prediction_history:
-            return html.Div("No predictions yet", style={"color": "#7f8c8d"})
-
-        # Create table data
-        table_data = []
-        for i, pred in enumerate(reversed(prediction_history[-10:])):  # Show last 10
-            table_data.append(
-                {
-                    "ID": f"#{len(prediction_history) - i}",
-                    "Timestamp": pred["timestamp"][:19],  # Remove microseconds
-                    "Prediction": pred["result"].get("prediction", "N/A"),
-                    "Confidence": f"{pred['result'].get('confidence', 0):.3f}"
-                    if pred["result"].get("confidence")
-                    else "N/A",
-                }
-            )
-
-        return dash_table.DataTable(
-            data=table_data,
-            columns=[
-                {"name": "ID", "id": "ID"},
-                {"name": "Timestamp", "id": "Timestamp"},
-                {"name": "Prediction", "id": "Prediction"},
-                {"name": "Confidence", "id": "Confidence"},
-            ],
-            style_cell={"textAlign": "left", "padding": "10px"},
-            style_header={
-                "backgroundColor": "#3498db",
-                "color": "white",
-                "fontWeight": "bold",
-            },
-            style_data_conditional=[
-                {
-                    "if": {"row_index": 0},
-                    "backgroundColor": "#ecf0f1",
-                }
-            ],
-        )
-
-    @app.callback(
-        Output("interval-component", "disabled"), Input("auto-refresh-toggle", "value")
-    )
-    def toggle_auto_refresh(value):
-        """Toggle auto-refresh based on checkbox."""
-        return "auto" not in value
-
-    @app.callback(
-        Output("json-input", "value"),
-        Input("json-input-display", "value"),
+        [
+            Output("predict-button", "children"),
+            Output("predict-button", "disabled"),
+            Output("predict-button", "color"),
+        ],
+        [Input("predict-button", "n_clicks")],
         prevent_initial_call=True,
     )
-    def sync_json_input(value):
-        """Sync the display JSON input with the hidden one."""
-        return value
+    def update_predict_button(n_clicks):
+        """Update predict button state with loading animation."""
+        if n_clicks:
+            # Show loading state briefly (will be overridden by prediction callback)
+            return [
+                [
+                    html.I(className="fas fa-spinner fa-spin me-2"),
+                    "Analyzing Your Personality...",
+                ],
+                True,
+                "warning",
+            ]
+
+        # Default state
+        return [
+            [html.I(className="fas fa-magic me-2"), "Analyze My Personality"],
+            False,
+            "primary",
+        ]
+
+    # Reset button state after prediction
+    @app.callback(
+        [
+            Output("predict-button", "children", allow_duplicate=True),
+            Output("predict-button", "disabled", allow_duplicate=True),
+            Output("predict-button", "color", allow_duplicate=True),
+        ],
+        [Input("prediction-results", "children")],
+        prevent_initial_call=True,
+    )
+    def reset_predict_button(results):
+        """Reset predict button after prediction is complete."""
+        if results:
+            return [
+                [html.I(className="fas fa-magic me-2"), "Analyze Again"],
+                False,
+                "success",
+            ]
+
+        return [
+            [html.I(className="fas fa-magic me-2"), "Analyze My Personality"],
+            False,
+            "primary",
+        ]

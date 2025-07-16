@@ -1,63 +1,40 @@
 # API Reference - Six-Stack Personality Classification Pipeline
+## Modules & Functions
 
-## Module Overview
+**config.py**
+- RND: int = 42
+- N_SPLITS: int = 5
+- N_TRIALS_STACK: int = 15
+- N_TRIALS_BLEND: int = 200
+- LOG_LEVEL: str = "INFO"
+- ENABLE_DATA_AUGMENTATION: bool = True
+- AUGMENTATION_METHOD: str = "sdv_copula"
+- AUGMENTATION_RATIO: float = 0.05
+- DIVERSITY_THRESHOLD: float = 0.95
+- QUALITY_THRESHOLD: float = 0.7
+- class ThreadConfig(Enum): N_JOBS, THREAD_COUNT
+- setup_logging(), get_logger(name)
 
-The pipeline consists of 8 core modules, each with well-defined interfaces and responsibilities.
+**data_loader.py**
+- load_data_with_external_merge() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
 
-## config.py
+**preprocessing.py**
+- preprocess_data(df) -> pd.DataFrame
 
-### Configuration Management
+**data_augmentation.py**
+- augment_data(X, y, method, ratio) -> pd.DataFrame
 
-#### Global Constants
+**model_builders.py**
+- build_stack(stack_id, X, y) -> model
 
-```python
-RND: int = 42                    # Global random seed
-N_SPLITS: int = 5               # Cross-validation folds
-N_TRIALS_STACK: int = 15        # Optuna trials per stack
-N_TRIALS_BLEND: int = 200       # Ensemble blending trials
-LOG_LEVEL: str = "INFO"         # Logging level
-```
+**ensemble.py**
+- blend_predictions(preds_list) -> np.ndarray
 
-#### Threading Configuration
+**optimization.py**
+- optimize_hyperparameters(model, X, y) -> dict
 
-```python
-class ThreadConfig(Enum):
-    """Centralized threading configuration."""
-    N_JOBS: int = 4             # Parallel jobs for sklearn
-    THREAD_COUNT: int = 4       # Thread count for XGB/LGB
-```
-
-#### Data Augmentation Configuration
-
-```python
-ENABLE_DATA_AUGMENTATION: bool = True
-AUGMENTATION_METHOD: str = "sdv_copula"
-AUGMENTATION_RATIO: float = 0.05
-DIVERSITY_THRESHOLD: float = 0.95
-QUALITY_THRESHOLD: float = 0.7
-```
-
-#### Functions
-
-```python
-def setup_logging() -> None:
-    """Initialize structured logging configuration."""
-
-def get_logger(name: str) -> logging.Logger:
-    """Get configured logger instance."""
-```
-
-## data_loader.py
-
-### Data Loading and External Integration
-
-#### Primary Functions
-
-```python
-def load_data_with_external_merge() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """
-    Load training/test data with external dataset merge using TOP-4 strategy.
-
+**utils.py**
+- Utility functions for metrics, logging, etc.
     Returns:
         tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
             (train_df, test_df, submission_template)

@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 import dash
+import dash_bootstrap_components as dbc
 
 from .callbacks import register_callbacks
 from .layout import create_layout
@@ -46,7 +47,48 @@ class PersonalityClassifierApp:
             __name__,
             title=f"Personality Classifier - {model_name}",
             suppress_callback_exceptions=True,
+            external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.FONT_AWESOME],
         )
+
+        # Add custom CSS to ensure white background
+        self.app.index_string = """
+        <!DOCTYPE html>
+        <html>
+            <head>
+                {%metas%}
+                <title>{%title%}</title>
+                {%favicon%}
+                {%css%}
+                <style>
+                    body {
+                        background-color: #ffffff !important;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    html {
+                        background-color: #ffffff !important;
+                    }
+                    .dash-bootstrap, .container-fluid, .container {
+                        background-color: #ffffff !important;
+                    }
+                    ._dash-loading {
+                        background-color: #ffffff !important;
+                    }
+                    #react-entry-point {
+                        background-color: #ffffff !important;
+                    }
+                </style>
+            </head>
+            <body style="background-color: #ffffff !important; margin: 0; padding: 0;">
+                {%app_entry%}
+                <footer>
+                    {%config%}
+                    {%scripts%}
+                    {%renderer%}
+                </footer>
+            </body>
+        </html>
+        """
 
         # Load model
         self.model_loader = ModelLoader(model_name, model_version, model_stage)
