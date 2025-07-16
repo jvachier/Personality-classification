@@ -1,7 +1,5 @@
 # Documentation Index
 
-# Documentation Index
-
 Welcome! This documentation covers all aspects of the Six-Stack Personality Classification Pipeline.
 
 ## Main Guides
