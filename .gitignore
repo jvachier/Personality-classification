@@ -237,3 +237,6 @@ models/stack_*.pkl  # Exclude large stack models but keep ensemble model
 
 # Remove Mac file
 *.DS_Store
+
+# Do not include pre-commit-output.txt
+*.pre-commit-output.txt

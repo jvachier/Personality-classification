@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from .config import Paths
 from .utils import get_logger
 
 logger = get_logger(__name__)
@@ -17,17 +18,18 @@ def load_data_with_external_merge():
     """
     logger.info("📊 Loading data with advanced merge strategy...")
 
-    # Load original datasets
-    df_tr = pd.read_csv("./data/train.csv")
-    df_te = pd.read_csv("./data/test.csv")
-    submission = pd.read_csv("./data/sample_submission.csv")
+    # Use Paths enum from config.py for all file paths
+    df_tr = pd.read_csv(Paths.TRAIN_CSV.value)
+    df_te = pd.read_csv(Paths.TEST_CSV.value)
+    submission = pd.read_csv(Paths.SAMPLE_SUBMISSION_CSV.value)
 
     logger.info(f"Original train shape: {df_tr.shape}")
     logger.info(f"Original test shape: {df_te.shape}")
 
     # Load external dataset using advanced merge strategy
+
     try:
-        df_external = pd.read_csv("./data/personality_datasert.csv")
+        df_external = pd.read_csv(Paths.PERSONALITY_DATASET_CSV.value)
         logger.info(f"External dataset shape: {df_external.shape}")
 
         # Rename Personality column to match_p for clarity
@@ -52,7 +54,6 @@ def load_data_with_external_merge():
         logger.info(f"External dataset shape after deduplication: {df_external.shape}")
 
         # Merge with training and test data to create match_p feature
-        # This adds the match_p column as a new feature
         df_tr = df_tr.merge(df_external, how="left", on=merge_cols)
         df_te = df_te.merge(df_external, how="left", on=merge_cols)
 
