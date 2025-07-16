@@ -147,8 +147,17 @@ class TestCallbackInputValidation:
                 if len(input_values) < 7:
                     return "Invalid input: Not enough values"
 
-                time_alone, social_events, going_outside = input_values[0], input_values[1], input_values[2]
-                friends_size, post_freq, _stage_fear, _drained_social = input_values[3], input_values[4], input_values[5], input_values[6]
+                time_alone, social_events, going_outside = (
+                    input_values[0],
+                    input_values[1],
+                    input_values[2],
+                )
+                friends_size, post_freq, _stage_fear, _drained_social = (
+                    input_values[3],
+                    input_values[4],
+                    input_values[5],
+                    input_values[6],
+                )
 
                 inputs = [
                     time_alone,

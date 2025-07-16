@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 @dataclass
 class NoisyEnsembleConfig:
     """Configuration for noisy label ensemble training."""
+
     model_builder: Callable
     X: pd.DataFrame
     y: pd.Series

@@ -17,6 +17,7 @@ from .layout import (
 @dataclass
 class PredictionInputs:
     """Data class for prediction input parameters."""
+
     time_alone: float | None = None
     social_events: float | None = None
     going_outside: float | None = None
@@ -29,9 +30,15 @@ class PredictionInputs:
         """Convert inputs to feature dictionary for model prediction."""
         return {
             "Time_spent_Alone": self.time_alone if self.time_alone is not None else 2.0,
-            "Social_event_attendance": self.social_events if self.social_events is not None else 4.0,
-            "Going_outside": self.going_outside if self.going_outside is not None else 3.0,
-            "Friends_circle_size": self.friends_size if self.friends_size is not None else 8.0,
+            "Social_event_attendance": self.social_events
+            if self.social_events is not None
+            else 4.0,
+            "Going_outside": self.going_outside
+            if self.going_outside is not None
+            else 3.0,
+            "Friends_circle_size": self.friends_size
+            if self.friends_size is not None
+            else 8.0,
             "Post_frequency": self.post_freq if self.post_freq is not None else 3.0,
             # One-hot encode Stage_fear
             "Stage_fear_No": 1 if self.stage_fear == "No" else 0,
@@ -39,7 +46,9 @@ class PredictionInputs:
             "Stage_fear_Yes": 1 if self.stage_fear == "Yes" else 0,
             # One-hot encode Drained_after_socializing
             "Drained_after_socializing_No": 1 if self.drained_social == "No" else 0,
-            "Drained_after_socializing_Unknown": 1 if self.drained_social == "Unknown" else 0,
+            "Drained_after_socializing_Unknown": 1
+            if self.drained_social == "Unknown"
+            else 0,
             "Drained_after_socializing_Yes": 1 if self.drained_social == "Yes" else 0,
             # Set external match features to Unknown (default)
             "match_p_Extrovert": 0,

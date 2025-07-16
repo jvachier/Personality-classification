@@ -13,6 +13,7 @@ from dash import dcc, html
 @dataclass
 class SliderConfig:
     """Configuration for enhanced sliders."""
+
     slider_id: str
     label: str
     min_val: int
