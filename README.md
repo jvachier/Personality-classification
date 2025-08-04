@@ -1,6 +1,6 @@
 # Six-Stack Personality Classification Pipeline
 
-Production-ready machine learning pipeline for personality classification using ensemble learning, data augmentation, and automated hyperparameter optimization. Modular, maintainable, and includes an interactive dashboard.
+Production-ready machine learning pipeline for personality classification using ensemble learning, data augmentation, and automated hyperparameter optimization. **Achieved top 5% (200/4329) in [Kaggle Personality Classification Competition](https://www.kaggle.com/competitions/playground-series-s5e7).** Modular, maintainable, and includes an interactive dashboard.
 
 ## Technology Stack
 
@@ -11,6 +11,7 @@ Production-ready machine learning pipeline for personality classification using 
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Top%205%25%20(200%2F4329)-orange.svg)](https://www.kaggle.com/competitions/playground-series-s5e7)
 [![Code Quality](https://img.shields.io/badge/Code%20Quality-Ruff-orange.svg)](https://ruff.rs)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Dash-red.svg)](https://plotly.com/dash/)
 [![Architecture](https://img.shields.io/badge/Architecture-Modular-purple.svg)](#-architecture)
