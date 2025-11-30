@@ -489,9 +489,7 @@ def create_domain_balanced_dataset(
         combined_df = combined_df[keep_mask].reset_index(drop=True)
         weights = weights[keep_mask]
 
-        logger.info(
-            f"   Kept {len(combined_df)} high-quality samples after filtering"
-        )
+        logger.info(f"   Kept {len(combined_df)} high-quality samples after filtering")
 
     logger.info(f"Created domain-balanced dataset with {len(combined_df)} samples")
     logger.info(

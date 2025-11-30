@@ -622,9 +622,7 @@ def apply_data_augmentation(
     # Select optimal method and ratio
     if AugmentationConfig.AUGMENTATION_METHOD.value == AugmentationMethod.ADAPTIVE:
         method, augment_ratio = adaptive_augmentation_selection(characteristics)
-        logger.info(
-            f"   Auto-selected: {method.value} with ratio {augment_ratio:.3f}"
-        )
+        logger.info(f"   Auto-selected: {method.value} with ratio {augment_ratio:.3f}")
     else:
         method = AugmentationConfig.AUGMENTATION_METHOD.value
         augment_ratio = AugmentationConfig.AUGMENTATION_RATIO.value
@@ -716,9 +714,7 @@ def apply_data_augmentation(
             X_combined = pd.concat([X_train, augmented_X], ignore_index=True)
             y_combined = pd.concat([y_train, augmented_y], ignore_index=True)
 
-            logger.info(
-                f"   Added {len(augmented_X)} high-quality synthetic samples"
-            )
+            logger.info(f"   Added {len(augmented_X)} high-quality synthetic samples")
             logger.info(f"   Data shape: {original_shape} → {X_combined.shape}")
 
             # Log class balance improvement

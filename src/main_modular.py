@@ -464,9 +464,7 @@ def apply_pseudo_labelling(
 
     # Create new TrainingData with pseudo labels added
     if pseudo_stats["n_pseudo_added"] > 0:
-        logger.info(
-            f"Pseudo labelling added {pseudo_stats['n_pseudo_added']} samples"
-        )
+        logger.info(f"Pseudo labelling added {pseudo_stats['n_pseudo_added']} samples")
 
         # Create new TrainingData object with enhanced training set
         enhanced_data = TrainingData(
