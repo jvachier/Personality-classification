@@ -2,7 +2,7 @@
 
 This comprehensive testing framework covers all components of the personality classification pipeline including data processing, model building, and MLOps infrastructure.
 
-## 📁 Test Structure
+## Test Structure
 
 ```
 tests/
@@ -18,7 +18,7 @@ tests/
 └── fixtures/                      # Test data and fixtures
 ```
 
-## 🧪 Test Categories
+## Test Categories
 
 ### **Unit Tests** (`@pytest.mark.unit`)
 - Test individual functions and classes in isolation
@@ -35,9 +35,9 @@ tests/
 - Large dataset processing
 - Model training with multiple iterations
 
-## 🚀 Running Tests
+## Running Tests
 
-### **Quick Start**
+### Quick Start
 ```bash
 # Run all tests
 python run_tests.py
@@ -49,7 +49,7 @@ python run_tests.py --type all
 python run_tests.py --type fast
 ```
 
-### **Test Categories**
+### Test Categories
 ```bash
 # Run only unit tests
 python run_tests.py --type unit
@@ -64,7 +64,7 @@ python run_tests.py --type modules
 python run_tests.py --type mlops
 ```
 
-### **Specific Test Execution**
+### Specific Test Execution
 ```bash
 # Run specific test file
 python run_tests.py --test tests/modules/test_data_loader.py
@@ -76,7 +76,7 @@ python run_tests.py --test tests/modules/test_data_loader.py::TestDataLoader
 python run_tests.py --test tests/modules/test_data_loader.py::TestDataLoader::test_init
 ```
 
-### **Coverage Options**
+### Coverage Options
 ```bash
 # Run without coverage (faster)
 python run_tests.py --no-coverage
@@ -85,7 +85,7 @@ python run_tests.py --no-coverage
 python run_tests.py --verbose
 ```
 
-### **Direct Pytest Usage**
+### Direct Pytest Usage
 ```bash
 # Run with pytest directly
 pytest tests/
@@ -97,9 +97,9 @@ pytest -m "unit and not slow" tests/
 pytest --cov=src --cov-report=html tests/
 ```
 
-## 🔧 Configuration
+## Configuration
 
-### **pytest.ini**
+### pytest.ini
 ```ini
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -121,7 +121,7 @@ markers = [
 ]
 ```
 
-## 🎯 Test Fixtures
+## Test Fixtures
 
 The test suite includes comprehensive fixtures for different testing scenarios:
 
@@ -139,7 +139,7 @@ The test suite includes comprehensive fixtures for different testing scenarios:
 - `assert_data_shape()`: Check DataFrame dimensions
 - `assert_no_missing_values()`: Verify data quality
 
-## 📊 Coverage Reports
+## Coverage Reports
 
 Test coverage reports are generated in multiple formats:
 
@@ -162,7 +162,7 @@ Open `htmlcov/index.html` in your browser for detailed coverage analysis.
 ### **XML Report**
 `coverage.xml` for CI/CD integration.
 
-## 🔍 Test Examples
+## Test Examples
 
 ### **Data Processing Tests**
 ```python
@@ -193,9 +193,9 @@ def test_train_model(self, sample_data):
     assert hasattr(trained_model, "predict")
 ```
 
-## 🐛 Debugging Tests
+## Debugging Tests
 
-### **Running in Debug Mode**
+### Running in Debug Mode
 ```bash
 # Run with verbose output and show local variables
 pytest -vvv --tb=long tests/
@@ -204,7 +204,7 @@ pytest -vvv --tb=long tests/
 pytest -s tests/modules/test_data_loader.py::TestDataLoader::test_init
 ```
 
-### **Using Print Statements**
+### Using Print Statements
 ```python
 def test_debug_example(self, sample_data):
     print(f"Data shape: {sample_data.shape}")
@@ -212,14 +212,14 @@ def test_debug_example(self, sample_data):
     # ... test logic
 ```
 
-### **Using Debugger**
+### Using Debugger
 ```python
 def test_with_debugger(self, sample_data):
     import pdb; pdb.set_trace()
     # ... test logic
 ```
 
-## 🔄 Continuous Integration
+## Continuous Integration
 
 ### **GitHub Actions Example**
 ```yaml
@@ -248,28 +248,28 @@ jobs:
       uses: codecov/codecov-action@v1
 ```
 
-## 📝 Best Practices
+## Best Practices
 
-### **Writing Tests**
-1. **Descriptive Names**: Use clear, descriptive test names
-2. **Single Responsibility**: Each test should verify one specific behavior
-3. **Independent Tests**: Tests should not depend on each other
-4. **Use Fixtures**: Leverage pytest fixtures for setup and teardown
-5. **Mock External Dependencies**: Use mocks for external services
+### Writing Tests
+1. Descriptive Names: Use clear, descriptive test names
+2. Single Responsibility: Each test should verify one specific behavior
+3. Independent Tests: Tests should not depend on each other
+4. Use Fixtures: Leverage pytest fixtures for setup and teardown
+5. Mock External Dependencies: Use mocks for external services
 
-### **Test Organization**
-1. **Group Related Tests**: Use test classes to group related functionality
-2. **Use Markers**: Tag tests appropriately for selective execution
-3. **Parametrize Tests**: Use `@pytest.mark.parametrize` for multiple scenarios
-4. **Document Complex Tests**: Add docstrings explaining test purpose
+### Test Organization
+1. Group Related Tests: Use test classes to group related functionality
+2. Use Markers: Tag tests appropriately for selective execution
+3. Parametrize Tests: Use `@pytest.mark.parametrize` for multiple scenarios
+4. Document Complex Tests: Add docstrings explaining test purpose
 
-### **Performance**
-1. **Fast Unit Tests**: Keep unit tests fast and focused
-2. **Mark Slow Tests**: Use `@pytest.mark.slow` for time-consuming tests
-3. **Use Smaller Datasets**: Create minimal datasets for testing
-4. **Parallel Execution**: Consider pytest-xdist for parallel test execution
+### Performance
+1. Fast Unit Tests: Keep unit tests fast and focused
+2. Mark Slow Tests: Use `@pytest.mark.slow` for time-consuming tests
+3. Use Smaller Datasets: Create minimal datasets for testing
+4. Parallel Execution: Consider pytest-xdist for parallel test execution
 
-## 🛠️ Dependencies
+## Dependencies
 
 The testing framework requires:
 
@@ -290,15 +290,15 @@ dash>=2.14.0
 pytest-xdist>=3.0.0
 ```
 
-## 📈 Metrics and Reporting
+## Metrics and Reporting
 
-### **Test Metrics**
-- **Test Count**: Total number of tests
-- **Pass Rate**: Percentage of passing tests
-- **Coverage**: Code coverage percentage
-- **Execution Time**: Test suite runtime
+### Test Metrics
+- Test Count: Total number of tests
+- Pass Rate: Percentage of passing tests
+- Coverage: Code coverage percentage
+- Execution Time: Test suite runtime
 
-### **Quality Gates**
+### Quality Gates
 - Minimum 90% code coverage
 - All tests must pass
 - No critical security vulnerabilities
@@ -306,7 +306,7 @@ pytest-xdist>=3.0.0
 
 ---
 
-## 🚀 Quick Commands Reference
+## Quick Commands Reference
 
 ```bash
 # Essential commands

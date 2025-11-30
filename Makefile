@@ -25,53 +25,53 @@ help:
 
 # Dependency management
 install:
-	@echo "📦 Installing dependencies with uv..."
+	@echo "Installing dependencies with uv..."
 	uv sync --all-extras
 
 # Code quality with Ruff
 format:
-	@echo "🎨 Formatting code with ruff..."
+	@echo "Formatting code with ruff..."
 	uv run ruff format src/ dash_app/ tests/ scripts/
 
 lint:
-	@echo "🔍 Linting code with ruff..."
+	@echo "Linting code with ruff..."
 	uv run ruff check . --fix
 	uv run ruff format --check .
 
 # Type checking
 typecheck:
-	@echo "🔎 Type checking with mypy..."
+	@echo "Type checking with mypy..."
 	uv run mypy src/ --ignore-missing-imports
 
 # Security checking
 security:
-	@echo "🔒 Security checking with bandit..."
+	@echo "Security checking with bandit..."
 	uv run bandit -r src/ -f json
 
 # Run all quality checks
 check-all: lint typecheck security
-	@echo "✅ All code quality checks completed!"
+	@echo "All code quality checks completed!"
 
 # Testing
 test:
-	@echo "🧪 Running tests..."
+	@echo "Running tests..."
 	uv run pytest tests/ -v
 
 # Pipeline execution
 run:
-	@echo "🚀 Running modular pipeline..."
+	@echo "Running modular pipeline..."
 	uv run python src/main_modular.py
 
 # Model training
 train-models:
-	@echo "🤖 Training and saving ML models..."
+	@echo "Training and saving ML models..."
 	uv run python scripts/train_and_save_models.py
 
 # Dash application
 dash:
-	@echo "📊 Starting Dash application..."
+	@echo "Starting Dash application..."
 	uv run python dash_app/main.py --model-name ensemble
 
 stop-dash:
-	@echo "🛑 Stopping Dash application..."
+	@echo "Stopping Dash application..."
 	@lsof -ti:8050 | xargs kill -9 2>/dev/null || echo "No process found on port 8050"

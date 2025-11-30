@@ -63,18 +63,18 @@ uv run python src/main_modular.py   # Run pipeline
 
 ```
 src/
-├── main_modular.py                 # 🎯 Main production pipeline (MLOps-enhanced)
-├── modules/                        # 🧩 Core modules
-│   ├── config.py                   # ⚙️ Configuration & logging
-│   ├── data_loader.py              # 📊 Data loading & external merge
-│   ├── preprocessing.py            # 🔧 Feature engineering
-│   ├── data_augmentation.py        # 🎲 Advanced synthetic data
-│   ├── model_builders.py           # 🏭 Model stack construction
-│   ├── ensemble.py                 # 🎯 Ensemble & OOF predictions
-│   ├── optimization.py             # 🔍 Optuna utilities
-│   └── utils.py                    # 🛠️ Utility functions
+├── main_modular.py                 # Main production pipeline (MLOps-enhanced)
+├── modules/                        # Core modules
+│   ├── config.py                   # Configuration & logging
+│   ├── data_loader.py              # Data loading & external merge
+│   ├── preprocessing.py            # Feature engineering
+│   ├── data_augmentation.py        # Advanced synthetic data
+│   ├── model_builders.py           # Model stack construction
+│   ├── ensemble.py                 # Ensemble & OOF predictions
+│   ├── optimization.py             # Optuna utilities
+│   └── utils.py                    # Utility functions
 
-dash_app/                           # 🖥️ Interactive Dashboard
+dash_app/                           # Interactive Dashboard
 ├── dashboard/                            # Application source
 │   ├── app.py                      # Main Dash application
 │   ├── layout.py                   # UI layout components
@@ -84,21 +84,21 @@ dash_app/                           # 🖥️ Interactive Dashboard
 ├── Dockerfile                      # Container configuration
 └── docker-compose.yml             # Multi-service orchestration
 
-models/                             # 🤖 Trained Models
+models/                             # Trained Models
 ├── ensemble_model.pkl              # Production ensemble model
 ├── ensemble_metadata.json         # Model metadata and labels
 ├── stack_*_model.pkl              # Individual stack models
 └── stack_*_metadata.json          # Stack-specific metadata
 
-scripts/                            # 🛠️ Utility Scripts
+scripts/                            # Utility Scripts
 └── train_and_save_models.py        # Model training and persistence
 
-data/                               # 📊 Datasets
+data/                               # Datasets
 
-docs/                               # 📝 Documentation
+docs/                               # Documentation
 └── [Generated documentation]       # Technical guides
 
-best_params/                        # 💾 Optimized parameters
+best_params/                        # Optimized parameters
 └── stack_*_best_params.json        # Per-stack best parameters
 ```
 
@@ -231,7 +231,7 @@ The pipeline employs six specialized ensemble stacks, each optimized for differe
 The pipeline is designed to achieve high accuracy through ensemble learning and advanced optimization techniques. Performance will vary based on:
 
 ```
-📊 Dataset Statistics
+Dataset Statistics
 ├── Training Samples: ~18,000+ (with augmentation)
 ├── Test Samples: ~6,000+
 ├── Original Features: 8 personality dimensions
@@ -239,11 +239,11 @@ The pipeline is designed to achieve high accuracy through ensemble learning and 
 ├── Augmented Samples: Variable (adaptive, typically 5-10%)
 └── Class Balance: Extrovert/Introvert classification
 
-🔧 Technical Specifications
+Technical Specifications
 ├── Memory Usage: <4GB peak (configurable)
 ├── CPU Utilization: 4 cores (configurable)
-├── Model Persistence: ✅ Best parameters saved
-└── Reproducibility: ✅ Fixed random seeds
+├── Model Persistence: Yes - Best parameters saved
+└── Reproducibility: Yes - Fixed random seeds
 ```
 
 ## Testing & Validation

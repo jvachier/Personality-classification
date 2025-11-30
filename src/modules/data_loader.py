@@ -16,7 +16,7 @@ def load_data_with_external_merge():
     Returns:
         tuple: (df_tr, df_te, submission) - training data, test data, and submission template
     """
-    logger.info("📊 Loading data with advanced merge strategy...")
+    logger.info("Loading data with advanced merge strategy...")
 
     # Use Paths enum from config.py for all file paths
     df_tr = pd.read_csv(Paths.TRAIN_CSV.value)
@@ -62,10 +62,10 @@ def load_data_with_external_merge():
         test_matches = df_te["match_p"].notna().sum()
 
         logger.info(
-            f"✅ Successfully matched {train_matches}/{len(df_tr)} training samples with external data"
+            f"Successfully matched {train_matches}/{len(df_tr)} training samples with external data"
         )
         logger.info(
-            f"✅ Successfully matched {test_matches}/{len(df_te)} test samples with external data"
+            f"Successfully matched {test_matches}/{len(df_te)} test samples with external data"
         )
 
         # Print match distribution for training data
@@ -77,10 +77,10 @@ def load_data_with_external_merge():
 
     except FileNotFoundError:
         logger.warning(
-            "⚠️ personality_datasert.csv not found, adding empty match_p column"
+            "personality_datasert.csv not found, adding empty match_p column"
         )
         df_tr["match_p"] = None
         df_te["match_p"] = None
 
-    logger.info("✅ Data loading with external merge completed")
+    logger.info("Data loading with external merge completed")
     return df_tr, df_te, submission
