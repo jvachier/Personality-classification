@@ -397,14 +397,14 @@ def calculate_adaptive_ratio(data_characteristics):
 
 ### When to Use Augmentation
 
-✅ **Recommended**:
+**Recommended**:
 
 - Small to medium datasets (<10K samples)
 - Class imbalanced problems
 - High-stakes applications requiring robustness
 - When overfitting is detected
 
-❌ **Not Recommended**:
+**Not Recommended**:
 
 - Very large datasets (>100K samples)
 - When computational resources are limited

@@ -65,7 +65,7 @@ def analyze_data_characteristics(X_train: pd.DataFrame, y_train: pd.Series) -> d
         "is_highly_categorical": categorical_ratio > 0.3,
     }
 
-    logger.info(f"📊 Data characteristics: {characteristics}")
+    logger.info(f"Data characteristics: {characteristics}")
     return characteristics
 
 
@@ -82,14 +82,14 @@ def adaptive_augmentation_selection(
     max_ratio = AugmentationConfig.MAX_AUGMENTATION_RATIO.value
 
     logger.info(
-        f"   📊 Adaptive selection using config ratios: base={base_ratio}, min={min_ratio}, max={max_ratio}"
+        f"   Adaptive selection using config ratios: base={base_ratio}, min={min_ratio}, max={max_ratio}"
     )
 
     if characteristics["is_small_dataset"] and characteristics["is_imbalanced"]:
         # Small imbalanced dataset - use higher ratio for SMOTENC
         adaptive_ratio = min(base_ratio * 1.5, max_ratio)  # 150% of base, capped at max
         logger.info(
-            f"   🎯 Small imbalanced dataset detected → SMOTENC with ratio {adaptive_ratio:.3f} (base*1.5)"
+            f"   Small imbalanced dataset detected → SMOTENC with ratio {adaptive_ratio:.3f} (base*1.5)"
         )
         return AugmentationMethod.SMOTENC, adaptive_ratio
 
@@ -97,7 +97,7 @@ def adaptive_augmentation_selection(
         # High categorical ratio - use moderate ratio for SDV Copula
         adaptive_ratio = min(base_ratio * 0.8, max_ratio)  # 80% of base
         logger.info(
-            f"   🎯 High categorical features detected → SDV_COPULA with ratio {adaptive_ratio:.3f} (base*0.8)"
+            f"   High categorical features detected → SDV_COPULA with ratio {adaptive_ratio:.3f} (base*0.8)"
         )
         return AugmentationMethod.SDV_COPULA, adaptive_ratio
 
@@ -105,7 +105,7 @@ def adaptive_augmentation_selection(
         # Large balanced dataset - use conservative ratio for ensemble
         adaptive_ratio = max(base_ratio * 0.5, min_ratio)  # 50% of base, at least min
         logger.info(
-            f"   🎯 Large balanced dataset detected → MIXED_ENSEMBLE with ratio {adaptive_ratio:.3f} (base*0.5)"
+            f"   Large balanced dataset detected → MIXED_ENSEMBLE with ratio {adaptive_ratio:.3f} (base*0.5)"
         )
         return AugmentationMethod.MIXED_ENSEMBLE, adaptive_ratio
 
@@ -113,7 +113,7 @@ def adaptive_augmentation_selection(
         # Severe imbalance - use maximum ratio for class balancing
         adaptive_ratio = max_ratio  # Use maximum configured ratio
         logger.info(
-            f"   🎯 Severe class imbalance detected → CLASS_BALANCED with ratio {adaptive_ratio:.3f} (max ratio)"
+            f"   Severe class imbalance detected → CLASS_BALANCED with ratio {adaptive_ratio:.3f} (max ratio)"
         )
         return AugmentationMethod.CLASS_BALANCED, adaptive_ratio
 
@@ -121,7 +121,7 @@ def adaptive_augmentation_selection(
         # Default to SDV Copula with base ratio
         adaptive_ratio = base_ratio
         logger.info(
-            f"   🎯 Default case → SDV_COPULA with ratio {adaptive_ratio:.3f} (base ratio)"
+            f"   Default case → SDV_COPULA with ratio {adaptive_ratio:.3f} (base ratio)"
         )
         return AugmentationMethod.SDV_COPULA, adaptive_ratio
 
@@ -131,7 +131,7 @@ def tvae_augmentation(
 ) -> tuple[pd.DataFrame, pd.Series]:
     """TVAE-based augmentation with better stability than CTGAN."""
     if not SDV_AVAILABLE:
-        logger.warning("⚠️ SDV not available, falling back to simple augmentation")
+        logger.warning("SDV not available, falling back to simple augmentation")
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
     try:
@@ -175,7 +175,7 @@ def tvae_augmentation(
         return augmented_X, augmented_y
 
     except Exception as e:
-        logger.warning(f"⚠️ TVAE failed: {e}, falling back to Copula")
+        logger.warning(f"TVAE failed: {e}, falling back to Copula")
         return sdv_augmentation(X_train, y_train, "copula", augment_ratio)
 
 
@@ -196,7 +196,7 @@ def class_balanced_augmentation(
     samples_needed = max(0, target_minority_count - minority_count)
 
     if samples_needed == 0:
-        logger.info("   ✅ Classes already balanced, no augmentation needed")
+        logger.info("   Classes already balanced, no augmentation needed")
         return pd.DataFrame(), pd.Series(dtype=y_train.dtype)
 
     # Filter minority class data
@@ -229,7 +229,7 @@ def class_balanced_augmentation(
                 all_augmented_y.append(aug_y)
 
         except Exception as e:
-            logger.warning(f"⚠️ Method {method} failed: {e}")
+            logger.warning(f"Method {method} failed: {e}")
 
     if all_augmented_X:
         combined_X = pd.concat(all_augmented_X, ignore_index=True)
@@ -266,7 +266,7 @@ def mixed_ensemble_augmentation(
                 all_augmented_y.append(aug_y)
 
         except Exception as e:
-            logger.warning(f"⚠️ Method {method} failed: {e}")
+            logger.warning(f"Method {method} failed: {e}")
 
     if all_augmented_X:
         combined_X = pd.concat(all_augmented_X, ignore_index=True)
@@ -284,7 +284,7 @@ def enhanced_quality_filtering(
     threshold: float = 0.75,
 ) -> tuple[pd.DataFrame, pd.Series]:
     """Multi-metric quality filtering for synthetic data."""
-    logger.info("   🔍 Enhanced quality filtering...")
+    logger.info("   Enhanced quality filtering...")
 
     if len(synthetic_X) == 0:
         return synthetic_X, synthetic_y
@@ -326,7 +326,7 @@ def enhanced_quality_filtering(
     logger.info(
         f"   ✨ Quality filtering: {len(filtered_X)}/{len(synthetic_X)} samples kept"
     )
-    logger.info(f"   📊 Avg quality score: {np.mean(quality_scores):.3f}")
+    logger.info(f"   Avg quality score: {np.mean(quality_scores):.3f}")
 
     return filtered_X, filtered_y
 
@@ -354,10 +354,10 @@ def diversity_check(
             diversity_scores.append(diversity)
 
     avg_diversity = np.mean(diversity_scores) if diversity_scores else 1.0
-    is_diverse = avg_diversity >= threshold
+    is_diverse = bool(avg_diversity >= threshold)
 
     logger.info(
-        f"   🌈 Diversity score: {avg_diversity:.3f} ({'✅ Pass' if is_diverse else '❌ Fail'})"
+        f"   Diversity score: {avg_diversity:.3f} ({'Pass' if is_diverse else 'Fail'})"
     )
     return is_diverse
 
@@ -435,11 +435,11 @@ def sdv_augmentation(
 ) -> tuple[pd.DataFrame, pd.Series]:
     """High-quality synthetic data generation using SDV with improved CTGAN handling."""
     if not SDV_AVAILABLE:
-        logger.warning("⚠️ SDV not available, falling back to simple augmentation")
+        logger.warning("SDV not available, falling back to simple augmentation")
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
     try:
-        logger.info(f"   🔧 Using {method} synthesizer...")
+        logger.info(f"   Using {method} synthesizer...")
 
         # Combine features and target for SDV
         train_data = X_train.copy()
@@ -471,7 +471,7 @@ def sdv_augmentation(
                 logger.warning(
                     "   ⚠️ Apple Silicon detected - CTGAN has compatibility issues"
                 )
-                logger.info("   🔄 Falling back to GaussianCopula for stability...")
+                logger.info("   Falling back to GaussianCopula for stability...")
                 synthesizer = GaussianCopulaSynthesizer(metadata)
             else:
                 logger.info("   🧠 Training CTGAN (slow but high quality)...")
@@ -521,7 +521,7 @@ def sdv_augmentation(
         try:
             synthesizer.fit(train_data)
             training_time = time.time() - start_time
-            logger.info(f"   ✅ Training completed in {training_time:.1f}s")
+            logger.info(f"   Training completed in {training_time:.1f}s")
         finally:
             if method == "ctgan":
                 signal.alarm(0)
@@ -531,22 +531,22 @@ def sdv_augmentation(
         if n_synthetic == 0:
             return pd.DataFrame(), pd.Series(dtype=y_train.dtype)
 
-        logger.info(f"   🎲 Generating {n_synthetic} synthetic samples...")
+        logger.info(f"   Generating {n_synthetic} synthetic samples...")
         synthetic_data = synthesizer.sample(num_rows=n_synthetic)
 
         # Split back to features and target
         synthetic_X = synthetic_data.drop("Personality", axis=1)
         synthetic_y = synthetic_data["Personality"]
 
-        logger.info(f"   ✅ Generated {len(synthetic_X)} synthetic samples")
+        logger.info(f"   Generated {len(synthetic_X)} synthetic samples")
         return synthetic_X, synthetic_y
 
     except TimeoutError:
-        logger.warning("⚠️ Training timed out, falling back to simple augmentation")
+        logger.warning("Training timed out, falling back to simple augmentation")
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
     except Exception as e:
         logger.warning(
-            f"⚠️ SDV augmentation failed: {e}, falling back to simple augmentation"
+            f"SDV augmentation failed: {e}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
@@ -557,7 +557,7 @@ def smotenc_augmentation(
     """SMOTE for mixed numerical/categorical data."""
     if not IMBLEARN_AVAILABLE:
         logger.warning(
-            "⚠️ imbalanced-learn not available, falling back to simple augmentation"
+            "imbalanced-learn not available, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
@@ -600,7 +600,7 @@ def smotenc_augmentation(
 
     except Exception as e:
         logger.warning(
-            f"⚠️ SMOTENC augmentation failed: {e}, falling back to simple augmentation"
+            f"SMOTENC augmentation failed: {e}, falling back to simple augmentation"
         )
         return simple_mixed_augmentation(X_train, y_train, augment_ratio)
 
@@ -613,7 +613,7 @@ def apply_data_augmentation(
         logger.info("📊 Data augmentation disabled")
         return X_train, y_train
 
-    logger.info("📊 Applying adaptive data augmentation...")
+    logger.info("Applying adaptive data augmentation...")
     original_shape = X_train.shape
 
     # Analyze data characteristics
@@ -623,13 +623,13 @@ def apply_data_augmentation(
     if AugmentationConfig.AUGMENTATION_METHOD.value == AugmentationMethod.ADAPTIVE:
         method, augment_ratio = adaptive_augmentation_selection(characteristics)
         logger.info(
-            f"   🎯 Auto-selected: {method.value} with ratio {augment_ratio:.3f}"
+            f"   Auto-selected: {method.value} with ratio {augment_ratio:.3f}"
         )
     else:
         method = AugmentationConfig.AUGMENTATION_METHOD.value
         augment_ratio = AugmentationConfig.AUGMENTATION_RATIO.value
         logger.info(
-            f"   🎯 Using configured: {method.value} with ratio {augment_ratio:.3f}"
+            f"   Using configured: {method.value} with ratio {augment_ratio:.3f}"
         )
 
     # Apply augmentation with timeout
@@ -677,12 +677,12 @@ def apply_data_augmentation(
 
     except TimeoutError:
         logger.warning(
-            f"⚠️ Augmentation timeout after {AugmentationConfig.MAX_AUGMENTATION_TIME_SECONDS.value}s, using SMOTENC fallback"
+            f"Augmentation timeout after {AugmentationConfig.MAX_AUGMENTATION_TIME_SECONDS.value}s, using SMOTENC fallback"
         )
         augmented_X, augmented_y = smotenc_augmentation(X_train, y_train, 0.03)
         signal.alarm(0)
     except Exception as e:
-        logger.warning(f"⚠️ Augmentation failed: {e}, using original data")
+        logger.warning(f"Augmentation failed: {e}, using original data")
         signal.alarm(0)
         return X_train, y_train
 
@@ -704,7 +704,7 @@ def apply_data_augmentation(
         if AugmentationConfig.ENABLE_DIVERSITY_CHECK.value and not diversity_check(
             X_train, augmented_X, AugmentationConfig.DIVERSITY_THRESHOLD.value
         ):
-            logger.warning("   ⚠️ Low diversity detected, reducing synthetic samples")
+            logger.warning("   Low diversity detected, reducing synthetic samples")
             # Keep only top 50% most diverse samples
             keep_ratio = 0.5
             keep_count = int(len(augmented_X) * keep_ratio)
@@ -717,18 +717,18 @@ def apply_data_augmentation(
             y_combined = pd.concat([y_train, augmented_y], ignore_index=True)
 
             logger.info(
-                f"   ✅ Added {len(augmented_X)} high-quality synthetic samples"
+                f"   Added {len(augmented_X)} high-quality synthetic samples"
             )
-            logger.info(f"   📈 Data shape: {original_shape} → {X_combined.shape}")
+            logger.info(f"   Data shape: {original_shape} → {X_combined.shape}")
 
             # Log class balance improvement
             orig_balance = y_train.value_counts().min() / y_train.value_counts().max()
             new_balance = (
                 y_combined.value_counts().min() / y_combined.value_counts().max()
             )
-            logger.info(f"   ⚖️ Class balance: {orig_balance:.3f} → {new_balance:.3f}")
+            logger.info(f"   Class balance: {orig_balance:.3f} → {new_balance:.3f}")
 
             return X_combined, y_combined
 
-    logger.warning("⚠️ No synthetic samples generated, using original data")
+    logger.warning("No synthetic samples generated, using original data")
     return X_train, y_train

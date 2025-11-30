@@ -28,7 +28,7 @@ def prep(
     Returns:
         Tuple of (X_train, X_test, y_train, label_encoder)
     """
-    logger.info("🔧 Preprocessing data with advanced competitive approach...")
+    logger.info("Preprocessing data with advanced competitive approach...")
 
     # Define feature groups before any processing
     # Keep original column types for proper categorization
@@ -52,7 +52,7 @@ def prep(
         df_te = df_te.drop(columns=[idx])
 
     # Use advanced correlation-based imputation
-    logger.info("🔄 Performing TOP-4 correlation-based imputation...")
+    logger.info("Performing TOP-4 correlation-based imputation...")
 
     # Extract and encode target variable BEFORE combining data
     le_tgt = LabelEncoder()
@@ -143,7 +143,7 @@ def prep(
             all_data[col] = all_data[col].fillna("Unknown")
 
     # Apply one-hot encoding for categorical features using OneHotEncoder (advanced approach)
-    logger.info("🔄 Applying one-hot encoding for categorical features...")
+    logger.info("Applying one-hot encoding for categorical features...")
 
     # Identify categorical columns that exist in the data
     existing_categorical_cols = [
@@ -173,13 +173,13 @@ def prep(
         all_data = pd.concat([all_data, encoded_df], axis=1)
 
         logger.info(
-            f"   ✅ Encoded {len(existing_categorical_cols)} categorical features into {len(feature_names)} binary features"
+            f"   Encoded {len(existing_categorical_cols)} categorical features into {len(feature_names)} binary features"
         )
     else:
-        logger.warning("   ⚠️ No categorical features found to encode")
+        logger.warning("   No categorical features found to encode")
 
     # Fill any remaining missing values
-    logger.info("🔄 Filling any remaining missing values...")
+    logger.info("Filling any remaining missing values...")
 
     # For numerical columns, use median
     num_cols = all_data.select_dtypes(include=[np.number]).columns
@@ -200,7 +200,7 @@ def prep(
     logger.info(f"Final train shape: {df_tr.shape}")
     logger.info(f"Final test shape: {df_te.shape}")
 
-    logger.info("✅ Preprocessing completed with advanced competitive approach")
+    logger.info("Preprocessing completed with advanced competitive approach")
     return df_tr, df_te, ytr, le_tgt
 
 
@@ -259,13 +259,13 @@ def add_pseudo_labeling_conservative(
     n_high_conf = np.sum(high_conf_mask)
     max_pseudo_samples = int(len(X_full) * max_pseudo_ratio)
 
-    logger.info(f"   📊 Found {n_high_conf} high-confidence predictions")
-    logger.info(f"   📏 Maximum allowed pseudo-samples: {max_pseudo_samples}")
+    logger.info(f"   Found {n_high_conf} high-confidence predictions")
+    logger.info(f"   Maximum allowed pseudo-samples: {max_pseudo_samples}")
 
     if n_high_conf > 0:
         # Limit pseudo-samples to avoid overfitting
         if n_high_conf > max_pseudo_samples:
-            logger.info(f"   ✂️ Limiting to {max_pseudo_samples} most confident samples")
+            logger.info(f"   Limiting to {max_pseudo_samples} most confident samples")
             # Get confidence scores and select most confident samples
             conf_scores = np.maximum(ensemble_proba, 1 - ensemble_proba)
             high_conf_indices = np.where(high_conf_mask)[0]
@@ -299,16 +299,16 @@ def add_pseudo_labeling_conservative(
             "final_size": len(X_combined),
         }
 
-        logger.info(f"   ✅ Added {len(y_pseudo)} pseudo-labels to training data")
+        logger.info(f"   Added {len(y_pseudo)} pseudo-labels to training data")
         logger.info(
-            f"   📊 Pseudo-label distribution: Class 0: {pseudo_stats['pseudo_class_0']}, Class 1: {pseudo_stats['pseudo_class_1']}"
+            f"   Pseudo-label distribution: Class 0: {pseudo_stats['pseudo_class_0']}, Class 1: {pseudo_stats['pseudo_class_1']}"
         )
-        logger.info(f"   🎯 Mean confidence: {pseudo_stats['mean_confidence']:.4f}")
-        logger.info(f"   📈 Training data: {len(X_full)} → {len(X_combined)} samples")
+        logger.info(f"   Mean confidence: {pseudo_stats['mean_confidence']:.4f}")
+        logger.info(f"   Training data: {len(X_full)} → {len(X_combined)} samples")
 
         return X_combined, y_combined, pseudo_stats
     else:
-        logger.info("   ⚠️ No high-confidence predictions found")
+        logger.info("   No high-confidence predictions found")
         pseudo_stats = {
             "n_pseudo_added": 0,
             "original_size": len(X_full),
@@ -340,7 +340,7 @@ def create_domain_balanced_dataset(
     Returns:
         Tuple of (combined_dataframe, sample_weights)
     """
-    logger.info("🎯 Computing domain weights for distribution alignment...")
+    logger.info("Computing domain weights for distribution alignment...")
 
     # Combine dataframes with domain labels
     combined_data = []
@@ -440,7 +440,7 @@ def create_domain_balanced_dataset(
             weights[domain_mask] = domain_weights / (np.mean(domain_weights) + 1e-8)
 
     # Print summary
-    logger.info("📊 Domain weighting summary:")
+    logger.info("Domain weighting summary:")
     logger.info("   Reference domain: 0 (first dataframe)")
     for domain_idx in range(len(dataframes)):
         domain_mask = domain_labels == domain_idx
@@ -481,7 +481,7 @@ def create_domain_balanced_dataset(
             total_count = np.sum(domain_mask)
             if removed_count > 0:
                 logger.info(
-                    f"   🚫 Filtered {removed_count}/{total_count} ({removed_count / total_count * 100:.1f}%) "
+                    f"   Filtered {removed_count}/{total_count} ({removed_count / total_count * 100:.1f}%) "
                     f"low-quality samples from domain {domain_idx}"
                 )
 
@@ -490,7 +490,7 @@ def create_domain_balanced_dataset(
         weights = weights[keep_mask]
 
         logger.info(
-            f"   ✅ Kept {len(combined_df)} high-quality samples after filtering"
+            f"   Kept {len(combined_df)} high-quality samples after filtering"
         )
 
     logger.info(f"Created domain-balanced dataset with {len(combined_df)} samples")

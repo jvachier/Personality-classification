@@ -174,14 +174,14 @@ def main():
     setup_logging()
     logger = get_logger(__name__)
 
-    logger.info("🚀 Starting model training and saving process...")
+    logger.info("Starting model training and saving process...")
 
     # Create models directory
     models_dir = Path("models")
     models_dir.mkdir(exist_ok=True)
 
     # Load and prepare data
-    logger.info("📊 Loading and preparing data...")
+    logger.info("Loading and preparing data...")
     df_tr, df_te, submission = load_data_with_external_merge()
 
     # Preprocess data (prep function expects target column in df_tr)
@@ -215,7 +215,7 @@ def main():
     except Exception as e:
         logger.error(f"Failed to train ensemble model: {e}")
 
-    logger.info("✅ Model training and saving complete!")
+    logger.info("Model training and saving complete!")
     logger.info(f"Models saved in: {models_dir.absolute()}")
 
 
